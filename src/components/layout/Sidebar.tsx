@@ -20,11 +20,12 @@ import {
   Settings,
   Activity,
   Code2,
+  ExternalLink,
 } from "lucide-react";
 import clsx from "clsx";
 
 const navItems = [
-  { label: "Overview", href: "/", icon: LayoutDashboard },
+  { label: "Overview", href: "/overview", icon: LayoutDashboard },
   { label: "Emails", href: "/emails", icon: Mail },
   { label: "Domains", href: "/domains", icon: Globe },
   { label: "API Keys", href: "/api-keys", icon: Key },
@@ -44,6 +45,9 @@ const navItems = [
 export default function Sidebar() {
   const pathname = usePathname();
 
+  // If on landing page, sidebar is hidden
+  if (pathname === "/") return null;
+
   return (
     <aside className="hidden lg:flex fixed left-0 top-14 bottom-0 z-30 w-56 flex-col justify-between border-r border-surface-border bg-surface px-3 py-4 transition-colors">
       {/* Navigation Links */}
@@ -53,8 +57,8 @@ export default function Sidebar() {
         </div>
         {navItems.map((item) => {
           const isActive =
-            item.href === "/"
-              ? pathname === "/"
+            item.href === "/overview"
+              ? pathname === "/overview"
               : pathname.startsWith(item.href);
           const Icon = item.icon;
 
@@ -84,7 +88,14 @@ export default function Sidebar() {
       </nav>
 
       {/* Bottom Documentation & Quick API Specs */}
-      <div className="border-t border-surface-border pt-3">
+      <div className="border-t border-surface-border pt-3 space-y-1">
+        <Link
+          href="/"
+          className="flex items-center justify-between rounded-md px-2.5 py-1.5 text-xs font-medium text-zinc-600 dark:text-zinc-400 hover:bg-surface-raised hover:text-zinc-900 dark:hover:text-white transition-colors"
+        >
+          <span>Landing Page</span>
+          <ExternalLink className="h-3 w-3 text-zinc-400" />
+        </Link>
         <a
           href="/backend/openapi.json"
           target="_blank"
@@ -94,7 +105,7 @@ export default function Sidebar() {
           <Code2 className="h-4 w-4 text-zinc-400 dark:text-zinc-500" />
           <span>OpenAPI Spec</span>
         </a>
-        <div className="px-2.5 pt-2 text-[10px] text-zinc-400 dark:text-zinc-600 font-mono">
+        <div className="px-2.5 pt-1 text-[10px] text-zinc-400 dark:text-zinc-600 font-mono">
           Mailhost v1.0.0 (Go)
         </div>
       </div>

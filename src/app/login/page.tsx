@@ -31,7 +31,7 @@ export default function LoginPage() {
       } else {
         await connectWithKey(apiKey);
       }
-      router.push("/");
+      router.push("/overview");
     } catch (err: any) {
       setError(err.message || "Authentication failed. Please verify credentials.");
     } finally {

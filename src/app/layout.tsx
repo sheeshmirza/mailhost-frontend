@@ -3,8 +3,7 @@ import "./globals.css";
 import { AuthProvider } from "@/lib/auth-context";
 import { ThemeProvider } from "@/lib/theme-context";
 import { ToastProvider } from "@/lib/toast-context";
-import Navbar from "@/components/layout/Navbar";
-import Sidebar from "@/components/layout/Sidebar";
+import AppShell from "@/components/layout/AppShell";
 
 export const metadata: Metadata = {
   title: "Resend | Email for developers",
@@ -37,19 +36,11 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className="min-h-screen bg-background text-foreground font-sans antialiased selection:bg-brand-500 selection:text-white">
+      <body className="min-h-screen bg-background text-foreground font-sans antialiased selection:bg-zinc-900 selection:text-white dark:selection:bg-white dark:selection:text-black">
         <ThemeProvider>
           <ToastProvider>
             <AuthProvider>
-              <div className="relative flex min-h-screen flex-col">
-                <Navbar />
-                <div className="flex flex-1">
-                  <Sidebar />
-                  <main className="flex-1 w-full pl-0 lg:pl-56 min-h-[calc(100vh-3.5rem)] pb-16 transition-all duration-200">
-                    {children}
-                  </main>
-                </div>
-              </div>
+              <AppShell>{children}</AppShell>
             </AuthProvider>
           </ToastProvider>
         </ThemeProvider>
