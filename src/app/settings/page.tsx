@@ -36,6 +36,11 @@ export default function SettingsPage() {
   const [email, setEmail] = useState(user?.email || "");
   const [profileSaved, setProfileSaved] = useState(false);
 
+  // Email fields
+  const [newEmail, setNewEmail] = useState("");
+  const [emailPassword, setEmailPassword] = useState("");
+  const [emailSaved, setEmailSaved] = useState(false);
+
   // Password fields
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
@@ -101,6 +106,21 @@ export default function SettingsPage() {
       setTimeout(() => setPassSaved(false), 2500);
     } catch (err: any) {
       alert("Failed to change password: " + err.message);
+    }
+  };
+
+  const handleChangeEmail = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      await api.changeEmail(newEmail.trim(), emailPassword);
+      setEmailSaved(true);
+      setEmail(newEmail.trim());
+      setNewEmail("");
+      setEmailPassword("");
+      setTimeout(() => setEmailSaved(false), 2500);
+      refresh();
+    } catch (err: any) {
+      alert("Failed to change email: " + err.message);
     }
   };
 
@@ -275,6 +295,54 @@ export default function SettingsPage() {
                   </>
                 ) : (
                   <span>Update Profile</span>
+                )}
+              </button>
+            </form>
+          </div>
+
+          {/* Change Email Address */}
+          <div className="rounded-xl border border-surface-border bg-surface p-6 space-y-4">
+            <h2 className="text-sm font-semibold text-white">Change Email Address</h2>
+            <form onSubmit={handleChangeEmail} className="space-y-4 max-w-md">
+              <div>
+                <label className="block text-[11px] text-brand-400 mb-1">
+                  New Email Address
+                </label>
+                <input
+                  type="email"
+                  value={newEmail}
+                  onChange={(e) => setNewEmail(e.target.value)}
+                  placeholder="newemail@example.com"
+                  required
+                  className="w-full rounded-md border border-surface-border bg-surface-raised px-3 py-1.5 text-xs text-white focus:outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[11px] text-brand-400 mb-1">
+                  Current Password (to confirm)
+                </label>
+                <input
+                  type="password"
+                  value={emailPassword}
+                  onChange={(e) => setEmailPassword(e.target.value)}
+                  placeholder="••••••••••••"
+                  required
+                  className="w-full rounded-md border border-surface-border bg-surface-raised px-3 py-1.5 text-xs text-white focus:outline-none"
+                />
+              </div>
+
+              <button
+                type="submit"
+                className="flex items-center gap-1.5 rounded bg-white px-4 py-1.5 text-xs font-medium text-black hover:bg-zinc-200"
+              >
+                {emailSaved ? (
+                  <>
+                    <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" />
+                    <span>Email Changed!</span>
+                  </>
+                ) : (
+                  <span>Change Email</span>
                 )}
               </button>
             </form>

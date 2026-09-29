@@ -73,6 +73,7 @@ export interface EmailSummary {
   batch_id?: string;
   from: string;
   subject: string;
+  status?: "pending" | "queued" | "sent" | "delivered" | "bounced" | "failed" | "canceled" | string;
   created_at: string;
 }
 
@@ -487,9 +488,10 @@ export class APIClient {
   }
 
   // Emails
-  async listEmails(limit = 50, before?: string) {
+  async listEmails(limit = 50, before?: string, status?: string) {
     const q = new URLSearchParams({ limit: limit.toString() });
     if (before) q.set("before", before);
+    if (status && status !== "all") q.set("status", status);
     return this.request<{ data: EmailSummary[]; next_before?: string }>(
       `/v1/emails?${q.toString()}`
     );
@@ -652,6 +654,25 @@ export class APIClient {
     const url = audienceId ? `/v1/audiences/${audienceId}/contacts/${id}` : `/v1/contacts/${id}`;
     return this.request<{ id: string; deleted: boolean }>(url, {
       method: "DELETE",
+    });
+  }
+
+  async getContact(id: string, audienceId?: string) {
+    const url = audienceId ? `/v1/audiences/${audienceId}/contacts/${id}` : `/v1/contacts/${id}`;
+    return this.request<ContactView>(url);
+  }
+
+  async updateContact(id: string, data: {
+    first_name?: string;
+    last_name?: string;
+    unsubscribed?: boolean;
+    traits?: Record<string, any>;
+    audience_id?: string;
+  }) {
+    const url = data.audience_id ? `/v1/audiences/${data.audience_id}/contacts/${id}` : `/v1/contacts/${id}`;
+    return this.request<ContactView>(url, {
+      method: "PATCH",
+      body: JSON.stringify(data),
     });
   }
 
@@ -873,6 +894,54 @@ export class APIClient {
     });
   }
 
+  // Segment Contacts
+  async listSegmentContacts(segmentId: string) {
+    return this.request<{ data: ContactView[] }>(`/v1/segments/${segmentId}/contacts`);
+  }
+
+  // Contact Segments
+  async listContactSegments(contactId: string) {
+    return this.request<{ data: SegmentView[] }>(`/v1/contacts/${contactId}/segments`);
+  }
+
+  async addContactToSegment(contactId: string, segmentId: string) {
+    return this.request<{ contact_id: string; segment_id: string }>(
+      `/v1/contacts/${contactId}/segments/${segmentId}`,
+      { method: "POST" }
+    );
+  }
+
+  async removeContactFromSegment(contactId: string, segmentId: string) {
+    return this.request<{ contact_id: string; segment_id: string; deleted: boolean }>(
+      `/v1/contacts/${contactId}/segments/${segmentId}`,
+      { method: "DELETE" }
+    );
+  }
+
+  // Contact Topics
+  async listContactTopics(contactId: string) {
+    return this.request<{ data: (TopicView & { status: string })[] }>(
+      `/v1/contacts/${contactId}/topics`
+    );
+  }
+
+  async updateContactTopic(contactId: string, topicId: string, status: "subscribed" | "unsubscribed") {
+    return this.request<{ contact_id: string; topic_id: string; status: string }>(
+      `/v1/contacts/${contactId}/topics/${topicId}`,
+      {
+        method: "POST",
+        body: JSON.stringify({ status }),
+      }
+    );
+  }
+
+  async removeContactTopic(contactId: string, topicId: string) {
+    return this.request<{ contact_id: string; topic_id: string; deleted: boolean }>(
+      `/v1/contacts/${contactId}/topics/${topicId}`,
+      { method: "DELETE" }
+    );
+  }
+
   // Template Versions & Rollback
   async listTemplateVersions(templateId: string) {
     return this.request<{ data: TemplateVersion[] }>(`/v1/templates/${templateId}/versions`);
@@ -957,10 +1026,10 @@ export class APIClient {
     });
   }
 
-  async changeEmail(newEmail: string) {
+  async changeEmail(newEmail: string, password = "") {
     return this.request<{ message: string }>("/v1/users/change-email", {
       method: "POST",
-      body: JSON.stringify({ email: newEmail }),
+      body: JSON.stringify({ new_email: newEmail, password }),
     });
   }
 

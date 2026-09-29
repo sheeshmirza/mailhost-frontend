@@ -18,6 +18,11 @@ import {
   FolderPlus,
   Filter,
   Tag,
+  X,
+  Check,
+  ChevronRight,
+  Sliders,
+  CheckCircle2,
 } from "lucide-react";
 
 export default function AudiencesPage() {
@@ -33,6 +38,17 @@ export default function AudiencesPage() {
   const [segments, setSegments] = useState<SegmentView[]>([]);
   const [topics, setTopics] = useState<TopicView[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+
+  // Contact Detail Drawer State
+  const [selectedContact, setSelectedContact] = useState<ContactView | null>(null);
+  const [contactSegments, setContactSegments] = useState<SegmentView[]>([]);
+  const [contactTopics, setContactTopics] = useState<(TopicView & { status: string })[]>([]);
+  const [isDetailLoading, setIsDetailLoading] = useState(false);
+
+  // Segment Detail Drill-Down State
+  const [selectedSegment, setSelectedSegment] = useState<SegmentView | null>(null);
+  const [segmentContacts, setSegmentContacts] = useState<ContactView[]>([]);
+  const [isSegmentLoading, setIsSegmentLoading] = useState(false);
 
   // Modals
   const [isAudienceOpen, setIsAudienceOpen] = useState(false);
@@ -203,6 +219,86 @@ export default function AudiencesPage() {
       fetchData();
     } catch (err: any) {
       alert("Failed to delete topic: " + err.message);
+    }
+  };
+
+  const openContactDetail = async (c: ContactView) => {
+    setSelectedContact(c);
+    setIsDetailLoading(true);
+    try {
+      const [segRes, topRes] = await Promise.allSettled([
+        api.listContactSegments(c.id),
+        api.listContactTopics(c.id),
+      ]);
+      if (segRes.status === "fulfilled") {
+        setContactSegments(segRes.value.data || []);
+      }
+      if (topRes.status === "fulfilled") {
+        setContactTopics(topRes.value.data || []);
+      }
+    } finally {
+      setIsDetailLoading(false);
+    }
+  };
+
+  const handleToggleUnsubscribe = async (c: ContactView) => {
+    try {
+      const updated = await api.updateContact(c.id, {
+        unsubscribed: !c.unsubscribed,
+        audience_id: selectedAudience?.id,
+      });
+      setSelectedContact(updated);
+      loadContacts(selectedAudience?.id);
+    } catch (err: any) {
+      alert("Failed to update contact: " + err.message);
+    }
+  };
+
+  const handleAddSegmentToContact = async (segmentId: string) => {
+    if (!selectedContact || !segmentId) return;
+    try {
+      await api.addContactToSegment(selectedContact.id, segmentId);
+      const segRes = await api.listContactSegments(selectedContact.id);
+      setContactSegments(segRes.data || []);
+    } catch (err: any) {
+      alert("Failed to add to segment: " + err.message);
+    }
+  };
+
+  const handleRemoveSegmentFromContact = async (segmentId: string) => {
+    if (!selectedContact) return;
+    try {
+      await api.removeContactFromSegment(selectedContact.id, segmentId);
+      const segRes = await api.listContactSegments(selectedContact.id);
+      setContactSegments(segRes.data || []);
+    } catch (err: any) {
+      alert("Failed to remove from segment: " + err.message);
+    }
+  };
+
+  const handleToggleTopic = async (topicId: string, currentStatus: string) => {
+    if (!selectedContact) return;
+    const newStatus = currentStatus === "subscribed" ? "unsubscribed" : "subscribed";
+    try {
+      await api.updateContactTopic(selectedContact.id, topicId, newStatus);
+      const topRes = await api.listContactTopics(selectedContact.id);
+      setContactTopics(topRes.data || []);
+    } catch (err: any) {
+      alert("Failed to update topic: " + err.message);
+    }
+  };
+
+  const openSegmentDetail = async (seg: SegmentView) => {
+    setSelectedSegment(seg);
+    setIsSegmentLoading(true);
+    try {
+      const res = await api.listSegmentContacts(seg.id);
+      setSegmentContacts(res.data || []);
+    } catch (err) {
+      console.error(err);
+      setSegmentContacts([]);
+    } finally {
+      setIsSegmentLoading(false);
     }
   };
 
@@ -385,7 +481,11 @@ export default function AudiencesPage() {
                 <tbody className="divide-y divide-surface-border font-mono">
                   {contacts.length > 0 ? (
                     contacts.map((c) => (
-                      <tr key={c.id} className="hover:bg-surface-raised/40 transition-colors">
+                      <tr
+                        key={c.id}
+                        onClick={() => openContactDetail(c)}
+                        className="group cursor-pointer hover:bg-surface-raised/40 transition-colors"
+                      >
                         <td className="px-5 py-3 text-white font-medium">
                           {c.email}
                         </td>
@@ -413,7 +513,10 @@ export default function AudiencesPage() {
                         </td>
                         <td className="px-5 py-3 text-right">
                           <button
-                            onClick={() => handleDeleteContact(c.id)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDeleteContact(c.id);
+                            }}
                             className="rounded p-1 text-brand-500 hover:text-red-400 transition-colors"
                           >
                             <Trash2 className="h-4 w-4" />
@@ -449,17 +552,29 @@ export default function AudiencesPage() {
             <tbody className="divide-y divide-surface-border">
               {segments.length > 0 ? (
                 segments.map((seg) => (
-                  <tr key={seg.id} className="hover:bg-surface-raised/40 transition-colors">
-                    <td className="px-5 py-3 text-white font-sans font-medium flex items-center gap-2">
-                      <Filter className="h-3.5 w-3.5 text-sky-400" />
-                      <span>{seg.name}</span>
+                  <tr
+                    key={seg.id}
+                    onClick={() => openSegmentDetail(seg)}
+                    className="group cursor-pointer hover:bg-surface-raised/40 transition-colors"
+                  >
+                    <td className="px-5 py-3 text-white font-sans font-medium flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Filter className="h-3.5 w-3.5 text-sky-400" />
+                        <span>{seg.name}</span>
+                      </div>
+                      <span className="text-[10px] text-brand-400 opacity-0 group-hover:opacity-100 flex items-center gap-1 transition-opacity">
+                        View Enrolled Contacts <ChevronRight className="h-3 w-3" />
+                      </span>
                     </td>
                     <td className="px-5 py-3 text-brand-500 text-[11px]">
                       {new Date(seg.created_at).toLocaleDateString()}
                     </td>
                     <td className="px-5 py-3 text-right">
                       <button
-                        onClick={() => handleDeleteSegment(seg.id)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDeleteSegment(seg.id);
+                        }}
                         className="rounded p-1 text-brand-500 hover:text-red-400"
                       >
                         <Trash2 className="h-4 w-4" />
@@ -734,6 +849,247 @@ export default function AudiencesPage() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Contact Detail Slide-over Drawer */}
+      {selectedContact && (
+        <div className="fixed inset-0 z-50 flex justify-end bg-black/60 backdrop-blur-sm animate-fade-in">
+          <div
+            className="fixed inset-0"
+            onClick={() => setSelectedContact(null)}
+          />
+          <div className="relative z-10 flex h-full w-full max-w-md flex-col border-l border-surface-border bg-surface shadow-2xl overflow-y-auto p-6 space-y-6">
+            {/* Header */}
+            <div className="flex items-center justify-between border-b border-surface-border pb-4">
+              <div>
+                <h2 className="text-sm font-semibold text-white">Contact Profile</h2>
+                <p className="text-xs font-mono text-brand-400 mt-0.5">{selectedContact.email}</p>
+              </div>
+              <button
+                onClick={() => setSelectedContact(null)}
+                className="rounded-md p-1.5 text-brand-400 hover:bg-surface-raised hover:text-white"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+
+            {/* Basic Info */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-brand-400">Subscription Status:</span>
+                <button
+                  onClick={() => handleToggleUnsubscribe(selectedContact)}
+                  className={`flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium border transition-colors ${
+                    selectedContact.unsubscribed
+                      ? "bg-red-950/60 border-red-800/40 text-red-400 hover:bg-red-900/60"
+                      : "bg-emerald-950/60 border-emerald-800/40 text-emerald-400 hover:bg-emerald-900/60"
+                  }`}
+                >
+                  {selectedContact.unsubscribed ? (
+                    <>
+                      <UserX className="h-3 w-3" />
+                      Unsubscribed (Click to subscribe)
+                    </>
+                  ) : (
+                    <>
+                      <UserCheck className="h-3 w-3" />
+                      Subscribed (Click to unsubscribe)
+                    </>
+                  )}
+                </button>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2 text-xs">
+                <div className="rounded-lg border border-surface-border bg-surface-raised p-2.5">
+                  <span className="text-[10px] text-brand-500 uppercase tracking-wider block">First Name</span>
+                  <span className="text-brand-200">{selectedContact.first_name || "—"}</span>
+                </div>
+                <div className="rounded-lg border border-surface-border bg-surface-raised p-2.5">
+                  <span className="text-[10px] text-brand-500 uppercase tracking-wider block">Last Name</span>
+                  <span className="text-brand-200">{selectedContact.last_name || "—"}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Segments Membership */}
+            <div className="space-y-3 pt-2 border-t border-surface-border">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-semibold text-white uppercase tracking-wider flex items-center gap-1.5">
+                  <Filter className="h-3.5 w-3.5 text-sky-400" />
+                  Enrolled Segments ({contactSegments.length})
+                </span>
+              </div>
+
+              <div className="space-y-1.5">
+                {contactSegments.length > 0 ? (
+                  contactSegments.map((s) => (
+                    <div
+                      key={s.id}
+                      className="flex items-center justify-between rounded-lg border border-surface-border bg-surface-raised px-3 py-2 text-xs"
+                    >
+                      <span className="text-brand-200">{s.name}</span>
+                      <button
+                        onClick={() => handleRemoveSegmentFromContact(s.id)}
+                        className="text-brand-500 hover:text-red-400"
+                        title="Remove from segment"
+                      >
+                        <X className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-xs text-brand-500">Not assigned to any custom segments.</p>
+                )}
+              </div>
+
+              {/* Add to Segment Picker */}
+              {segments.filter((sg) => !contactSegments.some((cs) => cs.id === sg.id)).length > 0 && (
+                <div className="pt-2">
+                  <label className="block text-[11px] text-brand-400 mb-1">Add to segment:</label>
+                  <select
+                    onChange={(e) => {
+                      if (e.target.value) {
+                        handleAddSegmentToContact(e.target.value);
+                        e.target.value = "";
+                      }
+                    }}
+                    defaultValue=""
+                    className="w-full rounded-md border border-surface-border bg-surface-raised px-3 py-1.5 text-xs text-brand-200 focus:outline-none"
+                  >
+                    <option value="" disabled>Choose a segment...</option>
+                    {segments
+                      .filter((sg) => !contactSegments.some((cs) => cs.id === sg.id))
+                      .map((sg) => (
+                        <option key={sg.id} value={sg.id}>
+                          {sg.name}
+                        </option>
+                      ))}
+                  </select>
+                </div>
+              )}
+            </div>
+
+            {/* Topics Preferences */}
+            <div className="space-y-3 pt-2 border-t border-surface-border">
+              <span className="text-xs font-semibold text-white uppercase tracking-wider flex items-center gap-1.5">
+                <Tag className="h-3.5 w-3.5 text-purple-400" />
+                Topic Preferences ({contactTopics.length})
+              </span>
+
+              <div className="space-y-1.5">
+                {contactTopics.length > 0 ? (
+                  contactTopics.map((top) => {
+                    const isSub = top.status !== "unsubscribed";
+                    return (
+                      <div
+                        key={top.id}
+                        className="flex items-center justify-between rounded-lg border border-surface-border bg-surface-raised px-3 py-2 text-xs"
+                      >
+                        <div>
+                          <p className="text-brand-200 font-medium">{top.name}</p>
+                          {top.description && (
+                            <p className="text-[10px] text-brand-500">{top.description}</p>
+                          )}
+                        </div>
+                        <button
+                          onClick={() => handleToggleTopic(top.id, top.status)}
+                          className={`rounded px-2.5 py-1 text-[11px] font-medium border transition-colors ${
+                            isSub
+                              ? "bg-emerald-950/60 border-emerald-800/40 text-emerald-400 hover:bg-emerald-900/60"
+                              : "bg-surface border-surface-border text-brand-500 hover:text-white"
+                          }`}
+                        >
+                          {isSub ? "Opted In" : "Opted Out"}
+                        </button>
+                      </div>
+                    );
+                  })
+                ) : (
+                  <p className="text-xs text-brand-500">No subscription topics configured.</p>
+                )}
+              </div>
+            </div>
+
+            {/* Actions */}
+            <div className="pt-4 border-t border-surface-border">
+              <button
+                onClick={() => {
+                  handleDeleteContact(selectedContact.id);
+                  setSelectedContact(null);
+                }}
+                className="w-full flex items-center justify-center gap-1.5 rounded-lg border border-red-900/50 bg-red-950/30 py-2 text-xs text-red-400 hover:bg-red-900/50 transition-colors"
+              >
+                <Trash2 className="h-3.5 w-3.5" />
+                <span>Delete Contact</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Segment Enrolled Contacts Modal */}
+      {selectedSegment && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-fade-in">
+          <div className="relative flex flex-col w-full max-w-xl rounded-xl border border-surface-border bg-surface p-6 shadow-2xl space-y-4 max-h-[85vh] overflow-y-auto">
+            <div className="flex items-center justify-between border-b border-surface-border pb-3">
+              <div>
+                <h2 className="text-sm font-semibold text-white flex items-center gap-2">
+                  <Filter className="h-4 w-4 text-sky-400" />
+                  <span>{selectedSegment.name}</span>
+                </h2>
+                <p className="text-xs text-brand-400 mt-0.5">
+                  {segmentContacts.length} contacts enrolled in this segment
+                </p>
+              </div>
+              <button
+                onClick={() => setSelectedSegment(null)}
+                className="rounded-md p-1.5 text-brand-400 hover:bg-surface-raised hover:text-white"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+
+            <div className="divide-y divide-surface-border overflow-hidden rounded-lg border border-surface-border bg-surface-raised">
+              {isSegmentLoading ? (
+                <div className="py-8 text-center text-xs text-brand-400 flex items-center justify-center gap-2">
+                  <RefreshCw className="h-3.5 w-3.5 animate-spin" />
+                  <span>Loading enrolled contacts...</span>
+                </div>
+              ) : segmentContacts.length > 0 ? (
+                segmentContacts.map((c) => (
+                  <div
+                    key={c.id}
+                    className="flex items-center justify-between p-3 text-xs"
+                  >
+                    <div>
+                      <p className="font-mono text-white">{c.email}</p>
+                      <p className="text-[11px] text-brand-400">
+                        {[c.first_name, c.last_name].filter(Boolean).join(" ") || "No name"}
+                      </p>
+                    </div>
+                    <span className="text-[10px] text-brand-500 font-mono">
+                      {new Date(c.created_at).toLocaleDateString()}
+                    </span>
+                  </div>
+                ))
+              ) : (
+                <div className="py-8 text-center text-xs text-brand-500">
+                  No contacts enrolled in this segment yet.
+                </div>
+              )}
+            </div>
+
+            <div className="flex justify-end pt-2">
+              <button
+                type="button"
+                onClick={() => setSelectedSegment(null)}
+                className="rounded bg-surface-raised px-4 py-1.5 text-xs text-brand-200 hover:text-white"
+              >
+                Close
+              </button>
+            </div>
           </div>
         </div>
       )}

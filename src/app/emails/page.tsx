@@ -105,11 +105,66 @@ function EmailsPageContent() {
     }
   };
 
+  const renderStatusPill = (status?: string) => {
+    const s = (status || "queued").toLowerCase();
+    switch (s) {
+      case "delivered":
+        return (
+          <span className="inline-flex items-center gap-1 rounded-full bg-emerald-950/60 border border-emerald-800/40 px-2 py-0.5 text-[10px] font-medium text-emerald-400">
+            <CheckCircle2 className="h-3 w-3" />
+            Delivered
+          </span>
+        );
+      case "bounced":
+        return (
+          <span className="inline-flex items-center gap-1 rounded-full bg-red-950/60 border border-red-800/40 px-2 py-0.5 text-[10px] font-medium text-red-400">
+            <AlertCircle className="h-3 w-3" />
+            Bounced
+          </span>
+        );
+      case "failed":
+        return (
+          <span className="inline-flex items-center gap-1 rounded-full bg-rose-950/60 border border-rose-800/40 px-2 py-0.5 text-[10px] font-medium text-rose-400">
+            <AlertCircle className="h-3 w-3" />
+            Failed
+          </span>
+        );
+      case "canceled":
+      case "cancelled":
+        return (
+          <span className="inline-flex items-center gap-1 rounded-full bg-zinc-900 border border-zinc-700 px-2 py-0.5 text-[10px] font-medium text-zinc-400">
+            <Ban className="h-3 w-3" />
+            Canceled
+          </span>
+        );
+      case "sent":
+        return (
+          <span className="inline-flex items-center gap-1 rounded-full bg-sky-950/60 border border-sky-800/40 px-2 py-0.5 text-[10px] font-medium text-sky-400">
+            <Clock className="h-3 w-3" />
+            Sent
+          </span>
+        );
+      case "queued":
+      default:
+        return (
+          <span className="inline-flex items-center gap-1 rounded-full bg-amber-950/60 border border-amber-800/40 px-2 py-0.5 text-[10px] font-medium text-amber-400">
+            <Clock className="h-3 w-3" />
+            Queued
+          </span>
+        );
+    }
+  };
+
   const filteredEmails = emails.filter((item) => {
     const matchesSearch =
-      item.subject.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.from.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesSearch;
+      (item.subject || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (item.from || "").toLowerCase().includes(searchQuery.toLowerCase());
+    const itemStatus = (item.status || "queued").toLowerCase();
+    const matchesStatus =
+      statusFilter === "all" ||
+      itemStatus === statusFilter.toLowerCase() ||
+      (statusFilter === "canceled" && itemStatus === "cancelled");
+    return matchesSearch && matchesStatus;
   });
 
   return (
@@ -144,25 +199,71 @@ function EmailsPageContent() {
         </div>
       </div>
 
-      {/* Search and Filters Bar */}
-      <div className="flex items-center justify-between gap-4">
-        <div className="relative flex-1 max-w-sm">
-          <Search className="absolute left-3 top-2.5 h-3.5 w-3.5 text-brand-500" />
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search by subject or sender..."
-            className="w-full rounded-md border border-surface-border bg-surface pl-9 pr-3 py-1.5 text-xs text-white placeholder-brand-500 focus:border-brand-500 focus:outline-none"
-          />
+      {/* Search and Status Filters Bar */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        {/* Status Filter Tabs */}
+        <div className="flex items-center gap-1 overflow-x-auto pb-1 sm:pb-0">
+          {[
+            { key: "all", label: "All" },
+            { key: "delivered", label: "Delivered" },
+            { key: "queued", label: "Queued" },
+            { key: "sent", label: "Sent" },
+            { key: "bounced", label: "Bounced" },
+            { key: "failed", label: "Failed" },
+            { key: "canceled", label: "Canceled" },
+          ].map((tab) => {
+            const count =
+              tab.key === "all"
+                ? emails.length
+                : emails.filter(
+                    (e) =>
+                      (e.status || "queued").toLowerCase() === tab.key ||
+                      (tab.key === "canceled" && (e.status || "").toLowerCase() === "cancelled")
+                  ).length;
+            const active = statusFilter === tab.key;
+            return (
+              <button
+                key={tab.key}
+                onClick={() => setStatusFilter(tab.key)}
+                className={`flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-medium transition-colors ${
+                  active
+                    ? "bg-white text-black"
+                    : "text-brand-400 hover:bg-surface-raised hover:text-white"
+                }`}
+              >
+                <span>{tab.label}</span>
+                <span
+                  className={`rounded-full px-1.5 py-0.2 text-[10px] ${
+                    active ? "bg-black/15 text-black" : "bg-surface-raised text-brand-500"
+                  }`}
+                >
+                  {count}
+                </span>
+              </button>
+            );
+          })}
         </div>
 
-        <button
-          onClick={fetchEmails}
-          className="flex h-8 w-8 items-center justify-center rounded-md border border-surface-border bg-surface text-brand-400 hover:bg-surface-raised hover:text-white"
-        >
-          <RefreshCw className={`h-3.5 w-3.5 ${isLoading ? "animate-spin" : ""}`} />
-        </button>
+        <div className="flex items-center gap-2">
+          <div className="relative w-full sm:w-64">
+            <Search className="absolute left-3 top-2.5 h-3.5 w-3.5 text-brand-500" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search subject or sender..."
+              className="w-full rounded-md border border-surface-border bg-surface pl-9 pr-3 py-1.5 text-xs text-white placeholder-brand-500 focus:border-brand-500 focus:outline-none"
+            />
+          </div>
+
+          <button
+            onClick={fetchEmails}
+            className="flex h-8 w-8 items-center justify-center rounded-md border border-surface-border bg-surface text-brand-400 hover:bg-surface-raised hover:text-white"
+            title="Refresh emails"
+          >
+            <RefreshCw className={`h-3.5 w-3.5 ${isLoading ? "animate-spin" : ""}`} />
+          </button>
+        </div>
       </div>
 
       {/* Emails Table */}
@@ -192,10 +293,7 @@ function EmailsPageContent() {
                     {item.from}
                   </td>
                   <td className="px-5 py-3">
-                    <span className="inline-flex items-center gap-1 rounded-full bg-emerald-950/60 border border-emerald-800/40 px-2 py-0.5 text-[10px] font-medium text-emerald-400">
-                      <CheckCircle2 className="h-3 w-3" />
-                      Delivered
-                    </span>
+                    {renderStatusPill(item.status)}
                   </td>
                   <td className="px-5 py-3 text-brand-400 font-mono text-[11px]">
                     {new Date(item.created_at).toLocaleString()}

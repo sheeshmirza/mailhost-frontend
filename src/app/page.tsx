@@ -304,8 +304,20 @@ export default function OverviewPage() {
                     </p>
                   </div>
                   <div className="text-right">
-                    <span className="inline-flex items-center rounded-full bg-emerald-950/60 border border-emerald-800/40 px-2 py-0.5 text-[10px] font-medium text-emerald-400">
-                      Delivered
+                    <span className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-medium capitalize ${
+                      email.status === "delivered"
+                        ? "bg-emerald-950/60 border-emerald-800/40 text-emerald-400"
+                        : email.status === "bounced"
+                        ? "bg-red-950/60 border-red-800/40 text-red-400"
+                        : email.status === "failed"
+                        ? "bg-rose-950/60 border-rose-800/40 text-rose-400"
+                        : email.status === "sent"
+                        ? "bg-sky-950/60 border-sky-800/40 text-sky-400"
+                        : email.status === "canceled"
+                        ? "bg-zinc-900 border-zinc-700 text-zinc-400"
+                        : "bg-amber-950/60 border-amber-800/40 text-amber-400"
+                    }`}>
+                      {email.status || "queued"}
                     </span>
                     <p className="text-[10px] text-brand-500 mt-0.5 font-mono">
                       {new Date(email.created_at).toLocaleTimeString([], {

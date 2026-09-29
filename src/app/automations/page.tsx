@@ -60,7 +60,12 @@ export default function AutomationsPage() {
         }
       }
       if (domRes.status === "fulfilled") {
-        setDomains(domRes.value.data || []);
+        const domList = domRes.value.data || [];
+        setDomains(domList);
+        if (domList.length > 0) {
+          const verified = domList.find((d: any) => d.status === "verified") || domList[0];
+          setEmailFrom(`Acme <welcome@${verified.name}>`);
+        }
       }
     } catch (err) {
       console.error("Failed to load automations", err);

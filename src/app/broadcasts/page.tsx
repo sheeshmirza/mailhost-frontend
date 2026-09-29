@@ -23,10 +23,12 @@ export default function BroadcastsPage() {
   const [audiences, setAudiences] = useState<AudienceView[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
+  const [domains, setDomains] = useState<any[]>([]);
+
   // New broadcast modal
   const [isOpen, setIsOpen] = useState(false);
   const [name, setName] = useState("");
-  const [from, setFrom] = useState("Acme <newsletter@example.com>");
+  const [from, setFrom] = useState("");
   const [subject, setSubject] = useState("");
   const [html, setHtml] = useState("<h1>Special Announcement</h1><p>Here is what is new this month.</p>");
   const [selectedAudienceId, setSelectedAudienceId] = useState("");
@@ -34,9 +36,10 @@ export default function BroadcastsPage() {
   const fetchData = async () => {
     setIsLoading(true);
     try {
-      const [bcRes, audRes] = await Promise.allSettled([
+      const [bcRes, audRes, domRes] = await Promise.allSettled([
         api.listBroadcasts(),
         api.listAudiences(),
+        api.listDomains(),
       ]);
       if (bcRes.status === "fulfilled") {
         setBroadcasts(bcRes.value.data || []);
@@ -46,6 +49,16 @@ export default function BroadcastsPage() {
         setAudiences(auds);
         if (auds.length > 0 && !selectedAudienceId) {
           setSelectedAudienceId(auds[0].id);
+        }
+      }
+      if (domRes.status === "fulfilled") {
+        const domList = domRes.value.data || [];
+        setDomains(domList);
+        if (domList.length > 0 && !from) {
+          const verified = domList.find((d: any) => d.status === "verified") || domList[0];
+          setFrom(`Acme <newsletter@${verified.name}>`);
+        } else if (!from) {
+          setFrom("Acme <newsletter@example.com>");
         }
       }
     } catch (err) {

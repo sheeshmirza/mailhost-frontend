@@ -10,10 +10,10 @@ export default function LoginPage() {
   const { login, register, connectWithKey } = useAuth();
 
   const [mode, setMode] = useState<"login" | "register" | "apikey">("login");
-  const [email, setEmail] = useState("admin@resend.local");
-  const [password, setPassword] = useState("Password1234!");
-  const [name, setName] = useState("Resend Admin");
-  const [orgName, setOrgName] = useState("Acme Corp");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [name, setName] = useState("");
+  const [orgName, setOrgName] = useState("");
   const [apiKey, setApiKey] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -218,6 +218,21 @@ export default function LoginPage() {
               <span>{loading ? "Authenticating..." : mode === "login" ? "Sign In" : mode === "register" ? "Create Account" : "Connect"}</span>
               <ArrowRight className="h-3.5 w-3.5" />
             </button>
+
+            {mode === "login" && (
+              <div className="pt-1 text-center">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setEmail("admin@resend.local");
+                    setPassword("Password1234!");
+                  }}
+                  className="text-[11px] text-brand-400 hover:text-white underline underline-offset-4 transition-colors"
+                >
+                  Quick Fill Local Test Credentials
+                </button>
+              </div>
+            )}
           </form>
         </div>
 
