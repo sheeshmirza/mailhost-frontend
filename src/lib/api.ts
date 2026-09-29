@@ -1,10 +1,6 @@
 // Resend / Mailhost API Client
 
 const getBaseUrl = (): string => {
-  if (typeof window !== "undefined") {
-    // Client-side: use proxy rewrite or direct URL
-    return window.location.origin ? "" : "http://localhost:8080";
-  }
   return process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
 };
 
@@ -377,9 +373,7 @@ export class APIClient {
     options: RequestInit = {}
   ): Promise<T> {
     const base = getBaseUrl();
-    // Route via Next.js proxy rewrite `/backend/...` if in browser, or direct URL
-    const isBrowser = typeof window !== "undefined";
-    const url = isBrowser ? `/backend${endpoint}` : `${base}${endpoint}`;
+    const url = `${base}${endpoint}`;
 
     const headers: Record<string, string> = {
       "Content-Type": "application/json",
