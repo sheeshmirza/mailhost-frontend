@@ -140,8 +140,12 @@ export interface InboundEmailDetail extends InboundEmailSummary {
 export interface AliasView {
   id: string;
   domain_id: string;
-  alias: string;
-  forward_to: string[];
+  name: string;
+  address: string;
+  alias?: string;
+  destinations: string[];
+  forward_to?: string[];
+  store_copy?: boolean;
   created_at: string;
 }
 
@@ -600,10 +604,23 @@ export class APIClient {
     return this.request<{ data: AliasView[] }>("/v1/aliases");
   }
 
-  async createAlias(data: { name?: string; alias: string; forward_to: string[] }) {
+  async createAlias(data: {
+    domain_id?: string;
+    name?: string;
+    alias?: string;
+    forward_to?: string[];
+    destinations?: string[];
+    store_copy?: boolean;
+  }) {
+    const payload = {
+      domain_id: data.domain_id,
+      name: data.name || (data.alias ? data.alias.split("@")[0] : ""),
+      destinations: data.destinations || data.forward_to || [],
+      store_copy: data.store_copy ?? true,
+    };
     return this.request<AliasView>("/v1/aliases", {
       method: "POST",
-      body: JSON.stringify(data),
+      body: JSON.stringify(payload),
     });
   }
 

@@ -80,11 +80,17 @@ export default function InboundPage() {
   const handleCreateAlias = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const fullAlias = `${aliasPrefix.trim()}@${selectedDomain}`;
+      const domObj = domains.find((d) => d.name === selectedDomain || d.id === selectedDomain) || domains[0];
+      if (!domObj) {
+        toast.error("Please add and verify a domain first");
+        return;
+      }
       const destinations = forwardTo.split(",").map((s) => s.trim()).filter(Boolean);
       await api.createAlias({
-        alias: fullAlias,
-        forward_to: destinations,
+        domain_id: domObj.id,
+        name: aliasPrefix.trim(),
+        destinations: destinations,
+        store_copy: true,
       });
       toast.success("Alias created successfully");
       setIsAliasOpen(false);
@@ -239,10 +245,16 @@ export default function InboundPage() {
                 aliases.map((al) => (
                   <tr key={al.id} className="hover:bg-surface-raised/40 transition-colors">
                     <td className="px-5 py-3 text-zinc-900 dark:text-white font-semibold">
-                      {al.alias}
+                      {al.address || al.alias || al.name}
                     </td>
                     <td className="px-5 py-3 text-zinc-700 dark:text-zinc-300">
-                      {al.forward_to?.join(", ")}
+                      {al.destinations && al.destinations.length > 0
+                        ? al.destinations.join(", ")
+                        : al.forward_to && al.forward_to.length > 0
+                        ? al.forward_to.join(", ")
+                        : al.store_copy
+                        ? "Stored in Inbox"
+                        : "—"}
                     </td>
                     <td className="px-5 py-3 text-zinc-500 dark:text-zinc-400 text-[11px]">
                       {new Date(al.created_at).toLocaleDateString()}
