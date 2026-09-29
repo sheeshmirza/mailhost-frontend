@@ -1,0 +1,293 @@
+"use client";
+
+import React, { useState, useEffect } from "react";
+import { api, APIKeyView, DomainView } from "@/lib/api";
+import {
+  Key,
+  Plus,
+  Trash2,
+  Copy,
+  Check,
+  Shield,
+  AlertTriangle,
+  RefreshCw,
+} from "lucide-react";
+
+export default function APIKeysPage() {
+  const [keys, setKeys] = useState<APIKeyView[]>([]);
+  const [domains, setDomains] = useState<DomainView[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [keyName, setKeyName] = useState("");
+  const [permission, setPermission] = useState<"full_access" | "sending_access">(
+    "full_access"
+  );
+  const [selectedDomainId, setSelectedDomainId] = useState("");
+  const [newKeyCreated, setNewKeyCreated] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
+
+  const fetchKeys = async () => {
+    setIsLoading(true);
+    try {
+      const [keysRes, domainsRes] = await Promise.allSettled([
+        api.listAPIKeys(),
+        api.listDomains(),
+      ]);
+      if (keysRes.status === "fulfilled") {
+        setKeys(keysRes.value.data || []);
+      }
+      if (domainsRes.status === "fulfilled") {
+        setDomains(domainsRes.value.data || []);
+      }
+    } catch (err) {
+      console.error("Failed to load API keys", err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchKeys();
+  }, []);
+
+  const handleCreate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const res = await api.createAPIKey(
+        keyName.trim() || "Default Key",
+        permission,
+        selectedDomainId || undefined
+      );
+      setNewKeyCreated(res.api_key);
+      setKeyName("");
+      fetchKeys();
+    } catch (err: any) {
+      alert("Failed to create API key: " + err.message);
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!confirm("Are you sure you want to revoke this API key? This action is irreversible.")) return;
+    try {
+      await api.deleteAPIKey(id);
+      fetchKeys();
+    } catch (err: any) {
+      alert("Failed to revoke API key: " + err.message);
+    }
+  };
+
+  const copyKey = () => {
+    if (!newKeyCreated) return;
+    navigator.clipboard.writeText(newKeyCreated);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  return (
+    <div className="max-w-6xl mx-auto px-8 py-8 space-y-6 animate-fade-in">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-surface-border pb-6">
+        <div>
+          <h1 className="text-xl font-semibold tracking-tight text-white">
+            API Keys
+          </h1>
+          <p className="text-xs text-brand-400 mt-1">
+            Manage authentication credentials for your servers, CLI, and SDK integrations.
+          </p>
+        </div>
+
+        <button
+          onClick={() => {
+            setNewKeyCreated(null);
+            setIsCreateOpen(true);
+          }}
+          className="flex items-center gap-1.5 rounded-md bg-white px-3.5 py-1.5 text-xs font-medium text-black hover:bg-zinc-200 transition-colors"
+        >
+          <Plus className="h-3.5 w-3.5" />
+          <span>Create API Key</span>
+        </button>
+      </div>
+
+      {/* Keys Table */}
+      <div className="overflow-hidden rounded-xl border border-surface-border bg-surface">
+        <table className="w-full text-left text-xs">
+          <thead className="border-b border-surface-border bg-surface-raised text-[11px] font-medium uppercase tracking-wider text-brand-400">
+            <tr>
+              <th className="px-5 py-3">Name</th>
+              <th className="px-5 py-3">Key Preview</th>
+              <th className="px-5 py-3">Permission</th>
+              <th className="px-5 py-3">Created</th>
+              <th className="px-5 py-3">Last Used</th>
+              <th className="px-5 py-3 text-right">Revoke</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-surface-border font-mono">
+            {keys.length > 0 ? (
+              keys.map((k) => (
+                <tr key={k.id} className="hover:bg-surface-raised/40 transition-colors">
+                  <td className="px-5 py-3 font-sans font-medium text-white">
+                    {k.name}
+                  </td>
+                  <td className="px-5 py-3 text-brand-400">
+                    re_••••••••{k.last_four}
+                  </td>
+                  <td className="px-5 py-3">
+                    <span
+                      className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium border ${
+                        k.permission === "full_access"
+                          ? "bg-zinc-800 text-brand-200 border-zinc-700"
+                          : "bg-blue-950/60 text-blue-300 border-blue-800/40"
+                      }`}
+                    >
+                      {k.permission === "full_access" ? "Full Access" : "Sending Only"}
+                    </span>
+                  </td>
+                  <td className="px-5 py-3 text-brand-500 text-[11px]">
+                    {new Date(k.created_at).toLocaleDateString()}
+                  </td>
+                  <td className="px-5 py-3 text-brand-500 text-[11px]">
+                    {k.last_used_at
+                      ? new Date(k.last_used_at).toLocaleDateString()
+                      : "Never"}
+                  </td>
+                  <td className="px-5 py-3 text-right">
+                    <button
+                      onClick={() => handleDelete(k.id)}
+                      title="Revoke key"
+                      className="rounded p-1 text-brand-500 hover:text-red-400 transition-colors"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  </td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan={6} className="py-12 text-center text-xs text-brand-500 font-sans">
+                  {isLoading ? "Loading API keys..." : "No API keys found. Create one to begin."}
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+
+      {/* Create Key Modal */}
+      {isCreateOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-fade-in">
+          <div className="relative flex flex-col w-full max-w-md rounded-xl border border-surface-border bg-surface p-6 shadow-2xl space-y-4">
+            <h2 className="text-sm font-semibold text-white">Create API Key</h2>
+
+            {newKeyCreated ? (
+              <div className="space-y-4">
+                <div className="rounded-lg border border-amber-900/50 bg-amber-950/20 p-3 text-xs text-amber-300 flex items-start gap-2">
+                  <AlertTriangle className="h-4 w-4 flex-shrink-0 mt-0.5" />
+                  <span>
+                    Copy this key now. For your security, it will never be displayed again.
+                  </span>
+                </div>
+
+                <div className="flex items-center justify-between rounded-lg border border-surface-border bg-surface-raised px-3 py-2 text-xs font-mono text-white">
+                  <span className="truncate mr-2">{newKeyCreated}</span>
+                  <button
+                    onClick={copyKey}
+                    className="flex items-center gap-1 rounded bg-zinc-800 px-2 py-1 text-xs text-brand-200 hover:text-white"
+                  >
+                    {copied ? (
+                      <>
+                        <Check className="h-3 w-3 text-emerald-400" />
+                        <span className="text-emerald-400">Copied</span>
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="h-3 w-3" />
+                        <span>Copy</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+
+                <div className="flex justify-end pt-2">
+                  <button
+                    onClick={() => {
+                      setIsCreateOpen(false);
+                      setNewKeyCreated(null);
+                    }}
+                    className="rounded bg-white px-4 py-1.5 text-xs font-medium text-black hover:bg-zinc-200"
+                  >
+                    Done
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <form onSubmit={handleCreate} className="space-y-4">
+                <div>
+                  <label className="block text-[11px] text-brand-400 mb-1">
+                    Name
+                  </label>
+                  <input
+                    type="text"
+                    value={keyName}
+                    onChange={(e) => setKeyName(e.target.value)}
+                    placeholder="Production Server, Marketing Script, etc."
+                    className="w-full rounded-md border border-surface-border bg-surface-raised px-3 py-1.5 text-xs text-white focus:outline-none focus:border-brand-500"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[11px] text-brand-400 mb-1">
+                    Permission Scope
+                  </label>
+                  <select
+                    value={permission}
+                    onChange={(e) => setPermission(e.target.value as any)}
+                    className="w-full rounded-md border border-surface-border bg-surface-raised px-3 py-1.5 text-xs text-white focus:outline-none"
+                  >
+                    <option value="full_access">Full Access (Send & Manage)</option>
+                    <option value="sending_access">Sending Access Only</option>
+                  </select>
+                </div>
+
+                {permission === "sending_access" && (
+                  <div>
+                    <label className="block text-[11px] text-brand-400 mb-1">
+                      Restrict to Domain (Optional)
+                    </label>
+                    <select
+                      value={selectedDomainId}
+                      onChange={(e) => setSelectedDomainId(e.target.value)}
+                      className="w-full rounded-md border border-surface-border bg-surface-raised px-3 py-1.5 text-xs text-white focus:outline-none"
+                    >
+                      <option value="">All Domains</option>
+                      {domains.map((d) => (
+                        <option key={d.id} value={d.id}>
+                          {d.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+
+                <div className="flex justify-end gap-2 pt-2">
+                  <button
+                    type="button"
+                    onClick={() => setIsCreateOpen(false)}
+                    className="rounded px-3 py-1.5 text-xs text-brand-400 hover:bg-surface-raised"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="rounded bg-white px-4 py-1.5 text-xs font-medium text-black hover:bg-zinc-200"
+                  >
+                    Generate API Key
+                  </button>
+                </div>
+              </form>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}

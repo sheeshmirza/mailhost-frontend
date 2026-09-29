@@ -1,0 +1,739 @@
+// Resend / Mailhost API Client
+
+const getBaseUrl = (): string => {
+  if (typeof window !== "undefined") {
+    // Client-side: use proxy rewrite or direct URL
+    return window.location.origin ? "" : "http://localhost:8080";
+  }
+  return process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
+};
+
+// API Types
+export interface UserView {
+  id: string;
+  email: string;
+  name: string;
+  avatar_url?: string;
+  email_verified: boolean;
+  created_at: string;
+}
+
+export interface UserAccountView {
+  id: string;
+  name: string;
+  role: string;
+  created_at: string;
+}
+
+export interface AuthSession {
+  token: string;
+  apiKey?: string;
+  user?: UserView;
+  account?: UserAccountView;
+  accounts?: UserAccountView[];
+}
+
+export interface DNSRecord {
+  type: string;
+  name: string;
+  value: string;
+  priority?: number;
+  purpose: string;
+  required?: boolean;
+  status?: string;
+}
+
+export interface DomainView {
+  id: string;
+  name: string;
+  status: "not_started" | "pending" | "verified" | "failed" | string;
+  region: string;
+  open_tracking: boolean;
+  click_tracking: boolean;
+  tls: string;
+  inbound_webhook_url?: string;
+  webhook_secret?: string;
+  created_at: string;
+  verified_at?: string;
+  records: DNSRecord[];
+}
+
+export interface APIKeyView {
+  id: string;
+  name: string;
+  permission: "full_access" | "sending_access" | string;
+  domain_id?: string;
+  last_four: string;
+  created_at: string;
+  last_used_at?: string;
+}
+
+export interface EmailSummary {
+  id: string;
+  batch_id?: string;
+  from: string;
+  subject: string;
+  created_at: string;
+}
+
+export interface DeliveryView {
+  id: string;
+  recipient: string;
+  status: "pending" | "queued" | "delivered" | "bounced" | "failed" | string;
+  attempts: number;
+  last_error?: string;
+  updated_at: string;
+}
+
+export interface EventView {
+  delivery_id: string;
+  type: "sent" | "delivered" | "bounced" | "opened" | "clicked" | "failed" | string;
+  detail?: string;
+  created_at: string;
+}
+
+export interface EmailDetail {
+  id: string;
+  batch_id?: string;
+  from: string;
+  subject: string;
+  message_id: string;
+  created_at: string;
+  deliveries: DeliveryView[];
+  events: EventView[];
+}
+
+export interface SendEmailPayload {
+  from: string;
+  to: string[];
+  cc?: string[];
+  bcc?: string[];
+  reply_to?: string[];
+  subject: string;
+  html?: string;
+  text?: string;
+  headers?: Record<string, string>;
+  tags?: { name: string; value: string }[];
+  scheduled_at?: string;
+  template_id?: string;
+}
+
+export interface InboundEmailSummary {
+  id: string;
+  domain_id: string;
+  mail_from: string;
+  rcpt_to: string[];
+  from: string;
+  subject: string;
+  size: number;
+  created_at: string;
+}
+
+export interface InboundEmailDetail extends InboundEmailSummary {
+  message_id: string;
+  text: string;
+  html: string;
+  attachments?: any;
+}
+
+export interface AliasView {
+  id: string;
+  domain_id: string;
+  alias: string;
+  forward_to: string[];
+  created_at: string;
+}
+
+export interface AudienceView {
+  id: string;
+  name: string;
+  created_at: string;
+}
+
+export interface ContactView {
+  id: string;
+  email: string;
+  first_name?: string;
+  last_name?: string;
+  unsubscribed: boolean;
+  created_at: string;
+}
+
+export interface BroadcastView {
+  id: string;
+  name: string;
+  from: string;
+  subject: string;
+  status: "draft" | "queued" | "sending" | "sent" | string;
+  audience_id?: string;
+  segment_id?: string;
+  sent_at?: string;
+  created_at: string;
+}
+
+export interface TemplateView {
+  id: string;
+  name: string;
+  alias?: string;
+  subject: string;
+  html: string;
+  text: string;
+  status: "draft" | "published" | string;
+  variables?: { key: string; type: string; fallback_value?: string }[];
+  created_at: string;
+  updated_at: string;
+}
+
+export interface WebhookView {
+  id: string;
+  url: string;
+  events: string[];
+  status: "active" | "disabled" | string;
+  signing_secret?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface SMTPCredView {
+  id: string;
+  domain_id: string;
+  email: string;
+  name: string;
+  username: string;
+  last_used_at?: string;
+  created_at: string;
+}
+
+export interface DedicatedIPView {
+  id: string;
+  ip_address: string;
+  status: string;
+  warmup_day: number;
+  daily_quota: number;
+  sent_today: number;
+  created_at: string;
+}
+
+export interface OrgMemberView {
+  id: string;
+  user_id: string;
+  email: string;
+  role: string;
+  created_at: string;
+}
+
+export interface AuditLogView {
+  id: string;
+  account_id: string;
+  actor: string;
+  action: string;
+  resource_type: string;
+  resource_id: string;
+  ip_address?: string;
+  user_agent?: string;
+  created_at: string;
+}
+
+export interface AnalyticsCounts {
+  sent: number;
+  delivered: number;
+  bounced: number;
+  failed: number;
+  opened: number;
+  clicked: number;
+}
+
+export interface AnalyticsBucket {
+  bucket: string;
+  sent: number;
+  delivered: number;
+  bounced: number;
+  failed: number;
+  opened: number;
+  clicked: number;
+}
+
+export interface AnalyticsResponse {
+  from: string;
+  to: string;
+  interval: string;
+  domain_id?: string;
+  totals: AnalyticsCounts;
+  rates: {
+    delivery_rate: number;
+    bounce_rate: number;
+    failure_rate: number;
+    open_rate: number;
+    click_rate: number;
+  };
+  series: AnalyticsBucket[];
+}
+
+export class APIClient {
+  private token: string | null = null;
+
+  constructor(token?: string | null) {
+    if (token) this.token = token;
+  }
+
+  setToken(token: string | null) {
+    this.token = token;
+  }
+
+  private async request<T>(
+    endpoint: string,
+    options: RequestInit = {}
+  ): Promise<T> {
+    const base = getBaseUrl();
+    // Route via Next.js proxy rewrite `/backend/...` if in browser, or direct URL
+    const isBrowser = typeof window !== "undefined";
+    const url = isBrowser ? `/backend${endpoint}` : `${base}${endpoint}`;
+
+    const headers: Record<string, string> = {
+      "Content-Type": "application/json",
+      ...(options.headers as Record<string, string>),
+    };
+
+    if (this.token) {
+      headers["Authorization"] = `Bearer ${this.token}`;
+    }
+
+    const res = await fetch(url, {
+      ...options,
+      headers,
+    });
+
+    if (res.status === 204) {
+      return {} as T;
+    }
+
+    const data = await res.json().catch(() => ({}));
+
+    if (!res.ok) {
+      throw new Error(data.message || data.error || `HTTP error ${res.status}`);
+    }
+
+    return data as T;
+  }
+
+  // System
+  async getHealth() {
+    return this.request<{ status: string }>("/healthz");
+  }
+
+  async getReadiness() {
+    return this.request<{ checks: Record<string, string>; status: string }>(
+      "/readyz"
+    );
+  }
+
+  // Auth
+  async register(data: {
+    email: string;
+    password: string;
+    name?: string;
+    organization_name?: string;
+  }) {
+    return this.request<{
+      object: string;
+      token: string;
+      verification_token: string;
+      verification_url: string;
+      user: UserView;
+      account: UserAccountView;
+      api_key: string;
+    }>("/v1/users/register", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  }
+
+  async login(data: { email: string; password: string }) {
+    return this.request<{
+      object: string;
+      token: string;
+      user: UserView;
+      current_account: UserAccountView;
+      accounts: UserAccountView[];
+    }>("/v1/users/login", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  }
+
+  async getMe() {
+    return this.request<{
+      user: UserView;
+      current_account: UserAccountView;
+      accounts: UserAccountView[];
+    }>("/v1/users/me");
+  }
+
+  async listAccounts() {
+    return this.request<{ data: UserAccountView[] }>("/v1/users/accounts");
+  }
+
+  async switchAccount(accountId: string) {
+    return this.request<{ object: string; token: string; account: UserAccountView }>(
+      "/v1/users/switch-account",
+      {
+        method: "POST",
+        body: JSON.stringify({ account_id: accountId }),
+      }
+    );
+  }
+
+  // Analytics
+  async getAnalytics(params?: {
+    from?: string;
+    to?: string;
+    interval?: "hour" | "day" | "week" | "month";
+    domain_id?: string;
+  }) {
+    const search = new URLSearchParams();
+    if (params?.from) search.set("from", params.from);
+    if (params?.to) search.set("to", params.to);
+    if (params?.interval) search.set("interval", params.interval);
+    if (params?.domain_id) search.set("domain_id", params.domain_id);
+    const query = search.toString() ? `?${search.toString()}` : "";
+    return this.request<AnalyticsResponse>(`/v1/analytics${query}`);
+  }
+
+  // Emails
+  async listEmails(limit = 50, before?: string) {
+    const q = new URLSearchParams({ limit: limit.toString() });
+    if (before) q.set("before", before);
+    return this.request<{ data: EmailSummary[]; next_before?: string }>(
+      `/v1/emails?${q.toString()}`
+    );
+  }
+
+  async getEmail(id: string) {
+    return this.request<EmailDetail>(`/v1/emails/${id}`);
+  }
+
+  async sendEmail(payload: SendEmailPayload) {
+    return this.request<{ id: string }>("/v1/emails", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    });
+  }
+
+  async sendBatch(emails: SendEmailPayload[]) {
+    return this.request<{ data: { id: string }[] }>("/v1/emails/batch", {
+      method: "POST",
+      body: JSON.stringify(emails),
+    });
+  }
+
+  async cancelEmail(id: string) {
+    return this.request<{ id: string; cancelled: boolean }>(
+      `/v1/emails/${id}/cancel`,
+      { method: "POST" }
+    );
+  }
+
+  // Render Preview
+  async renderEmail(data: { html?: string; text?: string; variables?: Record<string, any> }) {
+    return this.request<{ html: string; text: string }>("/v1/render", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  }
+
+  // Domains
+  async listDomains() {
+    return this.request<{ data: DomainView[] }>("/v1/domains");
+  }
+
+  async getDomain(id: string) {
+    return this.request<DomainView>(`/v1/domains/${id}`);
+  }
+
+  async createDomain(name: string, region = "us-east-1") {
+    return this.request<DomainView>("/v1/domains", {
+      method: "POST",
+      body: JSON.stringify({ name, region }),
+    });
+  }
+
+  async verifyDomain(id: string) {
+    return this.request<DomainView>(`/v1/domains/${id}/verify`, {
+      method: "POST",
+    });
+  }
+
+  async deleteDomain(id: string) {
+    return this.request<{ id: string; object: string; deleted: boolean }>(
+      `/v1/domains/${id}`,
+      { method: "DELETE" }
+    );
+  }
+
+  // API Keys
+  async listAPIKeys() {
+    return this.request<{ data: APIKeyView[] }>("/v1/api-keys");
+  }
+
+  async createAPIKey(name: string, permission: "full_access" | "sending_access" = "full_access", domain_id?: string) {
+    return this.request<{
+      id: string;
+      name: string;
+      permission: string;
+      api_key: string;
+      last_four: string;
+      created_at: string;
+      domain_id?: string;
+    }>("/v1/api-keys", {
+      method: "POST",
+      body: JSON.stringify({ name, permission, domain_id }),
+    });
+  }
+
+  async deleteAPIKey(id: string) {
+    return this.request<{ id: string; deleted: boolean }>(`/v1/api-keys/${id}`, {
+      method: "DELETE",
+    });
+  }
+
+  // Inbound & Aliases
+  async listInbound(limit = 50) {
+    return this.request<{ data: InboundEmailSummary[] }>(
+      `/v1/inbound?limit=${limit}`
+    );
+  }
+
+  async getInbound(id: string) {
+    return this.request<InboundEmailDetail>(`/v1/inbound/${id}`);
+  }
+
+  async listAliases() {
+    return this.request<{ data: AliasView[] }>("/v1/aliases");
+  }
+
+  async createAlias(data: { name?: string; alias: string; forward_to: string[] }) {
+    return this.request<AliasView>("/v1/aliases", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  }
+
+  async deleteAlias(id: string) {
+    return this.request<{ id: string; deleted: boolean }>(`/v1/aliases/${id}`, {
+      method: "DELETE",
+    });
+  }
+
+  // Audiences & Contacts
+  async listAudiences() {
+    return this.request<{ data: AudienceView[] }>("/v1/audiences");
+  }
+
+  async createAudience(name: string) {
+    return this.request<AudienceView>("/v1/audiences", {
+      method: "POST",
+      body: JSON.stringify({ name }),
+    });
+  }
+
+  async deleteAudience(id: string) {
+    return this.request<{ id: string; deleted: boolean }>(`/v1/audiences/${id}`, {
+      method: "DELETE",
+    });
+  }
+
+  async listContacts(audienceId?: string) {
+    const url = audienceId ? `/v1/audiences/${audienceId}/contacts` : "/v1/contacts";
+    return this.request<{ data: ContactView[] }>(url);
+  }
+
+  async createContact(data: {
+    email: string;
+    first_name?: string;
+    last_name?: string;
+    unsubscribed?: boolean;
+    audience_id?: string;
+  }) {
+    const url = data.audience_id ? `/v1/audiences/${data.audience_id}/contacts` : "/v1/contacts";
+    return this.request<ContactView>(url, {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  }
+
+  async deleteContact(id: string, audienceId?: string) {
+    const url = audienceId ? `/v1/audiences/${audienceId}/contacts/${id}` : `/v1/contacts/${id}`;
+    return this.request<{ id: string; deleted: boolean }>(url, {
+      method: "DELETE",
+    });
+  }
+
+  // Broadcasts
+  async listBroadcasts() {
+    return this.request<{ data: BroadcastView[] }>("/v1/broadcasts");
+  }
+
+  async createBroadcast(data: {
+    name: string;
+    from: string;
+    subject: string;
+    html?: string;
+    text?: string;
+    audience_id?: string;
+    scheduled_at?: string;
+  }) {
+    return this.request<BroadcastView>("/v1/broadcasts", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  }
+
+  async sendBroadcast(id: string) {
+    return this.request<{ id: string; status: string }>(
+      `/v1/broadcasts/${id}/send`,
+      { method: "POST" }
+    );
+  }
+
+  async duplicateBroadcast(id: string) {
+    return this.request<BroadcastView>(`/v1/broadcasts/${id}/duplicate`, {
+      method: "POST",
+    });
+  }
+
+  async deleteBroadcast(id: string) {
+    return this.request<{ id: string; deleted: boolean }>(
+      `/v1/broadcasts/${id}`,
+      { method: "DELETE" }
+    );
+  }
+
+  // Templates
+  async listTemplates() {
+    return this.request<{ data: TemplateView[] }>("/v1/templates");
+  }
+
+  async getTemplate(id: string) {
+    return this.request<TemplateView>(`/v1/templates/${id}`);
+  }
+
+  async createTemplate(data: {
+    name: string;
+    alias?: string;
+    subject: string;
+    html?: string;
+    text?: string;
+    variables?: { key: string; type: string; fallback_value?: string }[];
+  }) {
+    return this.request<TemplateView>("/v1/templates", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  }
+
+  async publishTemplate(id: string) {
+    return this.request<{ id: string; status: string }>(
+      `/v1/templates/${id}/publish`,
+      { method: "POST" }
+    );
+  }
+
+  async deleteTemplate(id: string) {
+    return this.request<{ id: string; deleted: boolean }>(
+      `/v1/templates/${id}`,
+      { method: "DELETE" }
+    );
+  }
+
+  // Webhooks
+  async listWebhooks() {
+    return this.request<{ data: WebhookView[] }>("/v1/webhooks");
+  }
+
+  async createWebhook(data: { url: string; events: string[]; status?: string }) {
+    return this.request<WebhookView>("/v1/webhooks", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  }
+
+  async deleteWebhook(id: string) {
+    return this.request<{ id: string; deleted: boolean }>(`/v1/webhooks/${id}`, {
+      method: "DELETE",
+    });
+  }
+
+  // SMTP Credentials
+  async listSMTPCredentials() {
+    return this.request<{ data: SMTPCredView[] }>("/v1/smtp-credentials");
+  }
+
+  async createSMTPCredential(email: string, name?: string) {
+    return this.request<{
+      id: string;
+      email: string;
+      name: string;
+      username: string;
+      password: string;
+      created_at: string;
+    }>("/v1/smtp-credentials", {
+      method: "POST",
+      body: JSON.stringify({ email, name }),
+    });
+  }
+
+  async deleteSMTPCredential(id: string) {
+    return this.request<{ id: string; deleted: boolean }>(
+      `/v1/smtp-credentials/${id}`,
+      { method: "DELETE" }
+    );
+  }
+
+  // Dedicated IPs & Warmup Schedule
+  async listDedicatedIPs() {
+    return this.request<{ data: DedicatedIPView[] }>("/v1/ips");
+  }
+
+  async getWarmingSchedule() {
+    return this.request<{ schedule: any[] }>("/v1/ips/warming-schedule");
+  }
+
+  // Organization Members
+  async listMembers() {
+    return this.request<{ data: OrgMemberView[] }>("/v1/members");
+  }
+
+  async addMember(email: string, role = "user") {
+    return this.request<OrgMemberView>("/v1/members", {
+      method: "POST",
+      body: JSON.stringify({ email, role }),
+    });
+  }
+
+  async removeMember(id: string) {
+    return this.request<{ id: string; deleted: boolean }>(`/v1/members/${id}`, {
+      method: "DELETE",
+    });
+  }
+
+  // Audit Logs
+  async listAuditLogs(limit = 50) {
+    return this.request<{ data: AuditLogView[] }>(`/v1/audit-logs?limit=${limit}`);
+  }
+
+  // Suppressions
+  async listSuppressions(limit = 50) {
+    return this.request<{ data: { address: string; reason?: string; created_at: string }[] }>(
+      `/v1/suppressions?limit=${limit}`
+    );
+  }
+
+  async deleteSuppression(address: string) {
+    return this.request<{ address: string; deleted: boolean }>(
+      `/v1/suppressions/${encodeURIComponent(address)}`,
+      { method: "DELETE" }
+    );
+  }
+}
+
+export const api = new APIClient();

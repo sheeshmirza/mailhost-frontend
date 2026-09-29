@@ -1,0 +1,321 @@
+"use client";
+
+import React, { useState, useEffect } from "react";
+import { api, TemplateView } from "@/lib/api";
+import {
+  FileText,
+  Plus,
+  Trash2,
+  CheckCircle2,
+  Code,
+  Eye,
+  Send,
+  UploadCloud,
+  RefreshCw,
+} from "lucide-react";
+
+export default function TemplatesPage() {
+  const [templates, setTemplates] = useState<TemplateView[]>([]);
+  const [selectedTemplate, setSelectedTemplate] = useState<TemplateView | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isOpen, setIsOpen] = useState(false);
+
+  // Form fields
+  const [name, setName] = useState("");
+  const [alias, setAlias] = useState("");
+  const [subject, setSubject] = useState("");
+  const [html, setHtml] = useState(`<h2>Welcome {{name}}!</h2>
+<p>Thank you for signing up for our service.</p>
+<p>Your account ID is: <code>{{account_id}}</code></p>`);
+
+  const fetchTemplates = async () => {
+    setIsLoading(true);
+    try {
+      const res = await api.listTemplates();
+      const list = res.data || [];
+      setTemplates(list);
+      if (list.length > 0 && !selectedTemplate) {
+        setSelectedTemplate(list[0]);
+      }
+    } catch (err) {
+      console.error("Failed to load templates", err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchTemplates();
+  }, []);
+
+  const handleCreate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const newTpl = await api.createTemplate({
+        name: name.trim(),
+        alias: alias.trim() || undefined,
+        subject: subject.trim(),
+        html,
+      });
+      setIsOpen(false);
+      setName("");
+      setAlias("");
+      setSubject("");
+      await fetchTemplates();
+      setSelectedTemplate(newTpl);
+    } catch (err: any) {
+      alert("Failed to create template: " + err.message);
+    }
+  };
+
+  const handlePublish = async (id: string) => {
+    try {
+      await api.publishTemplate(id);
+      fetchTemplates();
+    } catch (err: any) {
+      alert("Failed to publish: " + err.message);
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!confirm("Are you sure you want to delete this template?")) return;
+    try {
+      await api.deleteTemplate(id);
+      setSelectedTemplate(null);
+      fetchTemplates();
+    } catch (err: any) {
+      alert("Failed to delete template: " + err.message);
+    }
+  };
+
+  return (
+    <div className="max-w-6xl mx-auto px-8 py-8 space-y-6 animate-fade-in">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-surface-border pb-6">
+        <div>
+          <h1 className="text-xl font-semibold tracking-tight text-white">
+            Templates
+          </h1>
+          <p className="text-xs text-brand-400 mt-1">
+            Build reusable HTML email templates with dynamic variable interpolation.
+          </p>
+        </div>
+
+        <button
+          onClick={() => setIsOpen(true)}
+          className="flex items-center gap-1.5 rounded-md bg-white px-3.5 py-1.5 text-xs font-medium text-black hover:bg-zinc-200 transition-colors"
+        >
+          <Plus className="h-3.5 w-3.5" />
+          <span>New Template</span>
+        </button>
+      </div>
+
+      {/* Grid: Templates List & Preview */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Left Column: Template List */}
+        <div className="space-y-3">
+          <div className="flex items-center justify-between text-xs text-brand-400 font-medium">
+            <span>Templates</span>
+            <span className="font-mono">{templates.length}</span>
+          </div>
+
+          <div className="space-y-2">
+            {templates.length > 0 ? (
+              templates.map((tpl) => (
+                <div
+                  key={tpl.id}
+                  onClick={() => setSelectedTemplate(tpl)}
+                  className={`cursor-pointer rounded-xl border p-4 transition-all ${
+                    selectedTemplate?.id === tpl.id
+                      ? "border-white/30 bg-surface-raised shadow-md"
+                      : "border-surface-border bg-surface hover:border-brand-700"
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-semibold text-white truncate">
+                      {tpl.name}
+                    </span>
+                    <span
+                      className={`rounded-full px-2 py-0.5 text-[10px] font-medium border ${
+                        tpl.status === "published"
+                          ? "bg-emerald-950/60 text-emerald-400 border-emerald-800/40"
+                          : "bg-zinc-800 text-brand-300 border-zinc-700"
+                      }`}
+                    >
+                      {tpl.status}
+                    </span>
+                  </div>
+                  {tpl.alias && (
+                    <div className="mt-1 font-mono text-[11px] text-brand-400">
+                      alias: {tpl.alias}
+                    </div>
+                  )}
+                  <div className="mt-2 text-[11px] text-brand-500 font-mono">
+                    Updated {new Date(tpl.updated_at).toLocaleDateString()}
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className="rounded-xl border border-surface-border bg-surface p-6 text-center text-xs text-brand-500">
+                {isLoading ? "Loading templates..." : "No templates created yet."}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Right Column: Template Inspector & Live HTML Preview */}
+        <div className="lg:col-span-2 space-y-4">
+          {selectedTemplate ? (
+            <div className="rounded-xl border border-surface-border bg-surface p-6 space-y-6">
+              <div className="flex items-center justify-between border-b border-surface-border pb-4">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h2 className="text-base font-semibold text-white">
+                      {selectedTemplate.name}
+                    </h2>
+                    <span className="rounded-full px-2 py-0.5 text-[10px] font-medium border border-surface-border bg-surface-raised text-brand-300">
+                      {selectedTemplate.status}
+                    </span>
+                  </div>
+                  <p className="text-xs text-brand-400 mt-1">
+                    Subject: {selectedTemplate.subject}
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  {selectedTemplate.status !== "published" && (
+                    <button
+                      onClick={() => handlePublish(selectedTemplate.id)}
+                      className="flex items-center gap-1 rounded bg-white px-3 py-1.5 text-xs font-medium text-black hover:bg-zinc-200"
+                    >
+                      <UploadCloud className="h-3.5 w-3.5" />
+                      <span>Publish</span>
+                    </button>
+                  )}
+                  <button
+                    onClick={() => handleDelete(selectedTemplate.id)}
+                    className="rounded border border-surface-border p-1.5 text-brand-500 hover:text-red-400"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </button>
+                </div>
+              </div>
+
+              {/* Live Preview */}
+              <div className="space-y-2">
+                <span className="text-xs font-semibold text-brand-400 uppercase tracking-wider">
+                  Template HTML Preview
+                </span>
+                <div className="rounded-lg border border-surface-border bg-white p-5 text-black min-h-[220px]">
+                  <div dangerouslySetInnerHTML={{ __html: selectedTemplate.html }} />
+                </div>
+              </div>
+
+              {/* Code Payload reference */}
+              <div className="space-y-2">
+                <span className="text-xs font-semibold text-brand-400 uppercase tracking-wider">
+                  Usage with API
+                </span>
+                <pre className="rounded-lg border border-surface-border bg-surface-raised p-3 font-mono text-xs text-brand-200">
+                  <code>{`// Send using this template:
+await resend.emails.send({
+  from: 'team@yourdomain.com',
+  to: ['recipient@example.com'],
+  template: '${selectedTemplate.alias || selectedTemplate.id}',
+  variables: {
+    name: 'Jane',
+    account_id: 'acct_102'
+  }
+});`}</code>
+                </pre>
+              </div>
+            </div>
+          ) : (
+            <div className="rounded-xl border border-surface-border bg-surface p-12 text-center text-xs text-brand-500">
+              Select or create a template to preview.
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* New Template Modal */}
+      {isOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-fade-in">
+          <div className="relative flex flex-col w-full max-w-lg rounded-xl border border-surface-border bg-surface p-6 shadow-2xl space-y-4">
+            <h2 className="text-sm font-semibold text-white">New Email Template</h2>
+            <form onSubmit={handleCreate} className="space-y-3">
+              <div>
+                <label className="block text-[11px] text-brand-400 mb-1">
+                  Template Name
+                </label>
+                <input
+                  type="text"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="Welcome Email"
+                  required
+                  className="w-full rounded-md border border-surface-border bg-surface-raised px-3 py-1.5 text-xs text-white focus:outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[11px] text-brand-400 mb-1">
+                  Alias (Unique API identifier)
+                </label>
+                <input
+                  type="text"
+                  value={alias}
+                  onChange={(e) => setAlias(e.target.value)}
+                  placeholder="welcome-email"
+                  className="w-full rounded-md border border-surface-border bg-surface-raised px-3 py-1.5 text-xs text-white focus:outline-none font-mono"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[11px] text-brand-400 mb-1">
+                  Subject Line
+                </label>
+                <input
+                  type="text"
+                  value={subject}
+                  onChange={(e) => setSubject(e.target.value)}
+                  placeholder="Welcome to Acme, {{name}}!"
+                  required
+                  className="w-full rounded-md border border-surface-border bg-surface-raised px-3 py-1.5 text-xs text-white focus:outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[11px] text-brand-400 mb-1">
+                  HTML Body
+                </label>
+                <textarea
+                  value={html}
+                  onChange={(e) => setHtml(e.target.value)}
+                  rows={6}
+                  className="w-full rounded-md border border-surface-border bg-surface-raised p-3 font-mono text-xs text-white focus:outline-none"
+                />
+              </div>
+
+              <div className="flex justify-end gap-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setIsOpen(false)}
+                  className="rounded px-3 py-1.5 text-xs text-brand-400 hover:bg-surface-raised"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="rounded bg-white px-4 py-1.5 text-xs font-medium text-black hover:bg-zinc-200"
+                >
+                  Create Template
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
