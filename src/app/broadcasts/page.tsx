@@ -129,69 +129,69 @@ export default function BroadcastsPage() {
   return (
     <div className="max-w-6xl mx-auto px-8 py-8 space-y-6 animate-fade-in">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-surface-border pb-6">
+      <div className="flex justify-between items-center border-b border-surface-border pb-6">
         <div>
-          <h1 className="text-xl font-semibold tracking-tight text-zinc-900 dark:text-white">
+          <h1 className="text-lg font-semibold tracking-tight text-zinc-900 dark:text-white">
             Broadcasts
           </h1>
-          <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
+          <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-1">
             Send newsletters, product announcements, and bulk campaigns to your audience.
           </p>
         </div>
 
         <button
           onClick={() => setIsOpen(true)}
-          className="flex items-center gap-1.5 rounded-md bg-zinc-900 px-3.5 py-1.5 text-xs font-medium text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200 transition-colors"
+          className="flex items-center gap-1.5 rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800 transition-colors"
         >
-          <Plus className="h-3.5 w-3.5" />
+          <Plus className="h-4 w-4" />
           <span>New Broadcast</span>
         </button>
       </div>
 
       {/* Broadcasts Table */}
-      <div className="overflow-x-auto rounded-xl border border-surface-border bg-surface">
-        <table className="w-full text-left text-xs min-w-[600px]">
-          <thead className="border-b border-surface-border bg-surface-raised text-[11px] font-medium uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+      <div className="rounded-xl border border-surface-border overflow-hidden bg-surface">
+        <table className="w-full text-left text-sm min-w-[600px]">
+          <thead className="bg-surface-raised border-b border-surface-border">
             <tr>
-              <th className="px-5 py-3">Campaign Name</th>
-              <th className="px-5 py-3">Subject</th>
-              <th className="px-5 py-3">From</th>
-              <th className="px-5 py-3">Status</th>
-              <th className="px-5 py-3">Created</th>
-              <th className="px-5 py-3 text-right">Actions</th>
+              <th className="px-4 py-3 text-[11px] font-medium uppercase tracking-wider text-zinc-500">Campaign Name</th>
+              <th className="px-4 py-3 text-[11px] font-medium uppercase tracking-wider text-zinc-500">Subject</th>
+              <th className="px-4 py-3 text-[11px] font-medium uppercase tracking-wider text-zinc-500">From</th>
+              <th className="px-4 py-3 text-[11px] font-medium uppercase tracking-wider text-zinc-500">Status</th>
+              <th className="px-4 py-3 text-[11px] font-medium uppercase tracking-wider text-zinc-500">Created</th>
+              <th className="px-4 py-3 text-[11px] font-medium uppercase tracking-wider text-zinc-500 text-right">Actions</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-surface-border">
             {broadcasts.length > 0 ? (
               broadcasts.map((b) => (
-                <tr key={b.id} className="hover:bg-surface-raised/40 transition-colors">
-                  <td className="px-5 py-3 font-medium text-zinc-900 dark:text-white max-w-xs truncate">
+                <tr key={b.id} className="hover:bg-surface-raised/50 transition-colors">
+                  <td className="px-4 py-3 font-medium text-zinc-900 dark:text-white max-w-xs truncate">
                     {b.name}
                   </td>
-                  <td className="px-5 py-3 text-zinc-700 dark:text-zinc-300 max-w-xs truncate">
+                  <td className="px-4 py-3 text-zinc-700 dark:text-zinc-300 max-w-xs truncate">
                     {b.subject}
                   </td>
-                  <td className="px-5 py-3 font-mono text-zinc-500 dark:text-zinc-400 text-[11px] truncate">
+                  <td className="px-4 py-3 font-mono text-zinc-500 dark:text-zinc-400 text-[11px] truncate">
                     {b.from}
                   </td>
-                  <td className="px-5 py-3">
+                  <td className="px-4 py-3">
                     <span
-                      className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium border ${
+                      className={`inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium ${
                         b.status === "sent"
-                          ? "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/60 dark:text-emerald-400 dark:border-emerald-800/40"
+                          ? "bg-emerald-50 text-emerald-700"
                           : b.status === "sending" || b.status === "queued"
-                          ? "bg-sky-50 text-sky-700 border-sky-200 dark:bg-sky-950/60 dark:text-sky-400 dark:border-sky-800/40"
-                          : "bg-zinc-100 text-zinc-700 border-zinc-200 dark:bg-zinc-800 dark:text-zinc-300 dark:border-zinc-700"
+                          ? "bg-emerald-50 text-emerald-700"
+                          : "bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300"
                       }`}
                     >
-                      {b.status === "sent" && <CheckCircle2 className="h-2.5 w-2.5" />}
+                      {b.status === "sent" && <CheckCircle2 className="h-2.5 w-2.5 mr-1" />}
                       {b.status}
                     </span>
                   </td>
-                  <td className="px-5 py-3 font-mono text-zinc-500 dark:text-zinc-400 text-[11px]">
+                  <td className="px-4 py-3 font-mono text-zinc-500 dark:text-zinc-400 text-[11px]">
                     {new Date(b.created_at).toLocaleDateString()}
                   </td>
-                  <td className="px-5 py-3 text-right">
+                  <td className="px-4 py-3 text-right">
                     <div className="flex items-center justify-end gap-1">
                       {b.status !== "sent" && (
                         <button
@@ -199,7 +199,7 @@ export default function BroadcastsPage() {
                           title="Send broadcast now"
                           className="rounded p-1 text-emerald-600 hover:text-emerald-700 dark:text-emerald-400 hover:bg-surface-raised"
                         >
-                          <Send className="h-3.5 w-3.5" />
+                          <Send className="h-4 w-4" />
                         </button>
                       )}
                       <button
@@ -207,14 +207,14 @@ export default function BroadcastsPage() {
                         title="Duplicate broadcast"
                         className="rounded p-1 text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white hover:bg-surface-raised"
                       >
-                        <Copy className="h-3.5 w-3.5" />
+                        <Copy className="h-4 w-4" />
                       </button>
                       <button
                         onClick={() => handleDelete(b.id)}
                         title="Delete broadcast"
                         className="rounded p-1 text-zinc-400 hover:text-red-500 dark:text-zinc-500 dark:hover:text-red-400 hover:bg-surface-raised"
                       >
-                        <Trash2 className="h-3.5 w-3.5" />
+                        <Trash2 className="h-4 w-4" />
                       </button>
                     </div>
                   </td>
@@ -222,7 +222,7 @@ export default function BroadcastsPage() {
               ))
             ) : (
               <tr>
-                <td colSpan={6} className="py-12 text-center text-xs text-zinc-500 dark:text-zinc-400">
+                <td colSpan={6} className="py-16 text-center text-sm text-zinc-500">
                   {isLoading
                     ? "Loading broadcasts..."
                     : "No broadcasts found. Create your first campaign above."}
@@ -235,12 +235,12 @@ export default function BroadcastsPage() {
 
       {/* New Broadcast Modal */}
       {isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
-          <div className="relative flex flex-col w-full max-w-lg rounded-xl border border-surface-border bg-surface p-6 shadow-2xl space-y-4">
-            <h2 className="text-sm font-semibold text-zinc-900 dark:text-white">Create Broadcast Campaign</h2>
-            <form onSubmit={handleCreate} className="space-y-3">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-fade-in p-4">
+          <div className="relative flex flex-col w-full max-w-lg rounded-xl border border-surface-border bg-surface p-6 shadow-2xl">
+            <h2 className="text-lg font-semibold text-zinc-900 dark:text-white">Create Broadcast Campaign</h2>
+            <form onSubmit={handleCreate} className="space-y-4 mt-4">
               <div>
-                <label className="block text-[11px] text-zinc-600 dark:text-zinc-400 mb-1">
+                <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">
                   Internal Campaign Name
                 </label>
                 <input
@@ -249,18 +249,18 @@ export default function BroadcastsPage() {
                   onChange={(e) => setName(e.target.value)}
                   placeholder="e.g. October Product Launch"
                   required
-                  className="w-full rounded-md border border-surface-border bg-surface-raised px-3 py-1.5 text-xs text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-600 focus:outline-none"
+                  className="w-full rounded-lg border border-surface-border bg-surface-raised px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-zinc-900/10 dark:focus:ring-white/10"
                 />
               </div>
 
               <div>
-                <label className="block text-[11px] text-zinc-600 dark:text-zinc-400 mb-1">
+                <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">
                   Target Audience
                 </label>
                 <select
                   value={selectedAudienceId}
                   onChange={(e) => setSelectedAudienceId(e.target.value)}
-                  className="w-full rounded-md border border-surface-border bg-surface-raised px-3 py-1.5 text-xs text-zinc-900 dark:text-white focus:outline-none"
+                  className="w-full rounded-lg border border-surface-border bg-surface-raised px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-zinc-900/10 dark:focus:ring-white/10"
                 >
                   <option value="">Select Audience...</option>
                   {audiences.map((aud) => (
@@ -272,7 +272,7 @@ export default function BroadcastsPage() {
               </div>
 
               <div>
-                <label className="block text-[11px] text-zinc-600 dark:text-zinc-400 mb-1">
+                <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">
                   From Address
                 </label>
                 <input
@@ -281,12 +281,12 @@ export default function BroadcastsPage() {
                   onChange={(e) => setFrom(e.target.value)}
                   placeholder="Company <news@yourdomain.com>"
                   required
-                  className="w-full rounded-md border border-surface-border bg-surface-raised px-3 py-1.5 text-xs text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-600 focus:outline-none"
+                  className="w-full rounded-lg border border-surface-border bg-surface-raised px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-zinc-900/10 dark:focus:ring-white/10"
                 />
               </div>
 
               <div>
-                <label className="block text-[11px] text-zinc-600 dark:text-zinc-400 mb-1">
+                <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">
                   Subject Line
                 </label>
                 <input
@@ -295,33 +295,33 @@ export default function BroadcastsPage() {
                   onChange={(e) => setSubject(e.target.value)}
                   placeholder="Announcing Version 2.0!"
                   required
-                  className="w-full rounded-md border border-surface-border bg-surface-raised px-3 py-1.5 text-xs text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-600 focus:outline-none"
+                  className="w-full rounded-lg border border-surface-border bg-surface-raised px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-zinc-900/10 dark:focus:ring-white/10"
                 />
               </div>
 
               <div>
-                <label className="block text-[11px] text-zinc-600 dark:text-zinc-400 mb-1">
+                <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">
                   HTML Content
                 </label>
                 <textarea
                   value={html}
                   onChange={(e) => setHtml(e.target.value)}
                   rows={6}
-                  className="w-full rounded-md border border-surface-border bg-surface-raised p-3 font-mono text-xs text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-600 focus:outline-none"
+                  className="w-full rounded-lg border border-surface-border bg-surface-raised px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-zinc-900/10 dark:focus:ring-white/10"
                 />
               </div>
 
-              <div className="flex justify-end gap-2 pt-2">
+              <div className="flex justify-end gap-3 pt-4 border-t border-surface-border mt-6">
                 <button
                   type="button"
                   onClick={() => setIsOpen(false)}
-                  className="rounded-md border border-surface-border px-3 py-1.5 text-xs text-zinc-700 hover:bg-surface-raised hover:text-zinc-900 dark:text-zinc-300 dark:hover:text-white transition-colors"
+                  className="rounded-lg border border-surface-border px-4 py-2 text-sm font-medium hover:bg-surface-raised"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="rounded-md bg-zinc-900 px-4 py-1.5 text-xs font-medium text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200 transition-colors"
+                  className="rounded-lg bg-zinc-900 text-white px-4 py-2 text-sm font-medium hover:bg-zinc-800"
                 >
                   Save Campaign
                 </button>

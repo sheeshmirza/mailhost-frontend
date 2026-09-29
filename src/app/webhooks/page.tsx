@@ -102,12 +102,12 @@ export default function WebhooksPage() {
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-8 py-8 space-y-6 animate-fade-in">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-surface-border pb-6">
+      <div className="flex justify-between items-center border-b border-surface-border pb-6">
         <div>
-          <h1 className="text-xl font-semibold tracking-tight text-zinc-900 dark:text-white">
+          <h1 className="text-lg font-semibold tracking-tight text-zinc-900 dark:text-white">
             Webhooks
           </h1>
-          <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
+          <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-1">
             Receive real-time HTTP callbacks for email delivery, bounce, and engagement events.
           </p>
         </div>
@@ -115,85 +115,85 @@ export default function WebhooksPage() {
         <div className="flex items-center gap-2">
           <button
             onClick={() => setIsOpen(true)}
-            className="flex items-center gap-1.5 rounded-md bg-zinc-900 px-3.5 py-1.5 text-xs font-medium text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200 transition-colors"
+            className="flex items-center gap-1.5 rounded-lg bg-zinc-900 text-white px-4 py-2 text-sm font-medium hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200 transition-colors"
           >
-            <Plus className="h-3.5 w-3.5" />
+            <Plus className="h-4 w-4" />
             <span>Add Webhook</span>
           </button>
           <button
             onClick={fetchWebhooks}
-            className="flex h-8 w-8 items-center justify-center rounded-md border border-surface-border bg-surface text-zinc-500 hover:bg-surface-raised hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white transition-colors"
+            className="flex h-9 w-9 items-center justify-center rounded-lg border border-surface-border bg-surface text-zinc-500 hover:bg-surface-raised hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white transition-colors"
             title="Refresh webhooks"
           >
-            <RefreshCw className={`h-3.5 w-3.5 ${isLoading ? "animate-spin" : ""}`} />
+            <RefreshCw className={`h-4 w-4 ${isLoading ? "animate-spin" : ""}`} />
           </button>
         </div>
       </div>
 
       {/* Webhooks Table */}
-      <div className="overflow-x-auto rounded-xl border border-surface-border bg-surface">
-        <table className="w-full text-left text-xs min-w-[700px]">
-          <thead className="border-b border-surface-border bg-surface-raised text-[11px] font-medium uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+      <div className="rounded-xl border border-surface-border overflow-hidden bg-surface">
+        <table className="w-full text-left">
+          <thead className="bg-surface-raised border-b border-surface-border text-[11px] font-medium uppercase tracking-wider text-zinc-500">
             <tr>
-              <th className="px-5 py-3">Endpoint URL</th>
-              <th className="px-5 py-3">Subscribed Events</th>
-              <th className="px-5 py-3">Status</th>
-              <th className="px-5 py-3">Signing Secret</th>
-              <th className="px-5 py-3 text-right">Delete</th>
+              <th className="px-4 py-3">Endpoint URL</th>
+              <th className="px-4 py-3">Subscribed Events</th>
+              <th className="px-4 py-3">Status</th>
+              <th className="px-4 py-3">Signing Secret</th>
+              <th className="px-4 py-3 text-right">Delete</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-surface-border font-mono">
+          <tbody className="divide-y divide-surface-border">
             {webhooks.length > 0 ? (
               webhooks.map((wh) => (
-                <tr key={wh.id} className="hover:bg-surface-raised/40 transition-colors">
-                  <td className="px-5 py-3 text-zinc-900 dark:text-white max-w-xs truncate" title={wh.url}>
+                <tr key={wh.id} className="hover:bg-surface-raised/50 transition-colors">
+                  <td className="px-4 py-3 text-sm font-mono text-zinc-700 dark:text-zinc-300 max-w-xs truncate" title={wh.url}>
                     {wh.url}
                   </td>
-                  <td className="px-5 py-3 font-sans">
+                  <td className="px-4 py-3 text-sm">
                     <div className="flex flex-wrap gap-1">
                       {wh.events?.map((ev) => (
                         <span
                           key={ev}
-                          className="rounded bg-surface-raised px-1.5 py-0.5 text-[10px] text-zinc-700 dark:text-zinc-300 border border-surface-border"
+                          className="rounded bg-surface-raised px-1.5 py-0.5 text-[11px] text-zinc-700 dark:text-zinc-300 border border-surface-border"
                         >
                           {ev}
                         </span>
                       ))}
                     </div>
                   </td>
-                  <td className="px-5 py-3 font-sans">
+                  <td className="px-4 py-3 text-sm font-sans">
                     <span
-                      className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium border ${
+                      className={`inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium ${
                         wh.status === "active"
-                          ? "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/60 dark:text-emerald-400 dark:border-emerald-800/40"
-                          : "bg-zinc-100 text-zinc-600 border-zinc-200 dark:bg-zinc-800 dark:text-zinc-400 dark:border-zinc-700"
+                          ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-400"
+                          : "bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300"
                       }`}
                     >
                       {wh.status}
                     </span>
                   </td>
-                  <td className="px-5 py-3 text-zinc-500 dark:text-zinc-400">
+                  <td className="px-4 py-3 text-sm font-mono text-zinc-700 dark:text-zinc-300">
                     {wh.signing_secret ? (
                       <button
                         onClick={() => copySecret(wh.signing_secret!, wh.id)}
-                        className="flex items-center gap-1 text-[11px] hover:text-zinc-900 dark:hover:text-white transition-colors"
+                        className="flex items-center gap-1.5 text-zinc-500 hover:text-zinc-900 dark:hover:text-white transition-colors"
                         title="Click to copy secret"
                       >
                         <span>••••••••••••••••</span>
                         {copiedSecret === wh.id ? (
-                          <Check className="h-3 w-3 text-emerald-500" />
+                          <Check className="h-4 w-4 text-emerald-500" />
                         ) : (
-                          <Copy className="h-3 w-3" />
+                          <Copy className="h-4 w-4" />
                         )}
                       </button>
                     ) : (
                       "—"
                     )}
                   </td>
-                  <td className="px-5 py-3 text-right">
+                  <td className="px-4 py-3 text-right">
                     <button
                       onClick={() => handleDelete(wh.id)}
-                      className="rounded p-1 text-zinc-400 hover:text-red-500 transition-colors"
+                      className="rounded-lg p-1.5 text-zinc-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 transition-colors"
                       title="Delete webhook"
                     >
                       <Trash2 className="h-4 w-4" />
@@ -203,7 +203,7 @@ export default function WebhooksPage() {
               ))
             ) : (
               <tr>
-                <td colSpan={5} className="py-12 text-center text-xs text-zinc-500 dark:text-zinc-400 font-sans">
+                <td colSpan={5} className="py-16 text-center text-sm text-zinc-500">
                   {isLoading
                     ? "Loading webhooks..."
                     : "No webhook endpoints registered yet."}
@@ -216,12 +216,15 @@ export default function WebhooksPage() {
 
       {/* Add Webhook Modal */}
       {isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
-          <div className="relative flex flex-col w-full max-w-md rounded-xl border border-surface-border bg-surface p-6 shadow-2xl space-y-4">
-            <h2 className="text-sm font-semibold text-zinc-900 dark:text-white">Add Webhook Endpoint</h2>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-fade-in">
+          <div className="relative flex flex-col w-full max-w-lg rounded-xl border border-surface-border bg-surface p-6 shadow-2xl space-y-4">
+            <div>
+              <h2 className="text-lg font-semibold text-zinc-900 dark:text-white">Add Webhook Endpoint</h2>
+              <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-1">Configure a new webhook URL to receive events.</p>
+            </div>
             <form onSubmit={handleCreate} className="space-y-4">
               <div>
-                <label className="block text-[11px] font-medium text-zinc-600 dark:text-zinc-300 mb-1">
+                <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">
                   Endpoint URL (must be HTTPS)
                 </label>
                 <input
@@ -230,19 +233,19 @@ export default function WebhooksPage() {
                   onChange={(e) => setUrl(e.target.value)}
                   placeholder="https://api.yourdomain.com/webhooks/resend"
                   required
-                  className="w-full rounded-md border border-surface-border bg-surface-raised px-3 py-1.5 text-xs text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-600 focus:outline-none font-mono"
+                  className="w-full rounded-lg border border-surface-border bg-surface-raised px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-zinc-900/10 font-mono text-zinc-700 dark:text-zinc-300 placeholder-zinc-400 dark:placeholder-zinc-600"
                 />
               </div>
 
               <div>
-                <label className="block text-[11px] font-medium text-zinc-600 dark:text-zinc-300 mb-2">
+                <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">
                   Select Events to Subscribe
                 </label>
                 <div className="grid grid-cols-2 gap-2">
                   {availableEvents.map((ev) => (
                     <label
                       key={ev.id}
-                      className="flex items-center gap-2 rounded-md border border-surface-border bg-surface-raised p-2 text-xs text-zinc-700 dark:text-zinc-300 cursor-pointer hover:border-zinc-400 dark:hover:border-zinc-600 transition-colors"
+                      className="flex items-center gap-2 rounded-lg border border-surface-border bg-surface-raised p-2 text-sm text-zinc-700 dark:text-zinc-300 cursor-pointer hover:border-zinc-400 dark:hover:border-zinc-600 transition-colors"
                     >
                       <input
                         type="checkbox"
@@ -256,17 +259,17 @@ export default function WebhooksPage() {
                 </div>
               </div>
 
-              <div className="flex justify-end gap-2 pt-2">
+              <div className="flex justify-end gap-3 pt-4">
                 <button
                   type="button"
                   onClick={() => setIsOpen(false)}
-                  className="rounded-md border border-surface-border px-3 py-1.5 text-xs font-medium text-zinc-600 hover:bg-surface-raised dark:text-zinc-400 dark:hover:text-white transition-colors"
+                  className="rounded-lg border border-surface-border px-4 py-2 text-sm font-medium text-zinc-700 hover:bg-surface-raised dark:text-zinc-300 transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="rounded-md bg-zinc-900 px-4 py-1.5 text-xs font-medium text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200 transition-colors"
+                  className="rounded-lg bg-zinc-900 text-white px-4 py-2 text-sm font-medium hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200 transition-colors"
                 >
                   Create Webhook
                 </button>

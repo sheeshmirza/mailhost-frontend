@@ -90,18 +90,18 @@ func main() {
   };
 
   return (
-    <div className="overflow-hidden rounded-lg border border-surface-border bg-surface">
+    <div className="overflow-hidden rounded-xl border border-surface-border bg-zinc-950">
       {/* Tab Header */}
-      <div className="flex items-center justify-between border-b border-surface-border px-3 py-2 bg-surface-raised/40">
-        <div className="flex items-center gap-1">
+      <div className="flex items-center justify-between border-b border-zinc-800 px-4 py-3 bg-zinc-900/50">
+        <div className="flex items-center gap-1.5">
           {(["curl", "node", "python", "go"] as const).map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`rounded px-2.5 py-1 text-xs font-mono uppercase transition-colors ${
+              className={`rounded-md px-3 py-1.5 text-[13px] font-mono transition-colors ${
                 activeTab === tab
-                  ? "bg-surface-raised text-zinc-900 dark:text-white font-semibold shadow-sm"
-                  : "text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200"
+                  ? "bg-zinc-800 text-zinc-100 shadow-sm"
+                  : "text-zinc-400 hover:bg-zinc-800/50 hover:text-zinc-200"
               }`}
             >
               {tab === "curl" ? "cURL" : tab === "node" ? "Node.js" : tab === "python" ? "Python" : "Go"}
@@ -111,24 +111,24 @@ func main() {
 
         <button
           onClick={handleCopy}
-          className="flex items-center gap-1.5 rounded px-2 py-1 text-xs text-zinc-500 dark:text-zinc-400 hover:bg-surface-raised hover:text-zinc-900 dark:hover:text-white transition-colors"
+          className="flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-[13px] text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200 transition-colors"
         >
           {copied ? (
             <>
-              <Check className="h-3.5 w-3.5 text-emerald-500" />
-              <span className="text-emerald-500">Copied</span>
+              <Check className="h-4 w-4 text-emerald-400" />
+              <span className="text-emerald-400 font-medium">Copied</span>
             </>
           ) : (
             <>
-              <Copy className="h-3.5 w-3.5" />
-              <span>Copy</span>
+              <Copy className="h-4 w-4" />
+              <span className="font-medium">Copy</span>
             </>
           )}
         </button>
       </div>
 
       {/* Code Display */}
-      <pre className="overflow-x-auto p-4 font-mono text-xs leading-relaxed text-zinc-800 dark:text-zinc-200 bg-surface">
+      <pre className="overflow-x-auto p-5 font-mono text-[13px] leading-relaxed text-zinc-300 bg-transparent">
         <code>{snippets[activeTab]}</code>
       </pre>
     </div>

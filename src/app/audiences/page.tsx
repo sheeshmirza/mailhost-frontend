@@ -321,10 +321,10 @@ export default function AudiencesPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-surface-border pb-6">
         <div>
-          <h1 className="text-xl font-semibold tracking-tight text-zinc-900 dark:text-white">
+          <h1 className="text-lg font-semibold tracking-tight text-zinc-900 dark:text-white">
             Audiences & Contacts
           </h1>
-          <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
+          <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-1">
             Segment your subscribers, manage topics, and maintain your customer lists.
           </p>
         </div>
@@ -480,19 +480,19 @@ export default function AudiencesPage() {
               </span>
             </div>
 
-            <div className="overflow-x-auto rounded-xl border border-surface-border bg-surface">
-              <table className="w-full text-left text-xs min-w-[550px]">
-                <thead className="border-b border-surface-border bg-surface-raised text-[11px] font-medium uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+            <div className="overflow-hidden rounded-xl border border-surface-border bg-surface shadow-sm">
+              <table className="w-full text-left text-sm min-w-[550px]">
+                <thead className="border-b border-surface-border bg-surface-raised text-xs font-medium text-zinc-500 dark:text-zinc-400">
                   <tr>
-                    <th className="px-5 py-3">Email</th>
-                    <th className="px-5 py-3">First Name</th>
-                    <th className="px-5 py-3">Last Name</th>
-                    <th className="px-5 py-3">Status</th>
-                    <th className="px-5 py-3">Added</th>
-                    <th className="px-5 py-3 text-right">Delete</th>
+                    <th className="px-4 py-3 font-medium">Email</th>
+                    <th className="px-4 py-3 font-medium">First Name</th>
+                    <th className="px-4 py-3 font-medium">Last Name</th>
+                    <th className="px-4 py-3 font-medium">Status</th>
+                    <th className="px-4 py-3 font-medium">Added</th>
+                    <th className="px-4 py-3 font-medium text-right">Delete</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-surface-border font-mono">
+                <tbody className="divide-y divide-surface-border">
                   {contacts.length > 0 ? (
                     contacts.map((c) => (
                       <tr
@@ -500,32 +500,32 @@ export default function AudiencesPage() {
                         onClick={() => openContactDetail(c)}
                         className="group cursor-pointer hover:bg-surface-raised/40 transition-colors"
                       >
-                        <td className="px-5 py-3 text-zinc-900 dark:text-white font-medium">
+                        <td className="px-4 py-3 font-mono text-[13px] text-zinc-900 dark:text-white">
                           {c.email}
                         </td>
-                        <td className="px-5 py-3 font-sans text-zinc-700 dark:text-zinc-300">
+                        <td className="px-4 py-3 text-zinc-700 dark:text-zinc-300">
                           {c.first_name || "—"}
                         </td>
-                        <td className="px-5 py-3 font-sans text-zinc-700 dark:text-zinc-300">
+                        <td className="px-4 py-3 text-zinc-700 dark:text-zinc-300">
                           {c.last_name || "—"}
                         </td>
-                        <td className="px-5 py-3 font-sans">
+                        <td className="px-4 py-3">
                           {c.unsubscribed ? (
-                            <span className="inline-flex items-center gap-1 rounded-full bg-red-50 border border-red-200 px-2 py-0.5 text-[10px] text-red-700 dark:bg-red-950/60 dark:border-red-800/40 dark:text-red-400">
+                            <span className="inline-flex items-center gap-1 rounded-full bg-red-50 border border-red-200 px-2 py-0.5 text-[11px] text-red-700 dark:bg-red-950/60 dark:border-red-800/40 dark:text-red-400">
                               <UserX className="h-2.5 w-2.5" />
                               Unsubscribed
                             </span>
                           ) : (
-                            <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 border border-emerald-200 px-2 py-0.5 text-[10px] text-emerald-700 dark:bg-emerald-950/60 dark:border-emerald-800/40 dark:text-emerald-400">
+                            <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 border border-emerald-200 px-2 py-0.5 text-[11px] text-emerald-700 dark:bg-emerald-950/60 dark:border-emerald-800/40 dark:text-emerald-400">
                               <UserCheck className="h-2.5 w-2.5" />
                               Subscribed
                             </span>
                           )}
                         </td>
-                        <td className="px-5 py-3 text-zinc-500 dark:text-zinc-400 text-[11px]">
+                        <td className="px-4 py-3 text-zinc-500 dark:text-zinc-400">
                           {new Date(c.created_at).toLocaleDateString()}
                         </td>
-                        <td className="px-5 py-3 text-right">
+                        <td className="px-4 py-3 text-right">
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
@@ -554,13 +554,13 @@ export default function AudiencesPage() {
 
       {/* View 2: Segments */}
       {mainTab === "segments" && (
-        <div className="overflow-x-auto rounded-xl border border-surface-border bg-surface">
-          <table className="w-full text-left text-xs font-mono min-w-[450px]">
-            <thead className="border-b border-surface-border bg-surface-raised text-[11px] font-medium uppercase font-sans text-zinc-500 dark:text-zinc-400">
+        <div className="overflow-hidden rounded-xl border border-surface-border bg-surface shadow-sm">
+          <table className="w-full text-left text-sm min-w-[450px]">
+            <thead className="border-b border-surface-border bg-surface-raised text-xs font-medium text-zinc-500 dark:text-zinc-400">
               <tr>
-                <th className="px-5 py-3">Segment Name</th>
-                <th className="px-5 py-3">Created</th>
-                <th className="px-5 py-3 text-right">Delete</th>
+                <th className="px-4 py-3 font-medium">Segment Name</th>
+                <th className="px-4 py-3 font-medium">Created</th>
+                <th className="px-4 py-3 font-medium text-right">Delete</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-surface-border">
@@ -571,19 +571,19 @@ export default function AudiencesPage() {
                     onClick={() => openSegmentDetail(seg)}
                     className="group cursor-pointer hover:bg-surface-raised/40 transition-colors"
                   >
-                    <td className="px-5 py-3 text-zinc-900 dark:text-white font-sans font-medium flex items-center justify-between">
+                    <td className="px-4 py-3 text-zinc-900 dark:text-white font-medium flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        <Filter className="h-3.5 w-3.5 text-sky-500" />
+                        <Filter className="h-4 w-4 text-sky-500" />
                         <span>{seg.name}</span>
                       </div>
-                      <span className="text-[10px] text-zinc-500 dark:text-zinc-400 opacity-0 group-hover:opacity-100 flex items-center gap-1 transition-opacity">
-                        View Enrolled Contacts <ChevronRight className="h-3 w-3" />
+                      <span className="text-[11px] text-zinc-500 dark:text-zinc-400 opacity-0 group-hover:opacity-100 flex items-center gap-1 transition-opacity">
+                        View Enrolled Contacts <ChevronRight className="h-3.5 w-3.5" />
                       </span>
                     </td>
-                    <td className="px-5 py-3 text-zinc-500 dark:text-zinc-400 text-[11px]">
+                    <td className="px-4 py-3 text-zinc-500 dark:text-zinc-400">
                       {new Date(seg.created_at).toLocaleDateString()}
                     </td>
-                    <td className="px-5 py-3 text-right">
+                    <td className="px-4 py-3 text-right">
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
@@ -598,7 +598,7 @@ export default function AudiencesPage() {
                 ))
               ) : (
                 <tr>
-                  <td colSpan={3} className="py-12 text-center text-xs text-zinc-500 dark:text-zinc-400 font-sans">
+                  <td colSpan={3} className="py-12 text-center text-sm text-zinc-500 dark:text-zinc-400">
                     No segments defined yet. Click "New Segment" to create a dynamic contact group.
                   </td>
                 </tr>

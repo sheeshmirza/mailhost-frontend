@@ -111,31 +111,33 @@ export default function Navbar({ isLanding }: { isLanding?: boolean }) {
                       className="fixed inset-0 z-10"
                       onClick={() => setShowOrgDropdown(false)}
                     />
-                    <div className="absolute left-0 mt-1.5 w-52 z-20 rounded-lg border border-surface-border bg-surface p-1 shadow-xl animate-fade-in">
-                      <div className="px-2 py-1 text-[10px] font-semibold uppercase tracking-wider text-zinc-500">
+                    <div className="absolute left-0 mt-1.5 w-56 z-20 rounded-xl border border-surface-border bg-surface p-1 shadow-lg animate-fade-in">
+                      <div className="px-2 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-zinc-500">
                         Teams & Accounts
                       </div>
-                      {accounts.length > 0 ? (
-                        accounts.map((acct) => (
-                          <button
-                            key={acct.id}
-                            onClick={() => {
-                              switchAccount(acct.id);
-                              setShowOrgDropdown(false);
-                            }}
-                            className="flex w-full items-center justify-between rounded-md px-2 py-1.5 text-left text-xs text-zinc-700 dark:text-zinc-200 hover:bg-surface-raised hover:text-zinc-900 dark:hover:text-white"
-                          >
-                            <span className="truncate">{acct.name}</span>
-                            {acct.id === account?.id && (
-                              <Check className="h-3.5 w-3.5 text-zinc-900 dark:text-white" />
-                            )}
-                          </button>
-                        ))
-                      ) : (
-                        <div className="px-2 py-1.5 text-xs text-zinc-600 dark:text-zinc-400">
-                          {account?.name || "Default Team"}
-                        </div>
-                      )}
+                      <div className="flex flex-col gap-0.5">
+                        {accounts.length > 0 ? (
+                          accounts.map((acct) => (
+                            <button
+                              key={acct.id}
+                              onClick={() => {
+                                switchAccount(acct.id);
+                                setShowOrgDropdown(false);
+                              }}
+                              className="flex w-full items-center justify-between rounded-md px-2 py-1.5 text-left text-xs text-zinc-700 dark:text-zinc-200 hover:bg-surface-raised hover:text-zinc-900 dark:hover:text-white"
+                            >
+                              <span className="truncate">{acct.name}</span>
+                              {acct.id === account?.id && (
+                                <Check className="h-3.5 w-3.5 text-zinc-900 dark:text-white" />
+                              )}
+                            </button>
+                          ))
+                        ) : (
+                          <div className="px-2 py-1.5 text-xs text-zinc-600 dark:text-zinc-400">
+                            {account?.name || "Default Team"}
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </>
                 )}
@@ -239,23 +241,23 @@ export default function Navbar({ isLanding }: { isLanding?: boolean }) {
                       className="fixed inset-0 z-10"
                       onClick={() => setShowUserDropdown(false)}
                     />
-                    <div className="absolute right-0 mt-1.5 w-56 z-20 rounded-lg border border-surface-border bg-surface p-1 shadow-xl animate-fade-in">
-                      <div className="border-b border-surface-border px-3 py-2">
+                    <div className="absolute right-0 mt-1.5 w-56 z-20 rounded-xl border border-surface-border bg-surface p-1 shadow-lg animate-fade-in">
+                      <div className="border-b border-surface-border px-3 py-2 mb-1">
                         <p className="text-xs font-medium text-zinc-900 dark:text-white truncate">
                           {user?.name || "Admin"}
                         </p>
-                        <p className="text-[11px] text-zinc-500 truncate font-mono">
+                        <p className="text-[11px] text-zinc-500 truncate font-mono mt-0.5">
                           {user?.email || "admin@resend.local"}
                         </p>
                       </div>
 
-                      <div className="py-1">
+                      <div className="flex flex-col gap-0.5 py-1">
                         <Link
                           href="/"
                           onClick={() => setShowUserDropdown(false)}
                           className="flex items-center gap-2 rounded-md px-2.5 py-1.5 text-xs text-zinc-700 dark:text-zinc-300 hover:bg-surface-raised hover:text-zinc-900 dark:hover:text-white"
                         >
-                          <Globe className="h-3.5 w-3.5" />
+                          <Globe className="h-3.5 w-3.5 text-zinc-400" />
                           <span>Homepage</span>
                         </Link>
                         <Link
@@ -263,7 +265,7 @@ export default function Navbar({ isLanding }: { isLanding?: boolean }) {
                           onClick={() => setShowUserDropdown(false)}
                           className="flex items-center gap-2 rounded-md px-2.5 py-1.5 text-xs text-zinc-700 dark:text-zinc-300 hover:bg-surface-raised hover:text-zinc-900 dark:hover:text-white"
                         >
-                          <Settings className="h-3.5 w-3.5" />
+                          <Settings className="h-3.5 w-3.5 text-zinc-400" />
                           <span>Account Settings</span>
                         </Link>
                         <Link
@@ -271,18 +273,18 @@ export default function Navbar({ isLanding }: { isLanding?: boolean }) {
                           onClick={() => setShowUserDropdown(false)}
                           className="flex items-center gap-2 rounded-md px-2.5 py-1.5 text-xs text-zinc-700 dark:text-zinc-300 hover:bg-surface-raised hover:text-zinc-900 dark:hover:text-white"
                         >
-                          <Key className="h-3.5 w-3.5" />
+                          <Key className="h-3.5 w-3.5 text-zinc-400" />
                           <span>API Keys</span>
                         </Link>
                       </div>
 
-                      <div className="border-t border-surface-border pt-1">
+                      <div className="border-t border-surface-border mt-1 pt-1">
                         <button
                           onClick={() => {
                             setShowUserDropdown(false);
                             logout();
                           }}
-                          className="flex w-full items-center gap-2 rounded-md px-2.5 py-1.5 text-xs text-red-500 hover:bg-surface-raised hover:text-red-400"
+                          className="flex w-full items-center gap-2 rounded-md px-2.5 py-1.5 text-xs text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30"
                         >
                           <LogOut className="h-3.5 w-3.5" />
                           <span>Sign Out</span>

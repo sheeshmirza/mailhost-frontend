@@ -3,39 +3,50 @@
 @tailwind utilities;
 
 :root {
-  /* Light theme (DEFAULT) */
+  /* Light theme (DEFAULT) - Warmer grays */
   --background: #ffffff;
   --foreground: #09090b;
   --surface: #ffffff;
-  --surface-raised: #f9fafb;
-  --surface-subtle: #f3f4f6;
-  --surface-border: #e4e4e7;
-  --surface-border-hover: #d4d4d8;
+  --surface-raised: #fcfcfc;
+  --surface-subtle: #f9fafb;
+  --surface-border: #e5e7eb;
+  --surface-border-hover: #d1d5db;
   --text-primary: #09090b;
-  --text-secondary: #27272a;
-  --text-muted: #52525b;
-  --text-subtle: #71717a;
-  --scrollbar-track: #f4f4f5;
-  --scrollbar-thumb: #d4d4d8;
-  --scrollbar-thumb-hover: #a1a1aa;
+  --text-secondary: #374151;
+  --text-muted: #6b7280;
+  --text-subtle: #9ca3af;
+  --scrollbar-track: #f9fafb;
+  --scrollbar-thumb: #d1d5db;
+  --scrollbar-thumb-hover: #9ca3af;
+  --selection-bg: rgba(0, 0, 0, 0.1);
+  --selection-color: #000;
+  --ring: #09090b;
 }
 
 .dark {
-  /* Dark theme */
+  /* Dark theme - True blacks, blue-tinged grays */
   --background: #000000;
-  --foreground: #ededed;
-  --surface: #0c0c0e;
-  --surface-raised: #141417;
-  --surface-subtle: #1c1c20;
-  --surface-border: #26262b;
-  --surface-border-hover: #3f3f46;
-  --text-primary: #ffffff;
-  --text-secondary: #e4e4e7;
-  --text-muted: #a1a1aa;
-  --text-subtle: #71717a;
-  --scrollbar-track: #09090b;
-  --scrollbar-thumb: #27272a;
-  --scrollbar-thumb-hover: #3f3f46;
+  --foreground: #f8fafc;
+  --surface: #0a0a0a;
+  --surface-raised: #111111;
+  --surface-subtle: #171717;
+  --surface-border: #262626;
+  --surface-border-hover: #404040;
+  --text-primary: #f8fafc;
+  --text-secondary: #e2e8f0;
+  --text-muted: #94a3b8;
+  --text-subtle: #64748b;
+  --scrollbar-track: #000000;
+  --scrollbar-thumb: #262626;
+  --scrollbar-thumb-hover: #404040;
+  --selection-bg: rgba(255, 255, 255, 0.2);
+  --selection-color: #fff;
+  --ring: #f8fafc;
+}
+
+::selection {
+  background-color: var(--selection-bg);
+  color: var(--selection-color);
 }
 
 body {
@@ -63,14 +74,70 @@ body {
   background: var(--scrollbar-thumb-hover);
 }
 
+/* Utilities */
+@layer utilities {
+  .focus-ring {
+    @apply focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--background)];
+  }
+
+  input:focus, textarea:focus, select:focus {
+    @apply outline-none ring-1 ring-[var(--ring)] border-transparent;
+  }
+
+  .card {
+    @apply bg-surface border border-surface-border rounded-lg shadow-card;
+  }
+
+  .badge {
+    @apply inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium;
+  }
+  .badge-success {
+    @apply bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20;
+  }
+  .badge-warning {
+    @apply bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20;
+  }
+  .badge-error {
+    @apply bg-red-500/10 text-red-600 dark:text-red-400 border border-red-500/20;
+  }
+  .badge-info {
+    @apply bg-sky-500/10 text-sky-600 dark:text-sky-400 border border-sky-500/20;
+  }
+  .badge-neutral {
+    @apply bg-surface-subtle text-text-secondary border border-surface-border;
+  }
+
+  .shimmer {
+    @apply relative overflow-hidden bg-surface-subtle before:absolute before:inset-0 before:-translate-x-full before:animate-[shimmer_1.5s_infinite] before:bg-gradient-to-r before:from-transparent before:via-white/10 before:to-transparent;
+  }
+}
+
 /* Animations & glass effects */
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(4px); }
   to { opacity: 1; transform: translateY(0); }
 }
 
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateX(16px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
 .animate-fade-in {
   animation: fadeIn 0.15s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-slide-up {
+  animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-slide-in {
+  animation: slideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 .glass-panel {

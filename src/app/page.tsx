@@ -187,7 +187,7 @@ export default function HomePage() {
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-[600px] pointer-events-none opacity-40 dark:opacity-20 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-zinc-400 via-transparent to-transparent -z-10 blur-3xl" />
 
       {/* Hero Section */}
-      <section className="max-w-6xl mx-auto px-4 sm:px-6 pt-16 sm:pt-24 pb-16 sm:pb-20 text-center space-y-6 sm:space-y-8 animate-fade-in">
+      <section className="max-w-6xl mx-auto px-4 sm:px-6 pt-24 sm:pt-32 pb-20 sm:pb-24 text-center space-y-8 animate-fade-in">
         {/* Announcement Pill */}
         <div className="inline-flex items-center gap-2 rounded-full border border-surface-border bg-surface px-3.5 py-1 text-xs text-zinc-600 dark:text-zinc-300 shadow-sm hover:border-zinc-400 dark:hover:border-zinc-600 transition-all">
           <Sparkles className="h-3.5 w-3.5 text-amber-500" />
@@ -387,7 +387,7 @@ export default function HomePage() {
       </section>
 
       {/* Bento Grid Features Section */}
-      <section id="features" className="max-w-6xl mx-auto px-4 sm:px-6 py-20 sm:py-28 space-y-12">
+      <section id="features" className="max-w-6xl mx-auto px-4 sm:px-6 py-20 sm:py-24 space-y-16">
         <div className="text-center space-y-3 max-w-2xl mx-auto">
           <h2 className="text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
             Engineered for High Deliverability
@@ -595,7 +595,7 @@ export default function HomePage() {
       </section>
 
       {/* Developer Quotes / Testimonials */}
-      <section className="max-w-6xl mx-auto px-4 sm:px-6 py-20 space-y-12">
+      <section className="max-w-6xl mx-auto px-4 sm:px-6 py-20 sm:py-24 space-y-12">
         <div className="text-center space-y-2">
           <h2 className="text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
             Built for modern engineering teams
@@ -639,7 +639,7 @@ export default function HomePage() {
       </section>
 
       {/* Pre-Footer Call to Action */}
-      <section className="max-w-5xl mx-auto px-4 sm:px-6 pb-20">
+      <section className="max-w-5xl mx-auto px-4 sm:px-6 pb-20 sm:pb-24">
         <div className="rounded-3xl border border-surface-border bg-surface p-8 sm:p-12 text-center space-y-6 shadow-2xl relative overflow-hidden">
           <div className="space-y-3 max-w-xl mx-auto">
             <h2 className="text-3xl sm:text-4xl font-bold tracking-tight text-zinc-900 dark:text-white">

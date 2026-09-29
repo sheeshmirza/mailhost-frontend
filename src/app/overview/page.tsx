@@ -93,25 +93,25 @@ export default function OverviewPage() {
       {/* Top Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-surface-border pb-6">
         <div>
-          <h1 className="text-xl font-semibold tracking-tight text-zinc-900 dark:text-white">
+          <h1 className="text-lg font-semibold text-zinc-900 dark:text-white">
             Overview
           </h1>
-          <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
+          <p className="text-sm text-zinc-500 mt-1">
             Real-time delivery performance and account activity.
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
           {/* Interval selector */}
-          <div className="flex rounded-md border border-surface-border bg-surface p-0.5">
+          <div className="flex items-center rounded-full border border-surface-border bg-surface p-1">
             {(["hour", "day", "week", "month"] as const).map((int) => (
               <button
                 key={int}
                 onClick={() => setInterval(int)}
-                className={`rounded px-2.5 py-1 text-xs font-medium capitalize transition-colors ${
+                className={`rounded-full px-3 py-1 text-[11px] font-medium capitalize transition-colors ${
                   interval === int
-                    ? "bg-surface-raised text-zinc-900 dark:text-white shadow-sm"
-                    : "text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-200"
+                    ? "bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900 shadow-sm"
+                    : "text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
                 }`}
               >
                 {int}
@@ -122,14 +122,14 @@ export default function OverviewPage() {
           <button
             onClick={loadData}
             title="Refresh analytics"
-            className="flex h-8 w-8 items-center justify-center rounded-md border border-surface-border bg-surface text-zinc-500 hover:bg-surface-raised hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white transition-colors"
+            className="flex h-8 w-8 items-center justify-center rounded-full border border-surface-border bg-surface text-zinc-500 hover:bg-surface-raised hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white transition-colors"
           >
             <RefreshCw className={`h-3.5 w-3.5 ${isLoading ? "animate-spin" : ""}`} />
           </button>
 
           <button
             onClick={() => setIsSendModalOpen(true)}
-            className="flex items-center gap-1.5 rounded-md bg-zinc-900 px-3.5 py-1.5 text-xs font-medium text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200 transition-colors"
+            className="flex items-center gap-1.5 rounded-full bg-zinc-900 px-4 py-1.5 text-xs font-medium text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200 transition-colors"
           >
             <Send className="h-3.5 w-3.5" />
             <span>Send Email</span>
@@ -138,78 +138,100 @@ export default function OverviewPage() {
       </div>
 
       {/* KPI Cards Grid */}
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {/* Sent */}
-        <div className="rounded-xl border border-surface-border bg-surface p-4 space-y-1">
-          <div className="flex items-center justify-between text-zinc-500 dark:text-zinc-400 text-xs font-medium">
-            <span>Sent</span>
-            <Send className="h-3.5 w-3.5 text-zinc-400 dark:text-zinc-500" />
+        <div className="rounded-xl border border-surface-border bg-surface p-5 space-y-3 shadow-sm">
+          <div className="flex items-center justify-between">
+            <span className="text-xs text-zinc-500 uppercase tracking-wider font-medium">Sent</span>
+            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-zinc-100 dark:bg-zinc-800">
+              <Send className="h-4 w-4 text-zinc-600 dark:text-zinc-400" />
+            </div>
           </div>
-          <div className="text-2xl font-semibold text-zinc-900 dark:text-white tracking-tight">
-            {totals.sent.toLocaleString()}
+          <div>
+            <div className="text-2xl font-semibold text-zinc-900 dark:text-white tracking-tight">
+              {totals.sent.toLocaleString()}
+            </div>
+            <div className="text-[11px] text-zinc-400 mt-1">
+              All outbound messages
+            </div>
           </div>
-          <div className="text-[11px] text-zinc-400 dark:text-zinc-500">All outbound messages</div>
         </div>
 
         {/* Delivered */}
-        <div className="rounded-xl border border-surface-border bg-surface p-4 space-y-1">
-          <div className="flex items-center justify-between text-zinc-500 dark:text-zinc-400 text-xs font-medium">
-            <span>Delivered</span>
-            <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />
+        <div className="rounded-xl border border-surface-border bg-surface p-5 space-y-3 shadow-sm">
+          <div className="flex items-center justify-between">
+            <span className="text-xs text-zinc-500 uppercase tracking-wider font-medium">Delivered</span>
+            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-emerald-50 dark:bg-emerald-500/10">
+              <CheckCircle2 className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+            </div>
           </div>
-          <div className="text-2xl font-semibold text-zinc-900 dark:text-white tracking-tight">
-            {totals.delivered.toLocaleString()}
-          </div>
-          <div className="text-[11px] text-emerald-600 dark:text-emerald-400 font-medium">
-            {(rates.delivery_rate * 100).toFixed(1)}% rate
+          <div>
+            <div className="text-2xl font-semibold text-zinc-900 dark:text-white tracking-tight">
+              {totals.delivered.toLocaleString()}
+            </div>
+            <div className="text-[11px] text-emerald-600 dark:text-emerald-400 font-medium mt-1">
+              {(rates.delivery_rate * 100).toFixed(1)}% rate
+            </div>
           </div>
         </div>
 
         {/* Opened */}
-        <div className="rounded-xl border border-surface-border bg-surface p-4 space-y-1">
-          <div className="flex items-center justify-between text-zinc-500 dark:text-zinc-400 text-xs font-medium">
-            <span>Opened</span>
-            <Eye className="h-3.5 w-3.5 text-sky-500" />
+        <div className="rounded-xl border border-surface-border bg-surface p-5 space-y-3 shadow-sm">
+          <div className="flex items-center justify-between">
+            <span className="text-xs text-zinc-500 uppercase tracking-wider font-medium">Opened</span>
+            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-sky-50 dark:bg-sky-500/10">
+              <Eye className="h-4 w-4 text-sky-600 dark:text-sky-400" />
+            </div>
           </div>
-          <div className="text-2xl font-semibold text-zinc-900 dark:text-white tracking-tight">
-            {totals.opened.toLocaleString()}
-          </div>
-          <div className="text-[11px] text-sky-600 dark:text-sky-400 font-medium">
-            {(rates.open_rate * 100).toFixed(1)}% rate
+          <div>
+            <div className="text-2xl font-semibold text-zinc-900 dark:text-white tracking-tight">
+              {totals.opened.toLocaleString()}
+            </div>
+            <div className="text-[11px] text-sky-600 dark:text-sky-400 font-medium mt-1">
+              {(rates.open_rate * 100).toFixed(1)}% rate
+            </div>
           </div>
         </div>
 
         {/* Clicked */}
-        <div className="rounded-xl border border-surface-border bg-surface p-4 space-y-1">
-          <div className="flex items-center justify-between text-zinc-500 dark:text-zinc-400 text-xs font-medium">
-            <span>Clicked</span>
-            <MousePointer className="h-3.5 w-3.5 text-purple-500" />
+        <div className="rounded-xl border border-surface-border bg-surface p-5 space-y-3 shadow-sm">
+          <div className="flex items-center justify-between">
+            <span className="text-xs text-zinc-500 uppercase tracking-wider font-medium">Clicked</span>
+            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-purple-50 dark:bg-purple-500/10">
+              <MousePointer className="h-4 w-4 text-purple-600 dark:text-purple-400" />
+            </div>
           </div>
-          <div className="text-2xl font-semibold text-zinc-900 dark:text-white tracking-tight">
-            {totals.clicked.toLocaleString()}
-          </div>
-          <div className="text-[11px] text-purple-600 dark:text-purple-400 font-medium">
-            {(rates.click_rate * 100).toFixed(1)}% rate
+          <div>
+            <div className="text-2xl font-semibold text-zinc-900 dark:text-white tracking-tight">
+              {totals.clicked.toLocaleString()}
+            </div>
+            <div className="text-[11px] text-purple-600 dark:text-purple-400 font-medium mt-1">
+              {(rates.click_rate * 100).toFixed(1)}% rate
+            </div>
           </div>
         </div>
 
         {/* Bounced / Failed */}
-        <div className="rounded-xl border border-surface-border bg-surface p-4 space-y-1 col-span-2 md:col-span-1">
-          <div className="flex items-center justify-between text-zinc-500 dark:text-zinc-400 text-xs font-medium">
-            <span>Bounced</span>
-            <AlertTriangle className="h-3.5 w-3.5 text-red-500" />
+        <div className="rounded-xl border border-surface-border bg-surface p-5 space-y-3 shadow-sm sm:col-span-2 lg:col-span-1">
+          <div className="flex items-center justify-between">
+            <span className="text-xs text-zinc-500 uppercase tracking-wider font-medium">Bounced</span>
+            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-red-50 dark:bg-red-500/10">
+              <AlertTriangle className="h-4 w-4 text-red-600 dark:text-red-400" />
+            </div>
           </div>
-          <div className="text-2xl font-semibold text-zinc-900 dark:text-white tracking-tight">
-            {totals.bounced.toLocaleString()}
-          </div>
-          <div className="text-[11px] text-red-600 dark:text-red-400 font-medium">
-            {(rates.bounce_rate * 100).toFixed(1)}% rate
+          <div>
+            <div className="text-2xl font-semibold text-zinc-900 dark:text-white tracking-tight">
+              {totals.bounced.toLocaleString()}
+            </div>
+            <div className="text-[11px] text-red-600 dark:text-red-400 font-medium mt-1">
+              {(rates.bounce_rate * 100).toFixed(1)}% rate
+            </div>
           </div>
         </div>
       </div>
 
       {/* Activity Timeline Chart */}
-      <div className="rounded-xl border border-surface-border bg-surface p-5 space-y-4">
+      <div className="rounded-xl border border-surface-border bg-surface p-5 space-y-4 shadow-sm">
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-sm font-semibold text-zinc-900 dark:text-white">Email Volume</h2>
@@ -275,7 +297,7 @@ export default function OverviewPage() {
       {/* Two Column Grid: Recent Activity & Quick SDK Integration */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Recent Emails */}
-        <div className="rounded-xl border border-surface-border bg-surface p-5 space-y-4">
+        <div className="rounded-xl border border-surface-border bg-surface p-5 space-y-4 shadow-sm">
           <div className="flex items-center justify-between">
             <h2 className="text-sm font-semibold text-zinc-900 dark:text-white">Recent Emails</h2>
             <Link
@@ -293,7 +315,7 @@ export default function OverviewPage() {
                 <Link
                   key={email.id}
                   href={`/emails?id=${email.id}`}
-                  className="flex items-center justify-between py-2.5 hover:bg-surface-raised/40 px-2 rounded-md transition-colors"
+                  className="flex items-center justify-between py-3 hover:bg-surface-raised/50 -mx-2 px-2 rounded-md transition-colors"
                 >
                   <div className="space-y-0.5 truncate max-w-[70%]">
                     <p className="text-xs font-medium text-zinc-900 dark:text-zinc-200 truncate">
@@ -337,26 +359,28 @@ export default function OverviewPage() {
         </div>
 
         {/* Quick Send SDK Snippet */}
-        <div className="space-y-3">
+        <div className="rounded-xl border border-surface-border bg-surface p-5 space-y-4 shadow-sm">
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-sm font-semibold text-zinc-900 dark:text-white">API Integration</h2>
-              <p className="text-xs text-zinc-500 dark:text-zinc-400">
+              <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
                 Send your first email with 3 lines of code.
               </p>
             </div>
             <Link
               href="/api-keys"
-              className="text-xs text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white"
+              className="text-xs text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white transition-colors"
             >
               Manage keys →
             </Link>
           </div>
 
-          <CodeSnippet
-            apiKey="re_live_..."
-            domain={domains[0]?.name || "yourdomain.com"}
-          />
+          <div className="pt-2">
+            <CodeSnippet
+              apiKey="re_live_..."
+              domain={domains[0]?.name || "yourdomain.com"}
+            />
+          </div>
         </div>
       </div>
 

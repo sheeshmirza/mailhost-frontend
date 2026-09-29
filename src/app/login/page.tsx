@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
-import { Key, Mail, Lock, Building, User, AlertCircle, ArrowRight } from "lucide-react";
+import { Key, Mail, Lock, Building, User, AlertCircle, ArrowRight, Loader2 } from "lucide-react";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -40,11 +40,12 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex min-h-[calc(100vh-3.5rem)] items-center justify-center p-4 animate-fade-in">
-      <div className="w-full max-w-sm space-y-6">
+    <div className="flex min-h-[calc(100vh-3.5rem)] items-center justify-center p-4 animate-fade-in bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-zinc-100/50 via-surface to-surface dark:from-zinc-900/20 dark:via-surface dark:to-surface relative">
+      <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px]"></div>
+      <div className="w-full max-w-sm space-y-8 z-10">
         {/* Brand Header */}
-        <div className="flex flex-col items-center text-center space-y-2">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-zinc-900 text-white dark:bg-white dark:text-black font-bold text-lg shadow-md">
+        <div className="flex flex-col items-center text-center space-y-3">
+          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-zinc-900 text-white dark:bg-white dark:text-black font-bold text-xl shadow-lg">
             R
           </div>
           <h1 className="text-xl font-semibold tracking-tight text-zinc-900 dark:text-white">
@@ -62,17 +63,17 @@ export default function LoginPage() {
         </div>
 
         {/* Tab switch */}
-        <div className="flex rounded-lg border border-surface-border bg-surface p-1 text-xs gap-1">
+        <div className="flex rounded-xl border border-surface-border bg-surface p-1.5 text-xs gap-1 shadow-sm">
           <button
             type="button"
             onClick={() => {
               setMode("login");
               setError(null);
             }}
-            className={`flex-1 rounded-md py-1.5 text-center font-medium transition-colors ${
+            className={`flex-1 rounded-lg py-2 text-center font-medium transition-all ${
               mode === "login"
                 ? "bg-zinc-900 text-white dark:bg-white dark:text-black shadow-sm"
-                : "text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white"
+                : "text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:text-white dark:hover:bg-zinc-800/50"
             }`}
           >
             Sign In
@@ -83,10 +84,10 @@ export default function LoginPage() {
               setMode("register");
               setError(null);
             }}
-            className={`flex-1 rounded-md py-1.5 text-center font-medium transition-colors ${
+            className={`flex-1 rounded-lg py-2 text-center font-medium transition-all ${
               mode === "register"
                 ? "bg-zinc-900 text-white dark:bg-white dark:text-black shadow-sm"
-                : "text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white"
+                : "text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:text-white dark:hover:bg-zinc-800/50"
             }`}
           >
             Register
@@ -97,10 +98,10 @@ export default function LoginPage() {
               setMode("apikey");
               setError(null);
             }}
-            className={`flex-1 rounded-md py-1.5 text-center font-medium transition-colors ${
+            className={`flex-1 rounded-lg py-2 text-center font-medium transition-all ${
               mode === "apikey"
                 ? "bg-zinc-900 text-white dark:bg-white dark:text-black shadow-sm"
-                : "text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white"
+                : "text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:text-white dark:hover:bg-zinc-800/50"
             }`}
           >
             API Key
@@ -108,29 +109,29 @@ export default function LoginPage() {
         </div>
 
         {/* Form Card */}
-        <div className="rounded-xl border border-surface-border bg-surface p-6 shadow-xl space-y-4">
+        <div className="rounded-2xl border border-surface-border bg-surface p-8 shadow-2xl space-y-6">
           {error && (
-            <div className="flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 dark:border-red-900/50 dark:bg-red-950/20 p-3 text-xs text-red-700 dark:text-red-300">
-              <AlertCircle className="h-4 w-4 flex-shrink-0 text-red-500 dark:text-red-400" />
-              <span>{error}</span>
+            <div className="flex items-start gap-2.5 rounded-xl border border-red-200 bg-red-50 dark:border-red-900/50 dark:bg-red-950/20 p-4 text-xs text-red-700 dark:text-red-300">
+              <AlertCircle className="h-4 w-4 flex-shrink-0 text-red-500 dark:text-red-400 mt-0.5" />
+              <span className="leading-relaxed">{error}</span>
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-5">
             {mode === "apikey" ? (
               <div>
                 <label className="block text-[11px] font-medium text-zinc-600 dark:text-zinc-300 mb-1">
                   API Key or Session Token
                 </label>
                 <div className="relative">
-                  <Key className="absolute left-3 top-2.5 h-3.5 w-3.5 text-zinc-400 dark:text-zinc-500" />
+                  <Key className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400 dark:text-zinc-500" />
                   <input
                     type="password"
                     value={apiKey}
                     onChange={(e) => setApiKey(e.target.value)}
                     placeholder="re_live_••••••••••••••••"
                     required
-                    className="w-full rounded-md border border-surface-border bg-surface-raised pl-9 pr-3 py-1.5 text-xs text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-600 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-500 font-mono"
+                    className="w-full rounded-lg border border-surface-border bg-surface-raised pl-10 pr-3 py-2 text-sm text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-600 focus:outline-none focus:border-zinc-400 focus:ring-2 focus:ring-zinc-900/10 dark:focus:border-zinc-500 dark:focus:ring-white/10 font-mono transition-shadow"
                   />
                 </div>
               </div>
@@ -143,14 +144,14 @@ export default function LoginPage() {
                         Full Name
                       </label>
                       <div className="relative">
-                        <User className="absolute left-3 top-2.5 h-3.5 w-3.5 text-zinc-400 dark:text-zinc-500" />
+                        <User className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400 dark:text-zinc-500" />
                         <input
                           type="text"
                           value={name}
                           onChange={(e) => setName(e.target.value)}
                           placeholder="Alex Developer"
                           required
-                          className="w-full rounded-md border border-surface-border bg-surface-raised pl-9 pr-3 py-1.5 text-xs text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-600 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-500"
+                          className="w-full rounded-lg border border-surface-border bg-surface-raised pl-10 pr-3 py-2 text-sm text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-600 focus:outline-none focus:border-zinc-400 focus:ring-2 focus:ring-zinc-900/10 dark:focus:border-zinc-500 dark:focus:ring-white/10 transition-shadow"
                         />
                       </div>
                     </div>
@@ -160,14 +161,14 @@ export default function LoginPage() {
                         Organization / Team Name
                       </label>
                       <div className="relative">
-                        <Building className="absolute left-3 top-2.5 h-3.5 w-3.5 text-zinc-400 dark:text-zinc-500" />
+                        <Building className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400 dark:text-zinc-500" />
                         <input
                           type="text"
                           value={orgName}
                           onChange={(e) => setOrgName(e.target.value)}
                           placeholder="Acme Corp"
                           required
-                          className="w-full rounded-md border border-surface-border bg-surface-raised pl-9 pr-3 py-1.5 text-xs text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-600 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-500"
+                          className="w-full rounded-lg border border-surface-border bg-surface-raised pl-10 pr-3 py-2 text-sm text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-600 focus:outline-none focus:border-zinc-400 focus:ring-2 focus:ring-zinc-900/10 dark:focus:border-zinc-500 dark:focus:ring-white/10 transition-shadow"
                         />
                       </div>
                     </div>
@@ -179,14 +180,14 @@ export default function LoginPage() {
                     Email Address
                   </label>
                   <div className="relative">
-                    <Mail className="absolute left-3 top-2.5 h-3.5 w-3.5 text-zinc-400 dark:text-zinc-500" />
+                    <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400 dark:text-zinc-500" />
                     <input
                       type="email"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       placeholder="admin@resend.local"
                       required
-                      className="w-full rounded-md border border-surface-border bg-surface-raised pl-9 pr-3 py-1.5 text-xs text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-600 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-500"
+                      className="w-full rounded-lg border border-surface-border bg-surface-raised pl-10 pr-3 py-2 text-sm text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-600 focus:outline-none focus:border-zinc-400 focus:ring-2 focus:ring-zinc-900/10 dark:focus:border-zinc-500 dark:focus:ring-white/10 transition-shadow"
                     />
                   </div>
                 </div>
@@ -196,14 +197,14 @@ export default function LoginPage() {
                     Password
                   </label>
                   <div className="relative">
-                    <Lock className="absolute left-3 top-2.5 h-3.5 w-3.5 text-zinc-400 dark:text-zinc-500" />
+                    <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400 dark:text-zinc-500" />
                     <input
                       type="password"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       placeholder="••••••••••••"
                       required
-                      className="w-full rounded-md border border-surface-border bg-surface-raised pl-9 pr-3 py-1.5 text-xs text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-600 focus:outline-none focus:border-zinc-400 dark:focus:border-zinc-500"
+                      className="w-full rounded-lg border border-surface-border bg-surface-raised pl-10 pr-3 py-2 text-sm text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-600 focus:outline-none focus:border-zinc-400 focus:ring-2 focus:ring-zinc-900/10 dark:focus:border-zinc-500 dark:focus:ring-white/10 transition-shadow"
                     />
                   </div>
                 </div>
@@ -213,21 +214,22 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full flex items-center justify-center gap-1.5 rounded-md bg-zinc-900 py-2 text-xs font-semibold text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200 active:scale-95 disabled:opacity-50 transition-all shadow-sm"
+              className="w-full flex items-center justify-center gap-2 rounded-lg bg-zinc-900 py-2.5 text-sm font-medium text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200 active:scale-[0.98] disabled:opacity-50 transition-all shadow-md"
             >
+              {loading && <Loader2 className="h-4 w-4 animate-spin" />}
               <span>{loading ? "Authenticating..." : mode === "login" ? "Sign In" : mode === "register" ? "Create Account" : "Connect"}</span>
-              <ArrowRight className="h-3.5 w-3.5" />
+              {!loading && <ArrowRight className="h-4 w-4" />}
             </button>
 
             {mode === "login" && (
-              <div className="pt-1 text-center">
+              <div className="pt-2 text-center">
                 <button
                   type="button"
                   onClick={() => {
                     setEmail("admin@resend.local");
                     setPassword("Password1234!");
                   }}
-                  className="text-[11px] text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white underline underline-offset-4 transition-colors"
+                  className="text-xs text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white transition-colors hover:underline decoration-zinc-300 dark:decoration-zinc-700 underline-offset-4"
                 >
                   Quick Fill Local Test Credentials
                 </button>
@@ -236,8 +238,8 @@ export default function LoginPage() {
           </form>
         </div>
 
-        <div className="text-center text-[11px] text-zinc-400 dark:text-zinc-500">
-          Mailhost Engine running on <code className="text-zinc-700 dark:text-zinc-300">localhost:8080</code>
+        <div className="mt-8 text-center text-xs text-zinc-400 dark:text-zinc-500">
+          Mailhost Engine running on <code className="text-zinc-700 dark:text-zinc-300 font-mono">localhost:8080</code>
         </div>
       </div>
     </div>

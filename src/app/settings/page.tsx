@@ -200,120 +200,122 @@ export default function SettingsPage() {
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-8 py-8 space-y-6 animate-fade-in">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-surface-border pb-6">
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-surface-border pb-6">
         <div>
-          <h1 className="text-xl font-semibold tracking-tight text-zinc-900 dark:text-white">
+          <h1 className="text-lg font-semibold tracking-tight text-zinc-900 dark:text-white">
             Settings & Team
           </h1>
-          <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
+          <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-1">
             Manage your user account, organizations, teammates, and remote AI MCP server.
           </p>
         </div>
+      </div>
 
-        {/* Tab switch */}
-        <div className="flex rounded-lg border border-surface-border bg-surface p-1 gap-1">
-          <button
-            onClick={() => setActiveTab("profile")}
-            className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${
-              activeTab === "profile"
-                ? "bg-zinc-900 text-white dark:bg-white dark:text-black shadow-sm"
-                : "text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white"
-            }`}
-          >
-            <User className="h-3.5 w-3.5" />
-            <span>Profile</span>
-          </button>
-          <button
-            onClick={() => setActiveTab("team")}
-            className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${
-              activeTab === "team"
-                ? "bg-zinc-900 text-white dark:bg-white dark:text-black shadow-sm"
-                : "text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white"
-            }`}
-          >
-            <Users className="h-3.5 w-3.5" />
-            <span>Team</span>
-          </button>
-          <button
-            onClick={() => setActiveTab("sessions")}
-            className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${
-              activeTab === "sessions"
-                ? "bg-zinc-900 text-white dark:bg-white dark:text-black shadow-sm"
-                : "text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white"
-            }`}
-          >
-            <Lock className="h-3.5 w-3.5" />
-            <span>Security</span>
-          </button>
-          <button
-            onClick={() => setActiveTab("mcp")}
-            className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${
-              activeTab === "mcp"
-                ? "bg-zinc-900 text-white dark:bg-white dark:text-black shadow-sm"
-                : "text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white"
-            }`}
-          >
-            <Bot className="h-3.5 w-3.5" />
-            <span>AI MCP</span>
-          </button>
-        </div>
+      {/* Tab switch */}
+      <div className="flex gap-6 border-b border-surface-border">
+        <button
+          onClick={() => setActiveTab("profile")}
+          className={`flex items-center gap-2 pb-3 text-sm font-medium transition-colors border-b-2 -mb-px ${
+            activeTab === "profile"
+              ? "border-zinc-900 text-zinc-900 dark:border-white dark:text-white"
+              : "border-transparent text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white"
+          }`}
+        >
+          <User className="h-4 w-4" />
+          <span>Profile</span>
+        </button>
+        <button
+          onClick={() => setActiveTab("team")}
+          className={`flex items-center gap-2 pb-3 text-sm font-medium transition-colors border-b-2 -mb-px ${
+            activeTab === "team"
+              ? "border-zinc-900 text-zinc-900 dark:border-white dark:text-white"
+              : "border-transparent text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white"
+          }`}
+        >
+          <Users className="h-4 w-4" />
+          <span>Team</span>
+        </button>
+        <button
+          onClick={() => setActiveTab("sessions")}
+          className={`flex items-center gap-2 pb-3 text-sm font-medium transition-colors border-b-2 -mb-px ${
+            activeTab === "sessions"
+              ? "border-zinc-900 text-zinc-900 dark:border-white dark:text-white"
+              : "border-transparent text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white"
+          }`}
+        >
+          <Lock className="h-4 w-4" />
+          <span>Security</span>
+        </button>
+        <button
+          onClick={() => setActiveTab("mcp")}
+          className={`flex items-center gap-2 pb-3 text-sm font-medium transition-colors border-b-2 -mb-px ${
+            activeTab === "mcp"
+              ? "border-zinc-900 text-zinc-900 dark:border-white dark:text-white"
+              : "border-transparent text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white"
+          }`}
+        >
+          <Bot className="h-4 w-4" />
+          <span>AI MCP</span>
+        </button>
       </div>
 
       {/* Tab 1: Profile */}
       {activeTab === "profile" && (
         <div className="space-y-6">
-          <div className="rounded-xl border border-surface-border bg-surface p-6 space-y-4">
-            <h2 className="text-sm font-semibold text-zinc-900 dark:text-white">Your Profile</h2>
+          <div className="rounded-xl border border-surface-border bg-surface p-5 space-y-5">
+            <h2 className="text-base font-semibold text-zinc-900 dark:text-white">Your Profile</h2>
             <form onSubmit={handleUpdateProfile} className="space-y-4 max-w-md">
               <div>
-                <label className="block text-[11px] font-medium text-zinc-600 dark:text-zinc-300 mb-1">
+                <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">
                   Full Name
                 </label>
                 <input
                   type="text"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="w-full rounded-md border border-surface-border bg-surface-raised px-3 py-1.5 text-xs text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-600 focus:outline-none"
+                  className="w-full rounded-lg border border-surface-border bg-surface-raised px-3 py-2 text-sm text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-600 focus:outline-none"
                 />
               </div>
 
               <div>
-                <label className="block text-[11px] font-medium text-zinc-600 dark:text-zinc-300 mb-1">
+                <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">
                   Email Address
                 </label>
                 <input
                   type="email"
                   value={email}
                   disabled
-                  className="w-full rounded-md border border-surface-border bg-surface-raised/50 px-3 py-1.5 text-xs text-zinc-500 dark:text-zinc-400 focus:outline-none cursor-not-allowed"
+                  className="w-full rounded-lg border border-surface-border bg-surface-raised/50 px-3 py-2 text-sm text-zinc-500 dark:text-zinc-400 focus:outline-none cursor-not-allowed"
                 />
-                <span className="text-[10px] text-zinc-400 dark:text-zinc-500 mt-1 block">
+                <span className="text-xs text-zinc-500 mt-1.5 block">
                   Email is verified with primary account credentials.
                 </span>
               </div>
 
-              <button
-                type="submit"
-                className="flex items-center gap-1.5 rounded-md bg-zinc-900 px-4 py-1.5 text-xs font-medium text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200 transition-colors"
-              >
-                {profileSaved ? (
-                  <>
-                    <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />
-                    <span>Saved!</span>
-                  </>
-                ) : (
-                  <span>Update Profile</span>
-                )}
-              </button>
+              <div className="pt-2">
+                <button
+                  type="submit"
+                  className="flex items-center gap-1.5 rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200 transition-colors"
+                >
+                  {profileSaved ? (
+                    <>
+                      <CheckCircle2 className="h-4 w-4 text-emerald-500" />
+                      <span>Saved!</span>
+                    </>
+                  ) : (
+                    <span>Update Profile</span>
+                  )}
+                </button>
+              </div>
             </form>
           </div>
 
           {/* Change Email Address */}
-          <div className="rounded-xl border border-surface-border bg-surface p-6 space-y-4">
-            <h2 className="text-sm font-semibold text-zinc-900 dark:text-white">Change Email Address</h2>
+          <div className="rounded-xl border border-surface-border bg-surface p-5 space-y-5">
+            <h2 className="text-base font-semibold text-zinc-900 dark:text-white">Change Email Address</h2>
             <form onSubmit={handleChangeEmail} className="space-y-4 max-w-md">
               <div>
-                <label className="block text-[11px] font-medium text-zinc-600 dark:text-zinc-300 mb-1">
+                <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">
                   New Email Address
                 </label>
                 <input
@@ -322,12 +324,12 @@ export default function SettingsPage() {
                   onChange={(e) => setNewEmail(e.target.value)}
                   placeholder="newemail@example.com"
                   required
-                  className="w-full rounded-md border border-surface-border bg-surface-raised px-3 py-1.5 text-xs text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-600 focus:outline-none"
+                  className="w-full rounded-lg border border-surface-border bg-surface-raised px-3 py-2 text-sm text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-600 focus:outline-none"
                 />
               </div>
 
               <div>
-                <label className="block text-[11px] font-medium text-zinc-600 dark:text-zinc-300 mb-1">
+                <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">
                   Current Password (to confirm)
                 </label>
                 <input
@@ -336,23 +338,25 @@ export default function SettingsPage() {
                   onChange={(e) => setEmailPassword(e.target.value)}
                   placeholder="••••••••••••"
                   required
-                  className="w-full rounded-md border border-surface-border bg-surface-raised px-3 py-1.5 text-xs text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-600 focus:outline-none"
+                  className="w-full rounded-lg border border-surface-border bg-surface-raised px-3 py-2 text-sm text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-600 focus:outline-none"
                 />
               </div>
 
-              <button
-                type="submit"
-                className="flex items-center gap-1.5 rounded-md bg-zinc-900 px-4 py-1.5 text-xs font-medium text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200 transition-colors"
-              >
-                {emailSaved ? (
-                  <>
-                    <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />
-                    <span>Email Changed!</span>
-                  </>
-                ) : (
-                  <span>Change Email</span>
-                )}
-              </button>
+              <div className="pt-2">
+                <button
+                  type="submit"
+                  className="flex items-center gap-1.5 rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200 transition-colors"
+                >
+                  {emailSaved ? (
+                    <>
+                      <CheckCircle2 className="h-4 w-4 text-emerald-500" />
+                      <span>Email Changed!</span>
+                    </>
+                  ) : (
+                    <span>Change Email</span>
+                  )}
+                </button>
+              </div>
             </form>
           </div>
         </div>

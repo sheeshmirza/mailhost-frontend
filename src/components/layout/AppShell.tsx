@@ -18,7 +18,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
           className={
             isLanding
               ? "flex-1 w-full min-h-[calc(100vh-3.5rem)]"
-              : "flex-1 w-full pl-0 lg:pl-56 min-h-[calc(100vh-3.5rem)] pb-16 transition-all duration-200"
+              : "flex-1 w-full pl-0 lg:pl-56 min-h-[calc(100vh-3.5rem)] pt-6 pb-16 transition-all duration-300 ease-in-out"
           }
         >
           {children}
