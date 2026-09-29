@@ -3,8 +3,39 @@
 @tailwind utilities;
 
 :root {
+  /* Light theme (DEFAULT) */
+  --background: #ffffff;
+  --foreground: #09090b;
+  --surface: #ffffff;
+  --surface-raised: #f9fafb;
+  --surface-subtle: #f3f4f6;
+  --surface-border: #e4e4e7;
+  --surface-border-hover: #d4d4d8;
+  --text-primary: #09090b;
+  --text-secondary: #27272a;
+  --text-muted: #52525b;
+  --text-subtle: #71717a;
+  --scrollbar-track: #f4f4f5;
+  --scrollbar-thumb: #d4d4d8;
+  --scrollbar-thumb-hover: #a1a1aa;
+}
+
+.dark {
+  /* Dark theme */
   --background: #000000;
   --foreground: #ededed;
+  --surface: #0c0c0e;
+  --surface-raised: #141417;
+  --surface-subtle: #1c1c20;
+  --surface-border: #26262b;
+  --surface-border-hover: #3f3f46;
+  --text-primary: #ffffff;
+  --text-secondary: #e4e4e7;
+  --text-muted: #a1a1aa;
+  --text-subtle: #71717a;
+  --scrollbar-track: #09090b;
+  --scrollbar-thumb: #27272a;
+  --scrollbar-thumb-hover: #3f3f46;
 }
 
 body {
@@ -13,6 +44,7 @@ body {
   font-feature-settings: "cv02", "cv03", "cv04", "cv11";
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  transition: background-color 0.15s ease, color 0.15s ease;
 }
 
 /* Custom sleek scrollbar */
@@ -21,14 +53,14 @@ body {
   height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: #09090b;
+  background: var(--scrollbar-track);
 }
 ::-webkit-scrollbar-thumb {
-  background: #27272a;
+  background: var(--scrollbar-thumb);
   border-radius: 9999px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #3f3f46;
+  background: var(--scrollbar-thumb-hover);
 }
 
 /* Animations & glass effects */
@@ -42,7 +74,6 @@ body {
 }
 
 .glass-panel {
-  background: rgba(12, 12, 14, 0.85);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
 }

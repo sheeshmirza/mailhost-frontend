@@ -10,13 +10,20 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        background: "#000000",
+        background: "var(--background)",
+        foreground: "var(--foreground)",
         surface: {
-          DEFAULT: "#0c0c0e",
-          raised: "#141417",
-          subtle: "#1c1c20",
-          border: "#26262b",
-          borderHover: "#3f3f46",
+          DEFAULT: "var(--surface)",
+          raised: "var(--surface-raised)",
+          subtle: "var(--surface-subtle)",
+          border: "var(--surface-border)",
+          borderHover: "var(--surface-border-hover)",
+        },
+        content: {
+          primary: "var(--text-primary)",
+          secondary: "var(--text-secondary)",
+          muted: "var(--text-muted)",
+          subtle: "var(--text-subtle)",
         },
         brand: {
           50: "#fafafa",

@@ -19,8 +19,10 @@ import {
   ChevronRight,
   Mail,
 } from "lucide-react";
+import { useToast } from "@/lib/toast-context";
 
 export default function InboundPage() {
+  const toast = useToast();
   const [activeTab, setActiveTab] = useState<"emails" | "aliases">("emails");
   const [inboundEmails, setInboundEmails] = useState<InboundEmailSummary[]>([]);
   const [selectedInbound, setSelectedInbound] = useState<InboundEmailDetail | null>(null);
@@ -84,12 +86,13 @@ export default function InboundPage() {
         alias: fullAlias,
         forward_to: destinations,
       });
+      toast.success("Alias created successfully");
       setIsAliasOpen(false);
       setAliasPrefix("");
       setForwardTo("");
       fetchData();
     } catch (err: any) {
-      alert("Failed to create alias: " + err.message);
+      toast.error("Failed to create alias: " + err.message);
     }
   };
 
@@ -97,9 +100,10 @@ export default function InboundPage() {
     if (!confirm("Are you sure you want to remove this alias?")) return;
     try {
       await api.deleteAlias(id);
+      toast.success("Alias deleted successfully");
       fetchData();
     } catch (err: any) {
-      alert("Failed to delete alias: " + err.message);
+      toast.error("Failed to delete alias: " + err.message);
     }
   };
 
@@ -108,10 +112,10 @@ export default function InboundPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-surface-border pb-6">
         <div>
-          <h1 className="text-xl font-semibold tracking-tight text-white">
+          <h1 className="text-xl font-semibold tracking-tight text-zinc-900 dark:text-white">
             Inbound & Receiving
           </h1>
-          <p className="text-xs text-brand-400 mt-1">
+          <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
             Capture incoming mail on Port 25, parse MIME messages, and set up forwarding aliases.
           </p>
         </div>
@@ -123,8 +127,8 @@ export default function InboundPage() {
               onClick={() => setActiveTab("emails")}
               className={`flex items-center gap-1.5 rounded px-3 py-1.5 text-xs font-medium transition-colors ${
                 activeTab === "emails"
-                  ? "bg-surface-raised text-white shadow-sm"
-                  : "text-brand-500 hover:text-brand-300"
+                  ? "bg-surface-raised text-zinc-900 dark:text-white shadow-sm"
+                  : "text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-200"
               }`}
             >
               <Inbox className="h-3.5 w-3.5" />
@@ -134,8 +138,8 @@ export default function InboundPage() {
               onClick={() => setActiveTab("aliases")}
               className={`flex items-center gap-1.5 rounded px-3 py-1.5 text-xs font-medium transition-colors ${
                 activeTab === "aliases"
-                  ? "bg-surface-raised text-white shadow-sm"
-                  : "text-brand-500 hover:text-brand-300"
+                  ? "bg-surface-raised text-zinc-900 dark:text-white shadow-sm"
+                  : "text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-200"
               }`}
             >
               <Forward className="h-3.5 w-3.5" />
@@ -146,7 +150,7 @@ export default function InboundPage() {
           {activeTab === "aliases" && (
             <button
               onClick={() => setIsAliasOpen(true)}
-              className="flex items-center gap-1.5 rounded-md bg-white px-3.5 py-1.5 text-xs font-medium text-black hover:bg-zinc-200 transition-colors"
+              className="flex items-center gap-1.5 rounded-md bg-zinc-900 px-3.5 py-1.5 text-xs font-medium text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200 transition-colors"
             >
               <Plus className="h-3.5 w-3.5" />
               <span>Create Alias</span>
@@ -155,7 +159,7 @@ export default function InboundPage() {
 
           <button
             onClick={fetchData}
-            className="flex h-8 w-8 items-center justify-center rounded-md border border-surface-border bg-surface text-brand-400 hover:bg-surface-raised hover:text-white"
+            className="flex h-8 w-8 items-center justify-center rounded-md border border-surface-border bg-surface text-zinc-500 hover:bg-surface-raised hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white transition-colors"
           >
             <RefreshCw className={`h-3.5 w-3.5 ${isLoading ? "animate-spin" : ""}`} />
           </button>
@@ -164,9 +168,9 @@ export default function InboundPage() {
 
       {/* Tab: Received Emails */}
       {activeTab === "emails" && (
-        <div className="overflow-hidden rounded-xl border border-surface-border bg-surface">
-          <table className="w-full text-left text-xs">
-            <thead className="border-b border-surface-border bg-surface-raised text-[11px] font-medium uppercase tracking-wider text-brand-400">
+        <div className="overflow-x-auto rounded-xl border border-surface-border bg-surface">
+          <table className="w-full text-left text-xs min-w-[650px]">
+            <thead className="border-b border-surface-border bg-surface-raised text-[11px] font-medium uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
               <tr>
                 <th className="px-5 py-3">Subject</th>
                 <th className="px-5 py-3">From</th>
@@ -184,29 +188,29 @@ export default function InboundPage() {
                     onClick={() => loadDetail(item.id)}
                     className="cursor-pointer hover:bg-surface-raised/40 transition-colors"
                   >
-                    <td className="px-5 py-3 font-medium text-white max-w-xs truncate">
+                    <td className="px-5 py-3 font-medium text-zinc-900 dark:text-white max-w-xs truncate">
                       {item.subject || "(no subject)"}
                     </td>
-                    <td className="px-5 py-3 font-mono text-brand-400 max-w-xs truncate">
+                    <td className="px-5 py-3 font-mono text-zinc-600 dark:text-zinc-400 max-w-xs truncate">
                       {item.mail_from || item.from}
                     </td>
-                    <td className="px-5 py-3 font-mono text-brand-400 max-w-xs truncate">
+                    <td className="px-5 py-3 font-mono text-zinc-600 dark:text-zinc-400 max-w-xs truncate">
                       {item.rcpt_to?.join(", ") || "—"}
                     </td>
-                    <td className="px-5 py-3 font-mono text-brand-500">
+                    <td className="px-5 py-3 font-mono text-zinc-500 dark:text-zinc-400">
                       {(item.size / 1024).toFixed(1)} KB
                     </td>
-                    <td className="px-5 py-3 font-mono text-brand-500">
+                    <td className="px-5 py-3 font-mono text-zinc-500 dark:text-zinc-400">
                       {new Date(item.created_at).toLocaleString()}
                     </td>
                     <td className="px-5 py-3 text-right">
-                      <ChevronRight className="h-4 w-4 text-brand-500 ml-auto" />
+                      <ChevronRight className="h-4 w-4 text-zinc-400 dark:text-zinc-500 ml-auto" />
                     </td>
                   </tr>
                 ))
               ) : (
                 <tr>
-                  <td colSpan={6} className="py-12 text-center text-xs text-brand-500">
+                  <td colSpan={6} className="py-12 text-center text-xs text-zinc-500 dark:text-zinc-400">
                     {isLoading
                       ? "Loading received emails..."
                       : "No inbound emails received yet. Configure MX records pointing to port 25 to receive mail."}
@@ -220,9 +224,9 @@ export default function InboundPage() {
 
       {/* Tab: Aliases */}
       {activeTab === "aliases" && (
-        <div className="overflow-hidden rounded-xl border border-surface-border bg-surface">
-          <table className="w-full text-left text-xs">
-            <thead className="border-b border-surface-border bg-surface-raised text-[11px] font-medium uppercase tracking-wider text-brand-400">
+        <div className="overflow-x-auto rounded-xl border border-surface-border bg-surface">
+          <table className="w-full text-left text-xs min-w-[500px]">
+            <thead className="border-b border-surface-border bg-surface-raised text-[11px] font-medium uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
               <tr>
                 <th className="px-5 py-3">Alias Address</th>
                 <th className="px-5 py-3">Forward To</th>
@@ -234,19 +238,19 @@ export default function InboundPage() {
               {aliases.length > 0 ? (
                 aliases.map((al) => (
                   <tr key={al.id} className="hover:bg-surface-raised/40 transition-colors">
-                    <td className="px-5 py-3 text-white font-semibold">
+                    <td className="px-5 py-3 text-zinc-900 dark:text-white font-semibold">
                       {al.alias}
                     </td>
-                    <td className="px-5 py-3 text-brand-300">
+                    <td className="px-5 py-3 text-zinc-700 dark:text-zinc-300">
                       {al.forward_to?.join(", ")}
                     </td>
-                    <td className="px-5 py-3 text-brand-500 text-[11px]">
+                    <td className="px-5 py-3 text-zinc-500 dark:text-zinc-400 text-[11px]">
                       {new Date(al.created_at).toLocaleDateString()}
                     </td>
                     <td className="px-5 py-3 text-right">
                       <button
                         onClick={() => handleDeleteAlias(al.id)}
-                        className="rounded p-1 text-brand-500 hover:text-red-400 transition-colors"
+                        className="rounded p-1 text-zinc-400 hover:text-red-500 dark:hover:text-red-400 transition-colors"
                       >
                         <Trash2 className="h-4 w-4" />
                       </button>
@@ -255,7 +259,7 @@ export default function InboundPage() {
                 ))
               ) : (
                 <tr>
-                  <td colSpan={4} className="py-12 text-center text-xs text-brand-500 font-sans">
+                  <td colSpan={4} className="py-12 text-center text-xs text-zinc-500 dark:text-zinc-400 font-sans">
                     No forwarding aliases configured yet.
                   </td>
                 </tr>
@@ -271,16 +275,16 @@ export default function InboundPage() {
           <div className="h-full w-full max-w-xl border-l border-surface-border bg-surface p-6 shadow-2xl flex flex-col space-y-6 overflow-y-auto">
             <div className="flex items-start justify-between border-b border-surface-border pb-4">
               <div className="space-y-1">
-                <span className="text-[10px] font-mono uppercase tracking-wider text-brand-500">
+                <span className="text-[10px] font-mono uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
                   Inbound MIME Inspector
                 </span>
-                <h2 className="text-base font-semibold text-white">
+                <h2 className="text-base font-semibold text-zinc-900 dark:text-white">
                   {selectedInbound.subject || "(no subject)"}
                 </h2>
               </div>
               <button
                 onClick={() => setSelectedInbound(null)}
-                className="rounded-md p-1 text-brand-400 hover:bg-surface-raised hover:text-white"
+                className="rounded-md p-1 text-zinc-500 hover:bg-surface-raised hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white"
               >
                 <X className="h-4 w-4" />
               </button>
@@ -289,26 +293,26 @@ export default function InboundPage() {
             {/* Meta */}
             <div className="grid grid-cols-2 gap-3 text-xs">
               <div className="rounded-lg border border-surface-border bg-surface-raised p-3 col-span-2">
-                <span className="text-[10px] text-brand-500 block uppercase">From</span>
-                <span className="font-mono text-white block truncate">
+                <span className="text-[10px] text-zinc-500 dark:text-zinc-400 block uppercase">From</span>
+                <span className="font-mono text-zinc-900 dark:text-white block truncate">
                   {selectedInbound.mail_from}
                 </span>
               </div>
               <div className="rounded-lg border border-surface-border bg-surface-raised p-3 col-span-2">
-                <span className="text-[10px] text-brand-500 block uppercase">To</span>
-                <span className="font-mono text-white block truncate">
+                <span className="text-[10px] text-zinc-500 dark:text-zinc-400 block uppercase">To</span>
+                <span className="font-mono text-zinc-900 dark:text-white block truncate">
                   {selectedInbound.rcpt_to?.join(", ")}
                 </span>
               </div>
               <div className="rounded-lg border border-surface-border bg-surface-raised p-3">
-                <span className="text-[10px] text-brand-500 block uppercase">Size</span>
-                <span className="font-mono text-brand-200 block">
+                <span className="text-[10px] text-zinc-500 dark:text-zinc-400 block uppercase">Size</span>
+                <span className="font-mono text-zinc-900 dark:text-zinc-200 block">
                   {(selectedInbound.size / 1024).toFixed(1)} KB
                 </span>
               </div>
               <div className="rounded-lg border border-surface-border bg-surface-raised p-3">
-                <span className="text-[10px] text-brand-500 block uppercase">Received At</span>
-                <span className="font-mono text-brand-200 block">
+                <span className="text-[10px] text-zinc-500 dark:text-zinc-400 block uppercase">Received At</span>
+                <span className="font-mono text-zinc-900 dark:text-zinc-200 block">
                   {new Date(selectedInbound.created_at).toLocaleString()}
                 </span>
               </div>
@@ -316,7 +320,7 @@ export default function InboundPage() {
 
             {/* Email Body content */}
             <div className="space-y-2 flex-1">
-              <h3 className="text-xs font-semibold text-white uppercase tracking-wider">
+              <h3 className="text-xs font-semibold text-zinc-900 dark:text-white uppercase tracking-wider">
                 Email Body
               </h3>
               {selectedInbound.html ? (
@@ -324,11 +328,11 @@ export default function InboundPage() {
                   <div dangerouslySetInnerHTML={{ __html: selectedInbound.html }} />
                 </div>
               ) : selectedInbound.text ? (
-                <pre className="rounded-lg border border-surface-border bg-surface-raised p-4 font-mono text-xs text-brand-200 max-h-80 overflow-y-auto whitespace-pre-wrap">
+                <pre className="rounded-lg border border-surface-border bg-surface-raised p-4 font-mono text-xs text-zinc-800 dark:text-zinc-200 max-h-80 overflow-y-auto whitespace-pre-wrap">
                   {selectedInbound.text}
                 </pre>
               ) : (
-                <div className="text-xs text-brand-500">No body content available.</div>
+                <div className="text-xs text-zinc-500 dark:text-zinc-400">No body content available.</div>
               )}
             </div>
 
@@ -337,14 +341,14 @@ export default function InboundPage() {
               <a
                 href={`/backend/v1/inbound/${selectedInbound.id}/raw`}
                 download={`${selectedInbound.id}.eml`}
-                className="flex items-center gap-1.5 rounded-md border border-surface-border bg-surface-raised px-3 py-1.5 text-xs text-brand-300 hover:bg-surface-subtle hover:text-white transition-colors"
+                className="flex items-center gap-1.5 rounded-md border border-surface-border bg-surface-raised px-3 py-1.5 text-xs text-zinc-700 hover:bg-surface hover:text-zinc-900 dark:text-zinc-300 dark:hover:text-white transition-colors"
               >
                 <FileDown className="h-3.5 w-3.5" />
                 <span>Download Raw RFC822 (.eml)</span>
               </a>
               <button
                 onClick={() => setSelectedInbound(null)}
-                className="rounded-md bg-white px-3.5 py-1.5 text-xs font-medium text-black hover:bg-zinc-200"
+                className="rounded-md bg-zinc-900 px-3.5 py-1.5 text-xs font-medium text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200 transition-colors"
               >
                 Close
               </button>
@@ -355,16 +359,16 @@ export default function InboundPage() {
 
       {/* Create Alias Modal */}
       {isAliasOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-fade-in">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
           <div className="relative flex flex-col w-full max-w-md rounded-xl border border-surface-border bg-surface p-6 shadow-2xl space-y-4">
-            <h2 className="text-sm font-semibold text-white">Create Inbound Alias</h2>
-            <p className="text-xs text-brand-400">
+            <h2 className="text-sm font-semibold text-zinc-900 dark:text-white">Create Inbound Alias</h2>
+            <p className="text-xs text-zinc-500 dark:text-zinc-400">
               Forward all emails received at this alias to one or more destination mailboxes.
             </p>
 
             <form onSubmit={handleCreateAlias} className="space-y-4">
               <div>
-                <label className="block text-[11px] text-brand-400 mb-1">
+                <label className="block text-[11px] text-zinc-600 dark:text-zinc-400 mb-1">
                   Alias Address
                 </label>
                 <div className="flex items-center gap-1">
@@ -374,13 +378,13 @@ export default function InboundPage() {
                     onChange={(e) => setAliasPrefix(e.target.value)}
                     placeholder="support"
                     required
-                    className="flex-1 rounded-md border border-surface-border bg-surface-raised px-3 py-1.5 text-xs text-white focus:outline-none"
+                    className="flex-1 rounded-md border border-surface-border bg-surface-raised px-3 py-1.5 text-xs text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-600 focus:outline-none"
                   />
-                  <span className="text-brand-500 text-xs">@</span>
+                  <span className="text-zinc-500 text-xs">@</span>
                   <select
                     value={selectedDomain}
                     onChange={(e) => setSelectedDomain(e.target.value)}
-                    className="rounded-md border border-surface-border bg-surface-raised px-3 py-1.5 text-xs text-white focus:outline-none"
+                    className="rounded-md border border-surface-border bg-surface-raised px-3 py-1.5 text-xs text-zinc-900 dark:text-white focus:outline-none"
                   >
                     {domains.map((d) => (
                       <option key={d.id} value={d.name}>
@@ -392,7 +396,7 @@ export default function InboundPage() {
               </div>
 
               <div>
-                <label className="block text-[11px] text-brand-400 mb-1">
+                <label className="block text-[11px] text-zinc-600 dark:text-zinc-400 mb-1">
                   Forward To (comma separated)
                 </label>
                 <input
@@ -401,7 +405,7 @@ export default function InboundPage() {
                   onChange={(e) => setForwardTo(e.target.value)}
                   placeholder="team@mycompany.com, alerts@mycompany.com"
                   required
-                  className="w-full rounded-md border border-surface-border bg-surface-raised px-3 py-1.5 text-xs text-white focus:outline-none"
+                  className="w-full rounded-md border border-surface-border bg-surface-raised px-3 py-1.5 text-xs text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-600 focus:outline-none"
                 />
               </div>
 
@@ -409,13 +413,13 @@ export default function InboundPage() {
                 <button
                   type="button"
                   onClick={() => setIsAliasOpen(false)}
-                  className="rounded px-3 py-1.5 text-xs text-brand-400 hover:bg-surface-raised"
+                  className="rounded-md border border-surface-border px-3 py-1.5 text-xs text-zinc-700 hover:bg-surface-raised hover:text-zinc-900 dark:text-zinc-300 dark:hover:text-white transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="rounded bg-white px-4 py-1.5 text-xs font-medium text-black hover:bg-zinc-200"
+                  className="rounded-md bg-zinc-900 px-4 py-1.5 text-xs font-medium text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200 transition-colors"
                 >
                   Save Alias
                 </button>

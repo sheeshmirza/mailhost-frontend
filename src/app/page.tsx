@@ -93,10 +93,10 @@ export default function OverviewPage() {
       {/* Top Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-surface-border pb-6">
         <div>
-          <h1 className="text-xl font-semibold tracking-tight text-white">
+          <h1 className="text-xl font-semibold tracking-tight text-zinc-900 dark:text-white">
             Overview
           </h1>
-          <p className="text-xs text-brand-400 mt-1">
+          <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
             Real-time delivery performance and account activity.
           </p>
         </div>
@@ -110,8 +110,8 @@ export default function OverviewPage() {
                 onClick={() => setInterval(int)}
                 className={`rounded px-2.5 py-1 text-xs font-medium capitalize transition-colors ${
                   interval === int
-                    ? "bg-surface-raised text-white shadow-sm"
-                    : "text-brand-500 hover:text-brand-300"
+                    ? "bg-surface-raised text-zinc-900 dark:text-white shadow-sm"
+                    : "text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-200"
                 }`}
               >
                 {int}
@@ -122,14 +122,14 @@ export default function OverviewPage() {
           <button
             onClick={loadData}
             title="Refresh analytics"
-            className="flex h-8 w-8 items-center justify-center rounded-md border border-surface-border bg-surface text-brand-400 hover:bg-surface-raised hover:text-white transition-colors"
+            className="flex h-8 w-8 items-center justify-center rounded-md border border-surface-border bg-surface text-zinc-500 hover:bg-surface-raised hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white transition-colors"
           >
             <RefreshCw className={`h-3.5 w-3.5 ${isLoading ? "animate-spin" : ""}`} />
           </button>
 
           <button
             onClick={() => setIsSendModalOpen(true)}
-            className="flex items-center gap-1.5 rounded-md bg-white px-3.5 py-1.5 text-xs font-medium text-black hover:bg-zinc-200 transition-colors"
+            className="flex items-center gap-1.5 rounded-md bg-zinc-900 px-3.5 py-1.5 text-xs font-medium text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200 transition-colors"
           >
             <Send className="h-3.5 w-3.5" />
             <span>Send Email</span>
@@ -141,68 +141,68 @@ export default function OverviewPage() {
       <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
         {/* Sent */}
         <div className="rounded-xl border border-surface-border bg-surface p-4 space-y-1">
-          <div className="flex items-center justify-between text-brand-400 text-xs font-medium">
+          <div className="flex items-center justify-between text-zinc-500 dark:text-zinc-400 text-xs font-medium">
             <span>Sent</span>
-            <Send className="h-3.5 w-3.5 text-brand-500" />
+            <Send className="h-3.5 w-3.5 text-zinc-400 dark:text-zinc-500" />
           </div>
-          <div className="text-2xl font-semibold text-white tracking-tight">
+          <div className="text-2xl font-semibold text-zinc-900 dark:text-white tracking-tight">
             {totals.sent.toLocaleString()}
           </div>
-          <div className="text-[11px] text-brand-500">All outbound messages</div>
+          <div className="text-[11px] text-zinc-400 dark:text-zinc-500">All outbound messages</div>
         </div>
 
         {/* Delivered */}
         <div className="rounded-xl border border-surface-border bg-surface p-4 space-y-1">
-          <div className="flex items-center justify-between text-brand-400 text-xs font-medium">
+          <div className="flex items-center justify-between text-zinc-500 dark:text-zinc-400 text-xs font-medium">
             <span>Delivered</span>
-            <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400" />
+            <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />
           </div>
-          <div className="text-2xl font-semibold text-white tracking-tight">
+          <div className="text-2xl font-semibold text-zinc-900 dark:text-white tracking-tight">
             {totals.delivered.toLocaleString()}
           </div>
-          <div className="text-[11px] text-emerald-400 font-medium">
+          <div className="text-[11px] text-emerald-600 dark:text-emerald-400 font-medium">
             {(rates.delivery_rate * 100).toFixed(1)}% rate
           </div>
         </div>
 
         {/* Opened */}
         <div className="rounded-xl border border-surface-border bg-surface p-4 space-y-1">
-          <div className="flex items-center justify-between text-brand-400 text-xs font-medium">
+          <div className="flex items-center justify-between text-zinc-500 dark:text-zinc-400 text-xs font-medium">
             <span>Opened</span>
-            <Eye className="h-3.5 w-3.5 text-sky-400" />
+            <Eye className="h-3.5 w-3.5 text-sky-500" />
           </div>
-          <div className="text-2xl font-semibold text-white tracking-tight">
+          <div className="text-2xl font-semibold text-zinc-900 dark:text-white tracking-tight">
             {totals.opened.toLocaleString()}
           </div>
-          <div className="text-[11px] text-sky-400 font-medium">
+          <div className="text-[11px] text-sky-600 dark:text-sky-400 font-medium">
             {(rates.open_rate * 100).toFixed(1)}% rate
           </div>
         </div>
 
         {/* Clicked */}
         <div className="rounded-xl border border-surface-border bg-surface p-4 space-y-1">
-          <div className="flex items-center justify-between text-brand-400 text-xs font-medium">
+          <div className="flex items-center justify-between text-zinc-500 dark:text-zinc-400 text-xs font-medium">
             <span>Clicked</span>
-            <MousePointer className="h-3.5 w-3.5 text-purple-400" />
+            <MousePointer className="h-3.5 w-3.5 text-purple-500" />
           </div>
-          <div className="text-2xl font-semibold text-white tracking-tight">
+          <div className="text-2xl font-semibold text-zinc-900 dark:text-white tracking-tight">
             {totals.clicked.toLocaleString()}
           </div>
-          <div className="text-[11px] text-purple-400 font-medium">
+          <div className="text-[11px] text-purple-600 dark:text-purple-400 font-medium">
             {(rates.click_rate * 100).toFixed(1)}% rate
           </div>
         </div>
 
         {/* Bounced / Failed */}
         <div className="rounded-xl border border-surface-border bg-surface p-4 space-y-1 col-span-2 md:col-span-1">
-          <div className="flex items-center justify-between text-brand-400 text-xs font-medium">
+          <div className="flex items-center justify-between text-zinc-500 dark:text-zinc-400 text-xs font-medium">
             <span>Bounced</span>
-            <AlertTriangle className="h-3.5 w-3.5 text-red-400" />
+            <AlertTriangle className="h-3.5 w-3.5 text-red-500" />
           </div>
-          <div className="text-2xl font-semibold text-white tracking-tight">
+          <div className="text-2xl font-semibold text-zinc-900 dark:text-white tracking-tight">
             {totals.bounced.toLocaleString()}
           </div>
-          <div className="text-[11px] text-red-400 font-medium">
+          <div className="text-[11px] text-red-600 dark:text-red-400 font-medium">
             {(rates.bounce_rate * 100).toFixed(1)}% rate
           </div>
         </div>
@@ -212,19 +212,19 @@ export default function OverviewPage() {
       <div className="rounded-xl border border-surface-border bg-surface p-5 space-y-4">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-sm font-semibold text-white">Email Volume</h2>
-            <p className="text-xs text-brand-500">
+            <h2 className="text-sm font-semibold text-zinc-900 dark:text-white">Email Volume</h2>
+            <p className="text-xs text-zinc-500 dark:text-zinc-400">
               Aggregated deliveries grouped by {interval}
             </p>
           </div>
           <div className="flex items-center gap-4 text-xs">
-            <span className="flex items-center gap-1.5 text-brand-400">
-              <span className="h-2 w-2 rounded-full bg-white" /> Sent
+            <span className="flex items-center gap-1.5 text-zinc-500 dark:text-zinc-400">
+              <span className="h-2 w-2 rounded-full bg-zinc-900 dark:bg-white" /> Sent
             </span>
-            <span className="flex items-center gap-1.5 text-brand-400">
+            <span className="flex items-center gap-1.5 text-zinc-500 dark:text-zinc-400">
               <span className="h-2 w-2 rounded-full bg-emerald-500" /> Delivered
             </span>
-            <span className="flex items-center gap-1.5 text-brand-400">
+            <span className="flex items-center gap-1.5 text-zinc-500 dark:text-zinc-400">
               <span className="h-2 w-2 rounded-full bg-sky-500" /> Opened
             </span>
           </div>
@@ -249,9 +249,9 @@ export default function OverviewPage() {
                   className="flex-1 flex flex-col items-center h-full justify-end group relative"
                 >
                   {/* Tooltip */}
-                  <div className="absolute -top-10 hidden group-hover:flex z-10 flex-col items-center bg-surface-raised border border-surface-border px-2 py-1 rounded text-[10px] text-brand-200 shadow-lg pointer-events-none whitespace-nowrap">
+                  <div className="absolute -top-10 hidden group-hover:flex z-10 flex-col items-center bg-surface-raised border border-surface-border px-2 py-1 rounded text-[10px] text-zinc-700 dark:text-zinc-200 shadow-lg pointer-events-none whitespace-nowrap">
                     <span>{dateLabel}</span>
-                    <span className="font-mono text-white">
+                    <span className="font-mono text-zinc-900 dark:text-white font-medium">
                       {bucket.sent} sent · {bucket.delivered} delivered
                     </span>
                   </div>
@@ -259,13 +259,13 @@ export default function OverviewPage() {
                   {/* Stacked bar */}
                   <div
                     style={{ height: `${heightPct}%` }}
-                    className="w-full max-w-[28px] rounded-t bg-gradient-to-t from-zinc-700 to-white/90 group-hover:to-white transition-all"
+                    className="w-full max-w-[28px] rounded-t bg-gradient-to-t from-zinc-300 to-zinc-800 dark:from-zinc-700 dark:to-white/90 group-hover:to-black dark:group-hover:to-white transition-all"
                   />
                 </div>
               );
             })
           ) : (
-            <div className="w-full h-full flex flex-col items-center justify-center text-xs text-brand-500">
+            <div className="w-full h-full flex flex-col items-center justify-center text-xs text-zinc-500 dark:text-zinc-400">
               No email volume recorded in this timeframe yet.
             </div>
           )}
@@ -277,10 +277,10 @@ export default function OverviewPage() {
         {/* Recent Emails */}
         <div className="rounded-xl border border-surface-border bg-surface p-5 space-y-4">
           <div className="flex items-center justify-between">
-            <h2 className="text-sm font-semibold text-white">Recent Emails</h2>
+            <h2 className="text-sm font-semibold text-zinc-900 dark:text-white">Recent Emails</h2>
             <Link
               href="/emails"
-              className="flex items-center gap-1 text-xs text-brand-400 hover:text-white transition-colors"
+              className="flex items-center gap-1 text-xs text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white transition-colors"
             >
               <span>View all</span>
               <ArrowRight className="h-3.5 w-3.5" />
@@ -296,30 +296,30 @@ export default function OverviewPage() {
                   className="flex items-center justify-between py-2.5 hover:bg-surface-raised/40 px-2 rounded-md transition-colors"
                 >
                   <div className="space-y-0.5 truncate max-w-[70%]">
-                    <p className="text-xs font-medium text-brand-200 truncate">
+                    <p className="text-xs font-medium text-zinc-900 dark:text-zinc-200 truncate">
                       {email.subject || "(no subject)"}
                     </p>
-                    <p className="text-[11px] text-brand-500 font-mono truncate">
+                    <p className="text-[11px] text-zinc-500 dark:text-zinc-400 font-mono truncate">
                       {email.from}
                     </p>
                   </div>
                   <div className="text-right">
                     <span className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-medium capitalize ${
                       email.status === "delivered"
-                        ? "bg-emerald-950/60 border-emerald-800/40 text-emerald-400"
+                        ? "bg-emerald-50 border-emerald-200 text-emerald-700 dark:bg-emerald-950/60 dark:border-emerald-800/40 dark:text-emerald-400"
                         : email.status === "bounced"
-                        ? "bg-red-950/60 border-red-800/40 text-red-400"
+                        ? "bg-red-50 border-red-200 text-red-700 dark:bg-red-950/60 dark:border-red-800/40 dark:text-red-400"
                         : email.status === "failed"
-                        ? "bg-rose-950/60 border-rose-800/40 text-rose-400"
+                        ? "bg-rose-50 border-rose-200 text-rose-700 dark:bg-rose-950/60 dark:border-rose-800/40 dark:text-rose-400"
                         : email.status === "sent"
-                        ? "bg-sky-950/60 border-sky-800/40 text-sky-400"
+                        ? "bg-sky-50 border-sky-200 text-sky-700 dark:bg-sky-950/60 dark:border-sky-800/40 dark:text-sky-400"
                         : email.status === "canceled"
-                        ? "bg-zinc-900 border-zinc-700 text-zinc-400"
-                        : "bg-amber-950/60 border-amber-800/40 text-amber-400"
+                        ? "bg-zinc-100 border-zinc-200 text-zinc-600 dark:bg-zinc-900 dark:border-zinc-700 dark:text-zinc-400"
+                        : "bg-amber-50 border-amber-200 text-amber-700 dark:bg-amber-950/60 dark:border-amber-800/40 dark:text-amber-400"
                     }`}>
                       {email.status || "queued"}
                     </span>
-                    <p className="text-[10px] text-brand-500 mt-0.5 font-mono">
+                    <p className="text-[10px] text-zinc-400 dark:text-zinc-500 mt-0.5 font-mono">
                       {new Date(email.created_at).toLocaleTimeString([], {
                         hour: "2-digit",
                         minute: "2-digit",
@@ -329,7 +329,7 @@ export default function OverviewPage() {
                 </Link>
               ))
             ) : (
-              <div className="py-8 text-center text-xs text-brand-500">
+              <div className="py-8 text-center text-xs text-zinc-500 dark:text-zinc-400">
                 No emails sent yet. Click "Send Email" to get started!
               </div>
             )}
@@ -340,14 +340,14 @@ export default function OverviewPage() {
         <div className="space-y-3">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-sm font-semibold text-white">API Integration</h2>
-              <p className="text-xs text-brand-500">
+              <h2 className="text-sm font-semibold text-zinc-900 dark:text-white">API Integration</h2>
+              <p className="text-xs text-zinc-500 dark:text-zinc-400">
                 Send your first email with 3 lines of code.
               </p>
             </div>
             <Link
               href="/api-keys"
-              className="text-xs text-brand-400 hover:text-white"
+              className="text-xs text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white"
             >
               Manage keys →
             </Link>

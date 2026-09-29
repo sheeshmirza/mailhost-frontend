@@ -15,8 +15,10 @@ import {
   RotateCcw,
 } from "lucide-react";
 import { api, TemplateView, TemplateVersion } from "@/lib/api";
+import { useToast } from "@/lib/toast-context";
 
 export default function TemplatesPage() {
+  const { toast } = useToast();
   const [templates, setTemplates] = useState<TemplateView[]>([]);
   const [selectedTemplate, setSelectedTemplate] = useState<TemplateView | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -39,8 +41,9 @@ export default function TemplatesPage() {
       if (list.length > 0 && !selectedTemplate) {
         setSelectedTemplate(list[0]);
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error("Failed to load templates", err);
+      toast.error("Failed to load templates: " + (err.response?.data?.message || err.message));
     } finally {
       setIsLoading(false);
     }
@@ -70,14 +73,14 @@ export default function TemplatesPage() {
   }, [selectedTemplate?.id]);
 
   const handleRollback = async (templateId: string, version: number) => {
-    if (!confirm(`Rollback to version ${version}?`)) return;
     try {
       const res = await api.rollbackTemplate(templateId, version);
       setSelectedTemplate(res);
+      toast.success(`Template rolled back to v${version}`);
       fetchTemplates();
       loadVersions(templateId);
     } catch (err: any) {
-      alert("Rollback failed: " + err.message);
+      toast.error("Rollback failed: " + (err.response?.data?.message || err.message));
     }
   };
 
@@ -90,6 +93,7 @@ export default function TemplatesPage() {
         subject: subject.trim(),
         html,
       });
+      toast.success(`Template "${name}" created`);
       setIsOpen(false);
       setName("");
       setAlias("");
@@ -97,46 +101,47 @@ export default function TemplatesPage() {
       await fetchTemplates();
       setSelectedTemplate(newTpl);
     } catch (err: any) {
-      alert("Failed to create template: " + err.message);
+      toast.error("Failed to create template: " + (err.response?.data?.message || err.message));
     }
   };
 
   const handlePublish = async (id: string) => {
     try {
       await api.publishTemplate(id);
+      toast.success("Template published successfully");
       fetchTemplates();
     } catch (err: any) {
-      alert("Failed to publish: " + err.message);
+      toast.error("Failed to publish: " + (err.response?.data?.message || err.message));
     }
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this template?")) return;
     try {
       await api.deleteTemplate(id);
+      toast.success("Template deleted");
       setSelectedTemplate(null);
       fetchTemplates();
     } catch (err: any) {
-      alert("Failed to delete template: " + err.message);
+      toast.error("Failed to delete template: " + (err.response?.data?.message || err.message));
     }
   };
 
   return (
-    <div className="max-w-6xl mx-auto px-8 py-8 space-y-6 animate-fade-in">
+    <div className="max-w-6xl mx-auto px-4 sm:px-8 py-8 space-y-6 animate-fade-in">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-surface-border pb-6">
         <div>
-          <h1 className="text-xl font-semibold tracking-tight text-white">
+          <h1 className="text-xl font-semibold tracking-tight text-zinc-900 dark:text-white">
             Templates
           </h1>
-          <p className="text-xs text-brand-400 mt-1">
+          <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
             Build reusable HTML email templates with dynamic variable interpolation.
           </p>
         </div>
 
         <button
           onClick={() => setIsOpen(true)}
-          className="flex items-center gap-1.5 rounded-md bg-white px-3.5 py-1.5 text-xs font-medium text-black hover:bg-zinc-200 transition-colors"
+          className="flex items-center gap-1.5 rounded-md bg-zinc-900 px-3.5 py-1.5 text-xs font-medium text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200 transition-colors"
         >
           <Plus className="h-3.5 w-3.5" />
           <span>New Template</span>
@@ -147,7 +152,7 @@ export default function TemplatesPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left Column: Template List */}
         <div className="space-y-3">
-          <div className="flex items-center justify-between text-xs text-brand-400 font-medium">
+          <div className="flex items-center justify-between text-xs text-zinc-500 dark:text-zinc-400 font-medium">
             <span>Templates</span>
             <span className="font-mono">{templates.length}</span>
           </div>
@@ -160,36 +165,36 @@ export default function TemplatesPage() {
                   onClick={() => setSelectedTemplate(tpl)}
                   className={`cursor-pointer rounded-xl border p-4 transition-all ${
                     selectedTemplate?.id === tpl.id
-                      ? "border-white/30 bg-surface-raised shadow-md"
-                      : "border-surface-border bg-surface hover:border-brand-700"
+                      ? "border-zinc-900/30 dark:border-white/30 bg-surface-raised shadow-md"
+                      : "border-surface-border bg-surface hover:border-zinc-300 dark:hover:border-zinc-700"
                   }`}
                 >
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-semibold text-white truncate">
+                    <span className="text-xs font-semibold text-zinc-900 dark:text-white truncate">
                       {tpl.name}
                     </span>
                     <span
                       className={`rounded-full px-2 py-0.5 text-[10px] font-medium border ${
                         tpl.status === "published"
-                          ? "bg-emerald-950/60 text-emerald-400 border-emerald-800/40"
-                          : "bg-zinc-800 text-brand-300 border-zinc-700"
+                          ? "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/60 dark:text-emerald-400 dark:border-emerald-800/40"
+                          : "bg-zinc-100 text-zinc-600 border-zinc-200 dark:bg-zinc-800 dark:text-zinc-400 dark:border-zinc-700"
                       }`}
                     >
                       {tpl.status}
                     </span>
                   </div>
                   {tpl.alias && (
-                    <div className="mt-1 font-mono text-[11px] text-brand-400">
+                    <div className="mt-1 font-mono text-[11px] text-zinc-500 dark:text-zinc-400">
                       alias: {tpl.alias}
                     </div>
                   )}
-                  <div className="mt-2 text-[11px] text-brand-500 font-mono">
+                  <div className="mt-2 text-[11px] text-zinc-400 dark:text-zinc-500 font-mono">
                     Updated {new Date(tpl.updated_at).toLocaleDateString()}
                   </div>
                 </div>
               ))
             ) : (
-              <div className="rounded-xl border border-surface-border bg-surface p-6 text-center text-xs text-brand-500">
+              <div className="rounded-xl border border-surface-border bg-surface p-6 text-center text-xs text-zinc-500 dark:text-zinc-400">
                 {isLoading ? "Loading templates..." : "No templates created yet."}
               </div>
             )}
@@ -203,14 +208,14 @@ export default function TemplatesPage() {
               <div className="flex items-center justify-between border-b border-surface-border pb-4">
                 <div>
                   <div className="flex items-center gap-2">
-                    <h2 className="text-base font-semibold text-white">
+                    <h2 className="text-base font-semibold text-zinc-900 dark:text-white">
                       {selectedTemplate.name}
                     </h2>
-                    <span className="rounded-full px-2 py-0.5 text-[10px] font-medium border border-surface-border bg-surface-raised text-brand-300">
+                    <span className="rounded-full px-2 py-0.5 text-[10px] font-medium border border-surface-border bg-surface-raised text-zinc-600 dark:text-zinc-300">
                       {selectedTemplate.status}
                     </span>
                   </div>
-                  <p className="text-xs text-brand-400 mt-1">
+                  <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
                     Subject: {selectedTemplate.subject}
                   </p>
                 </div>
@@ -219,7 +224,7 @@ export default function TemplatesPage() {
                   {selectedTemplate.status !== "published" && (
                     <button
                       onClick={() => handlePublish(selectedTemplate.id)}
-                      className="flex items-center gap-1 rounded bg-white px-3 py-1.5 text-xs font-medium text-black hover:bg-zinc-200"
+                      className="flex items-center gap-1 rounded-md bg-zinc-900 px-3 py-1.5 text-xs font-medium text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200 transition-colors"
                     >
                       <UploadCloud className="h-3.5 w-3.5" />
                       <span>Publish</span>
@@ -227,7 +232,8 @@ export default function TemplatesPage() {
                   )}
                   <button
                     onClick={() => handleDelete(selectedTemplate.id)}
-                    className="rounded border border-surface-border p-1.5 text-brand-500 hover:text-red-400"
+                    className="rounded-md border border-surface-border p-1.5 text-zinc-400 hover:text-red-500 transition-colors"
+                    title="Delete template"
                   >
                     <Trash2 className="h-4 w-4" />
                   </button>
@@ -236,10 +242,10 @@ export default function TemplatesPage() {
 
               {/* Live Preview */}
               <div className="space-y-2">
-                <span className="text-xs font-semibold text-brand-400 uppercase tracking-wider">
+                <span className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
                   Template HTML Preview
                 </span>
-                <div className="rounded-lg border border-surface-border bg-white p-5 text-black min-h-[220px]">
+                <div className="rounded-lg border border-surface-border bg-white p-5 text-black min-h-[220px] overflow-auto">
                   <div dangerouslySetInnerHTML={{ __html: selectedTemplate.html }} />
                 </div>
               </div>
@@ -247,13 +253,13 @@ export default function TemplatesPage() {
               {/* Version History & Rollback */}
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-semibold text-brand-400 uppercase tracking-wider flex items-center gap-1.5">
-                    <History className="h-3.5 w-3.5 text-brand-400" />
+                  <span className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider flex items-center gap-1.5">
+                    <History className="h-3.5 w-3.5 text-zinc-400 dark:text-zinc-500" />
                     Version History ({versions.length})
                   </span>
                   <button
                     onClick={() => loadVersions(selectedTemplate.id)}
-                    className="text-[11px] text-brand-400 hover:text-white flex items-center gap-1"
+                    className="text-[11px] text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white flex items-center gap-1 transition-colors"
                   >
                     <RefreshCw className="h-3 w-3" />
                     Refresh
@@ -261,7 +267,7 @@ export default function TemplatesPage() {
                 </div>
 
                 {versions.length === 0 ? (
-                  <div className="rounded-lg border border-surface-border bg-surface-raised/50 p-4 text-center text-xs text-brand-500">
+                  <div className="rounded-lg border border-surface-border bg-surface-raised/50 p-4 text-center text-xs text-zinc-500 dark:text-zinc-400">
                     No historical snapshots found. Snapshots are created on each update and publish.
                   </div>
                 ) : (
@@ -273,18 +279,18 @@ export default function TemplatesPage() {
                       >
                         <div className="space-y-0.5">
                           <div className="flex items-center gap-2">
-                            <span className="font-mono font-medium text-white px-1.5 py-0.5 rounded bg-surface border border-surface-border">
+                            <span className="font-mono font-medium text-zinc-900 dark:text-white px-1.5 py-0.5 rounded bg-surface border border-surface-border">
                               v{v.version}
                             </span>
-                            <span className="text-brand-300 truncate max-w-[200px] sm:max-w-xs">{v.subject}</span>
+                            <span className="text-zinc-700 dark:text-zinc-300 truncate max-w-[200px] sm:max-w-xs">{v.subject}</span>
                           </div>
-                          <span className="text-[10px] text-brand-500 block">
+                          <span className="text-[10px] text-zinc-400 dark:text-zinc-500 block">
                             {new Date(v.created_at).toLocaleString()}
                           </span>
                         </div>
                         <button
                           onClick={() => handleRollback(selectedTemplate.id, v.version)}
-                          className="flex items-center gap-1 rounded border border-surface-border bg-surface px-2.5 py-1 text-xs text-brand-300 hover:text-white hover:border-zinc-500 transition-colors"
+                          className="flex items-center gap-1 rounded-md border border-surface-border bg-surface px-2.5 py-1 text-xs text-zinc-700 dark:text-zinc-300 hover:bg-surface-raised hover:text-zinc-900 dark:hover:text-white transition-colors"
                         >
                           <RotateCcw className="h-3 w-3" />
                           <span>Rollback</span>
@@ -297,10 +303,10 @@ export default function TemplatesPage() {
 
               {/* Code Payload reference */}
               <div className="space-y-2">
-                <span className="text-xs font-semibold text-brand-400 uppercase tracking-wider">
+                <span className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
                   Usage with API
                 </span>
-                <pre className="rounded-lg border border-surface-border bg-surface-raised p-3 font-mono text-xs text-brand-200">
+                <pre className="rounded-lg border border-surface-border bg-surface-raised p-3 font-mono text-xs text-zinc-700 dark:text-zinc-300 overflow-x-auto">
                   <code>{`// Send using this template:
 await resend.emails.send({
   from: 'team@yourdomain.com',
@@ -315,7 +321,7 @@ await resend.emails.send({
               </div>
             </div>
           ) : (
-            <div className="rounded-xl border border-surface-border bg-surface p-12 text-center text-xs text-brand-500">
+            <div className="rounded-xl border border-surface-border bg-surface p-12 text-center text-xs text-zinc-500 dark:text-zinc-400">
               Select or create a template to preview.
             </div>
           )}
@@ -324,12 +330,12 @@ await resend.emails.send({
 
       {/* New Template Modal */}
       {isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-fade-in">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
           <div className="relative flex flex-col w-full max-w-lg rounded-xl border border-surface-border bg-surface p-6 shadow-2xl space-y-4">
-            <h2 className="text-sm font-semibold text-white">New Email Template</h2>
+            <h2 className="text-sm font-semibold text-zinc-900 dark:text-white">New Email Template</h2>
             <form onSubmit={handleCreate} className="space-y-3">
               <div>
-                <label className="block text-[11px] text-brand-400 mb-1">
+                <label className="block text-[11px] font-medium text-zinc-600 dark:text-zinc-300 mb-1">
                   Template Name
                 </label>
                 <input
@@ -338,12 +344,12 @@ await resend.emails.send({
                   onChange={(e) => setName(e.target.value)}
                   placeholder="Welcome Email"
                   required
-                  className="w-full rounded-md border border-surface-border bg-surface-raised px-3 py-1.5 text-xs text-white focus:outline-none"
+                  className="w-full rounded-md border border-surface-border bg-surface-raised px-3 py-1.5 text-xs text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-600 focus:outline-none"
                 />
               </div>
 
               <div>
-                <label className="block text-[11px] text-brand-400 mb-1">
+                <label className="block text-[11px] font-medium text-zinc-600 dark:text-zinc-300 mb-1">
                   Alias (Unique API identifier)
                 </label>
                 <input
@@ -351,12 +357,12 @@ await resend.emails.send({
                   value={alias}
                   onChange={(e) => setAlias(e.target.value)}
                   placeholder="welcome-email"
-                  className="w-full rounded-md border border-surface-border bg-surface-raised px-3 py-1.5 text-xs text-white focus:outline-none font-mono"
+                  className="w-full rounded-md border border-surface-border bg-surface-raised px-3 py-1.5 text-xs text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-600 focus:outline-none font-mono"
                 />
               </div>
 
               <div>
-                <label className="block text-[11px] text-brand-400 mb-1">
+                <label className="block text-[11px] font-medium text-zinc-600 dark:text-zinc-300 mb-1">
                   Subject Line
                 </label>
                 <input
@@ -365,19 +371,19 @@ await resend.emails.send({
                   onChange={(e) => setSubject(e.target.value)}
                   placeholder="Welcome to Acme, {{name}}!"
                   required
-                  className="w-full rounded-md border border-surface-border bg-surface-raised px-3 py-1.5 text-xs text-white focus:outline-none"
+                  className="w-full rounded-md border border-surface-border bg-surface-raised px-3 py-1.5 text-xs text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-600 focus:outline-none"
                 />
               </div>
 
               <div>
-                <label className="block text-[11px] text-brand-400 mb-1">
+                <label className="block text-[11px] font-medium text-zinc-600 dark:text-zinc-300 mb-1">
                   HTML Body
                 </label>
                 <textarea
                   value={html}
                   onChange={(e) => setHtml(e.target.value)}
                   rows={6}
-                  className="w-full rounded-md border border-surface-border bg-surface-raised p-3 font-mono text-xs text-white focus:outline-none"
+                  className="w-full rounded-md border border-surface-border bg-surface-raised p-3 font-mono text-xs text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-600 focus:outline-none"
                 />
               </div>
 
@@ -385,13 +391,13 @@ await resend.emails.send({
                 <button
                   type="button"
                   onClick={() => setIsOpen(false)}
-                  className="rounded px-3 py-1.5 text-xs text-brand-400 hover:bg-surface-raised"
+                  className="rounded-md border border-surface-border px-3 py-1.5 text-xs font-medium text-zinc-600 hover:bg-surface-raised dark:text-zinc-400 dark:hover:text-white transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="rounded bg-white px-4 py-1.5 text-xs font-medium text-black hover:bg-zinc-200"
+                  className="rounded-md bg-zinc-900 px-4 py-1.5 text-xs font-medium text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200 transition-colors"
                 >
                   Create Template
                 </button>

@@ -2,50 +2,101 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
+import { useTheme } from "@/lib/theme-context";
 import {
   Send,
   Building,
   Check,
   ChevronDown,
   LogOut,
+  Sun,
+  Moon,
+  Menu,
+  X,
+  LayoutDashboard,
+  Mail,
+  Globe,
   Key,
-  Shield,
-  ExternalLink,
+  Inbox,
+  Users,
+  Radio,
+  GitBranch,
+  Zap,
+  FileText,
+  Webhook,
+  ShieldAlert,
+  Server,
+  Settings,
+  Activity,
+  Code2,
 } from "lucide-react";
 import SendEmailModal from "../emails/SendEmailModal";
+import clsx from "clsx";
+
+const navItems = [
+  { label: "Overview", href: "/", icon: LayoutDashboard },
+  { label: "Emails", href: "/emails", icon: Mail },
+  { label: "Domains", href: "/domains", icon: Globe },
+  { label: "API Keys", href: "/api-keys", icon: Key },
+  { label: "Inbound", href: "/inbound", icon: Inbox },
+  { label: "Audiences", href: "/audiences", icon: Users },
+  { label: "Broadcasts", href: "/broadcasts", icon: Radio },
+  { label: "Automations", href: "/automations", icon: GitBranch },
+  { label: "Events", href: "/events", icon: Zap },
+  { label: "Templates", href: "/templates", icon: FileText },
+  { label: "Webhooks", href: "/webhooks", icon: Webhook },
+  { label: "Suppressions", href: "/suppressions", icon: ShieldAlert },
+  { label: "SMTP", href: "/smtp", icon: Server },
+  { label: "Settings & Team", href: "/settings", icon: Settings },
+  { label: "Logs & Health", href: "/logs", icon: Activity },
+];
 
 export default function Navbar() {
-  const { user, account, accounts, switchAccount, logout, token } = useAuth();
+  const pathname = usePathname();
+  const { user, account, accounts, switchAccount, logout } = useAuth();
+  const { resolvedTheme, toggleTheme } = useTheme();
+
   const [isSendOpen, setIsSendOpen] = useState(false);
   const [showOrgDropdown, setShowOrgDropdown] = useState(false);
   const [showUserDropdown, setShowUserDropdown] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
     <>
-      <header className="sticky top-0 z-40 flex h-14 w-full items-center justify-between border-b border-surface-border bg-black/80 px-6 backdrop-blur-md">
-        {/* Left Section: Logo & Account Switcher */}
-        <div className="flex items-center gap-4">
+      <header className="sticky top-0 z-40 flex h-14 w-full items-center justify-between border-b border-surface-border bg-background/85 px-4 sm:px-6 backdrop-blur-md transition-colors">
+        {/* Left Section: Mobile Menu Button + Logo & Account Switcher */}
+        <div className="flex items-center gap-3 sm:gap-4">
+          {/* Mobile Menu Trigger */}
+          <button
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className="flex h-8 w-8 items-center justify-center rounded-md border border-surface-border bg-surface text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white lg:hidden transition-colors"
+            aria-label="Toggle navigation"
+          >
+            {mobileMenuOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
+          </button>
+
           <Link href="/" className="flex items-center gap-2.5 group">
-            <div className="flex h-6 w-6 items-center justify-center rounded-md bg-white text-black font-semibold text-xs tracking-tighter group-hover:opacity-90 transition-opacity">
+            <div className="flex h-6 w-6 items-center justify-center rounded-md bg-zinc-900 text-white dark:bg-white dark:text-black font-semibold text-xs tracking-tighter group-hover:opacity-90 transition-opacity">
               R
             </div>
-            <span className="text-sm font-semibold tracking-tight text-white">
+            <span className="text-sm font-semibold tracking-tight text-zinc-900 dark:text-white">
               Resend
             </span>
           </Link>
 
-          <span className="text-brand-700">/</span>
+          <span className="text-zinc-400 dark:text-zinc-600">/</span>
 
           {/* Organization Switcher Dropdown */}
           <div className="relative">
             <button
               onClick={() => setShowOrgDropdown(!showOrgDropdown)}
-              className="flex items-center gap-1.5 rounded-md px-2 py-1 text-xs font-medium text-brand-300 hover:bg-surface-raised hover:text-white transition-colors"
+              className="flex items-center gap-1.5 rounded-md px-2 py-1 text-xs font-medium text-zinc-700 dark:text-zinc-300 hover:bg-surface-raised hover:text-zinc-900 dark:hover:text-white transition-colors"
             >
-              <Building className="h-3.5 w-3.5 text-brand-500" />
-              <span>{account?.name || "Acme Corp"}</span>
-              <ChevronDown className="h-3 w-3 text-brand-500" />
+              <Building className="h-3.5 w-3.5 text-zinc-500" />
+              <span className="truncate max-w-[100px] sm:max-w-[140px]">{account?.name || "Acme Corp"}</span>
+              <ChevronDown className="h-3 w-3 text-zinc-500" />
             </button>
 
             {showOrgDropdown && (
@@ -55,7 +106,7 @@ export default function Navbar() {
                   onClick={() => setShowOrgDropdown(false)}
                 />
                 <div className="absolute left-0 mt-1.5 w-52 z-20 rounded-lg border border-surface-border bg-surface p-1 shadow-xl animate-fade-in">
-                  <div className="px-2 py-1 text-[10px] font-semibold uppercase tracking-wider text-brand-500">
+                  <div className="px-2 py-1 text-[10px] font-semibold uppercase tracking-wider text-zinc-500">
                     Teams & Accounts
                   </div>
                   {accounts.length > 0 ? (
@@ -66,16 +117,16 @@ export default function Navbar() {
                           switchAccount(acct.id);
                           setShowOrgDropdown(false);
                         }}
-                        className="flex w-full items-center justify-between rounded-md px-2 py-1.5 text-left text-xs text-brand-200 hover:bg-surface-raised hover:text-white"
+                        className="flex w-full items-center justify-between rounded-md px-2 py-1.5 text-left text-xs text-zinc-700 dark:text-zinc-200 hover:bg-surface-raised hover:text-zinc-900 dark:hover:text-white"
                       >
                         <span className="truncate">{acct.name}</span>
                         {acct.id === account?.id && (
-                          <Check className="h-3.5 w-3.5 text-white" />
+                          <Check className="h-3.5 w-3.5 text-zinc-900 dark:text-white" />
                         )}
                       </button>
                     ))
                   ) : (
-                    <div className="px-2 py-1.5 text-xs text-brand-400">
+                    <div className="px-2 py-1.5 text-xs text-zinc-600 dark:text-zinc-400">
                       {account?.name || "Default Team"}
                     </div>
                   )}
@@ -85,31 +136,45 @@ export default function Navbar() {
           </div>
         </div>
 
-        {/* Right Section: System status, Send Email, Profile */}
-        <div className="flex items-center gap-3">
-          {/* Live Status indicator */}
-          <div className="hidden sm:flex items-center gap-1.5 rounded-full border border-surface-border bg-surface-raised/60 px-2.5 py-1 text-[11px] text-brand-300">
+        {/* Right Section: System status, Theme Toggle, Send Email, Profile */}
+        <div className="flex items-center gap-2 sm:gap-3">
+          {/* Live Status indicator (hidden on small mobile) */}
+          <div className="hidden md:flex items-center gap-1.5 rounded-full border border-surface-border bg-surface-raised/70 px-2.5 py-1 text-[11px] text-zinc-600 dark:text-zinc-300">
             <span className="relative flex h-2 w-2">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
               <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
             </span>
-            <span className="font-mono text-[10px] text-brand-400">API: 8080</span>
+            <span className="font-mono text-[10px] text-zinc-500 dark:text-zinc-400">API: 8080</span>
           </div>
+
+          {/* Theme Toggle Button */}
+          <button
+            onClick={toggleTheme}
+            className="flex h-8 w-8 items-center justify-center rounded-md border border-surface-border bg-surface text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white hover:bg-surface-raised transition-colors"
+            title={`Switch to ${resolvedTheme === "dark" ? "light" : "dark"} mode`}
+            aria-label="Toggle Theme"
+          >
+            {resolvedTheme === "dark" ? (
+              <Sun className="h-4 w-4 text-amber-400" />
+            ) : (
+              <Moon className="h-4 w-4 text-zinc-600" />
+            )}
+          </button>
 
           {/* Quick Send Email Action */}
           <button
             onClick={() => setIsSendOpen(true)}
-            className="flex items-center gap-1.5 rounded-md bg-white px-3 py-1.5 text-xs font-medium text-black hover:bg-zinc-200 active:scale-95 transition-all shadow-sm"
+            className="flex items-center gap-1.5 rounded-md bg-zinc-900 text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200 active:scale-95 px-3 py-1.5 text-xs font-medium transition-all shadow-sm"
           >
             <Send className="h-3.5 w-3.5" />
-            <span>Send Email</span>
+            <span className="hidden sm:inline">Send Email</span>
           </button>
 
           {/* User Menu */}
           <div className="relative">
             <button
               onClick={() => setShowUserDropdown(!showUserDropdown)}
-              className="flex h-7 w-7 items-center justify-center rounded-full border border-surface-border bg-surface-raised text-xs font-semibold text-brand-200 hover:border-brand-600 transition-colors"
+              className="flex h-7 w-7 items-center justify-center rounded-full border border-surface-border bg-surface-raised text-xs font-semibold text-zinc-700 dark:text-zinc-200 hover:border-zinc-400 dark:hover:border-zinc-500 transition-colors"
             >
               {user?.name ? user.name.charAt(0).toUpperCase() : "A"}
             </button>
@@ -122,52 +187,43 @@ export default function Navbar() {
                 />
                 <div className="absolute right-0 mt-1.5 w-56 z-20 rounded-lg border border-surface-border bg-surface p-1 shadow-xl animate-fade-in">
                   <div className="border-b border-surface-border px-3 py-2">
-                    <p className="text-xs font-medium text-white">
-                      {user?.name || "Resend Admin"}
+                    <p className="text-xs font-medium text-zinc-900 dark:text-white truncate">
+                      {user?.name || "Admin"}
                     </p>
-                    <p className="truncate text-[11px] text-brand-500 font-mono">
+                    <p className="text-[11px] text-zinc-500 truncate font-mono">
                       {user?.email || "admin@resend.local"}
                     </p>
                   </div>
 
                   <div className="py-1">
                     <Link
-                      href="/api-keys"
+                      href="/settings"
                       onClick={() => setShowUserDropdown(false)}
-                      className="flex items-center gap-2 rounded-md px-3 py-1.5 text-xs text-brand-300 hover:bg-surface-raised hover:text-white"
+                      className="flex items-center gap-2 rounded-md px-2.5 py-1.5 text-xs text-zinc-700 dark:text-zinc-300 hover:bg-surface-raised hover:text-zinc-900 dark:hover:text-white"
                     >
-                      <Key className="h-3.5 w-3.5 text-brand-500" />
-                      <span>API Keys</span>
+                      <Settings className="h-3.5 w-3.5" />
+                      <span>Account Settings</span>
                     </Link>
                     <Link
-                      href="/logs"
+                      href="/api-keys"
                       onClick={() => setShowUserDropdown(false)}
-                      className="flex items-center gap-2 rounded-md px-3 py-1.5 text-xs text-brand-300 hover:bg-surface-raised hover:text-white"
+                      className="flex items-center gap-2 rounded-md px-2.5 py-1.5 text-xs text-zinc-700 dark:text-zinc-300 hover:bg-surface-raised hover:text-zinc-900 dark:hover:text-white"
                     >
-                      <Shield className="h-3.5 w-3.5 text-brand-500" />
-                      <span>Audit Logs & Health</span>
+                      <Key className="h-3.5 w-3.5" />
+                      <span>API Keys</span>
                     </Link>
-                    <a
-                      href="http://localhost:8025"
-                      target="_blank"
-                      rel="noreferrer"
-                      className="flex items-center justify-between rounded-md px-3 py-1.5 text-xs text-brand-300 hover:bg-surface-raised hover:text-white"
-                    >
-                      <span>Mailpit Web Inbox</span>
-                      <ExternalLink className="h-3 w-3 text-brand-500" />
-                    </a>
                   </div>
 
                   <div className="border-t border-surface-border pt-1">
                     <button
                       onClick={() => {
-                        logout();
                         setShowUserDropdown(false);
+                        logout();
                       }}
-                      className="flex w-full items-center gap-2 rounded-md px-3 py-1.5 text-left text-xs text-red-400 hover:bg-red-950/30 hover:text-red-300"
+                      className="flex w-full items-center gap-2 rounded-md px-2.5 py-1.5 text-xs text-red-500 hover:bg-surface-raised hover:text-red-400"
                     >
                       <LogOut className="h-3.5 w-3.5" />
-                      <span>Log out</span>
+                      <span>Sign Out</span>
                     </button>
                   </div>
                 </div>
@@ -177,17 +233,70 @@ export default function Navbar() {
         </div>
       </header>
 
-      {/* Global Send Email Modal */}
+      {/* Mobile Sidebar Navigation Drawer Overlay */}
+      {mobileMenuOpen && (
+        <div className="fixed inset-0 z-40 lg:hidden">
+          <div
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm animate-fade-in"
+            onClick={() => setMobileMenuOpen(false)}
+          />
+          <nav className="fixed inset-y-0 left-0 w-64 border-r border-surface-border bg-surface p-4 shadow-2xl flex flex-col justify-between overflow-y-auto animate-fade-in">
+            <div className="space-y-4">
+              <div className="flex items-center justify-between pb-3 border-b border-surface-border">
+                <div className="flex items-center gap-2">
+                  <div className="flex h-6 w-6 items-center justify-center rounded-md bg-zinc-900 text-white dark:bg-white dark:text-black font-semibold text-xs">
+                    R
+                  </div>
+                  <span className="text-sm font-semibold text-zinc-900 dark:text-white">Resend</span>
+                </div>
+                <button
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="rounded-md p-1 text-zinc-500 hover:text-zinc-900 dark:hover:text-white"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+
+              <div className="space-y-1">
+                {navItems.map((item) => {
+                  const isActive =
+                    item.href === "/"
+                      ? pathname === "/"
+                      : pathname.startsWith(item.href);
+                  const Icon = item.icon;
+
+                  return (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      onClick={() => setMobileMenuOpen(false)}
+                      className={clsx(
+                        "flex items-center gap-2.5 rounded-md px-3 py-2 text-xs font-medium transition-colors",
+                        isActive
+                          ? "bg-surface-raised text-zinc-900 dark:text-white font-semibold"
+                          : "text-zinc-600 dark:text-zinc-400 hover:bg-surface-raised hover:text-zinc-900 dark:hover:text-white"
+                      )}
+                    >
+                      <Icon className="h-4 w-4" />
+                      <span>{item.label}</span>
+                    </Link>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div className="pt-4 border-t border-surface-border text-[11px] text-zinc-500">
+              Mailhost Engine · Go
+            </div>
+          </nav>
+        </div>
+      )}
+
+      {/* Global Quick Send Email Modal */}
       <SendEmailModal
         isOpen={isSendOpen}
         onClose={() => setIsSendOpen(false)}
-        onSent={() => {
-          setIsSendOpen(false);
-          // Optional trigger refresh
-          if (typeof window !== "undefined") {
-            window.dispatchEvent(new CustomEvent("mailhost_email_sent"));
-          }
-        }}
+        onSent={() => setIsSendOpen(false)}
       />
     </>
   );

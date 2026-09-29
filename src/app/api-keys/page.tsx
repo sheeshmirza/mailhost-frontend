@@ -12,8 +12,10 @@ import {
   AlertTriangle,
   RefreshCw,
 } from "lucide-react";
+import { useToast } from "@/lib/toast-context";
 
 export default function APIKeysPage() {
+  const toast = useToast();
   const [keys, setKeys] = useState<APIKeyView[]>([]);
   const [domains, setDomains] = useState<DomainView[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -59,10 +61,11 @@ export default function APIKeysPage() {
         selectedDomainId || undefined
       );
       setNewKeyCreated(res.api_key);
+      toast.success("API key generated successfully!");
       setKeyName("");
       fetchKeys();
     } catch (err: any) {
-      alert("Failed to create API key: " + err.message);
+      toast.error("Failed to create API key: " + err.message);
     }
   };
 
@@ -70,9 +73,10 @@ export default function APIKeysPage() {
     if (!confirm("Are you sure you want to revoke this API key? This action is irreversible.")) return;
     try {
       await api.deleteAPIKey(id);
+      toast.success("API key revoked successfully");
       fetchKeys();
     } catch (err: any) {
-      alert("Failed to revoke API key: " + err.message);
+      toast.error("Failed to revoke API key: " + err.message);
     }
   };
 
@@ -80,6 +84,7 @@ export default function APIKeysPage() {
     if (!newKeyCreated) return;
     navigator.clipboard.writeText(newKeyCreated);
     setCopied(true);
+    toast.success("API key copied to clipboard!");
     setTimeout(() => setCopied(false), 2000);
   };
 
@@ -88,10 +93,10 @@ export default function APIKeysPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-surface-border pb-6">
         <div>
-          <h1 className="text-xl font-semibold tracking-tight text-white">
+          <h1 className="text-xl font-semibold tracking-tight text-zinc-900 dark:text-white">
             API Keys
           </h1>
-          <p className="text-xs text-brand-400 mt-1">
+          <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
             Manage authentication credentials for your servers, CLI, and SDK integrations.
           </p>
         </div>
@@ -101,7 +106,7 @@ export default function APIKeysPage() {
             setNewKeyCreated(null);
             setIsCreateOpen(true);
           }}
-          className="flex items-center gap-1.5 rounded-md bg-white px-3.5 py-1.5 text-xs font-medium text-black hover:bg-zinc-200 transition-colors"
+          className="flex items-center gap-1.5 rounded-md bg-zinc-900 px-3.5 py-1.5 text-xs font-medium text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200 transition-colors"
         >
           <Plus className="h-3.5 w-3.5" />
           <span>Create API Key</span>
@@ -109,9 +114,9 @@ export default function APIKeysPage() {
       </div>
 
       {/* Keys Table */}
-      <div className="overflow-hidden rounded-xl border border-surface-border bg-surface">
-        <table className="w-full text-left text-xs">
-          <thead className="border-b border-surface-border bg-surface-raised text-[11px] font-medium uppercase tracking-wider text-brand-400">
+      <div className="overflow-x-auto rounded-xl border border-surface-border bg-surface">
+        <table className="w-full text-left text-xs min-w-[550px]">
+          <thead className="border-b border-surface-border bg-surface-raised text-[11px] font-medium uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
             <tr>
               <th className="px-5 py-3">Name</th>
               <th className="px-5 py-3">Key Preview</th>
@@ -125,27 +130,27 @@ export default function APIKeysPage() {
             {keys.length > 0 ? (
               keys.map((k) => (
                 <tr key={k.id} className="hover:bg-surface-raised/40 transition-colors">
-                  <td className="px-5 py-3 font-sans font-medium text-white">
+                  <td className="px-5 py-3 font-sans font-medium text-zinc-900 dark:text-white">
                     {k.name}
                   </td>
-                  <td className="px-5 py-3 text-brand-400">
+                  <td className="px-5 py-3 text-zinc-600 dark:text-zinc-400">
                     re_••••••••{k.last_four}
                   </td>
                   <td className="px-5 py-3">
                     <span
                       className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium border ${
                         k.permission === "full_access"
-                          ? "bg-zinc-800 text-brand-200 border-zinc-700"
-                          : "bg-blue-950/60 text-blue-300 border-blue-800/40"
+                          ? "bg-zinc-100 text-zinc-700 border-zinc-200 dark:bg-zinc-800 dark:text-zinc-200 dark:border-zinc-700"
+                          : "bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/60 dark:text-blue-300 dark:border-blue-800/40"
                       }`}
                     >
                       {k.permission === "full_access" ? "Full Access" : "Sending Only"}
                     </span>
                   </td>
-                  <td className="px-5 py-3 text-brand-500 text-[11px]">
+                  <td className="px-5 py-3 text-zinc-500 dark:text-zinc-400 text-[11px]">
                     {new Date(k.created_at).toLocaleDateString()}
                   </td>
-                  <td className="px-5 py-3 text-brand-500 text-[11px]">
+                  <td className="px-5 py-3 text-zinc-500 dark:text-zinc-400 text-[11px]">
                     {k.last_used_at
                       ? new Date(k.last_used_at).toLocaleDateString()
                       : "Never"}
@@ -154,7 +159,7 @@ export default function APIKeysPage() {
                     <button
                       onClick={() => handleDelete(k.id)}
                       title="Revoke key"
-                      className="rounded p-1 text-brand-500 hover:text-red-400 transition-colors"
+                      className="rounded p-1 text-zinc-500 hover:text-red-500 dark:hover:text-red-400 transition-colors"
                     >
                       <Trash2 className="h-4 w-4" />
                     </button>
@@ -163,7 +168,7 @@ export default function APIKeysPage() {
               ))
             ) : (
               <tr>
-                <td colSpan={6} className="py-12 text-center text-xs text-brand-500 font-sans">
+                <td colSpan={6} className="py-12 text-center text-xs text-zinc-500 dark:text-zinc-400 font-sans">
                   {isLoading ? "Loading API keys..." : "No API keys found. Create one to begin."}
                 </td>
               </tr>
@@ -174,29 +179,29 @@ export default function APIKeysPage() {
 
       {/* Create Key Modal */}
       {isCreateOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-fade-in">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
           <div className="relative flex flex-col w-full max-w-md rounded-xl border border-surface-border bg-surface p-6 shadow-2xl space-y-4">
-            <h2 className="text-sm font-semibold text-white">Create API Key</h2>
+            <h2 className="text-sm font-semibold text-zinc-900 dark:text-white">Create API Key</h2>
 
             {newKeyCreated ? (
               <div className="space-y-4">
-                <div className="rounded-lg border border-amber-900/50 bg-amber-950/20 p-3 text-xs text-amber-300 flex items-start gap-2">
-                  <AlertTriangle className="h-4 w-4 flex-shrink-0 mt-0.5" />
+                <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-xs text-amber-800 dark:border-amber-900/50 dark:bg-amber-950/20 dark:text-amber-300 flex items-start gap-2">
+                  <AlertTriangle className="h-4 w-4 flex-shrink-0 mt-0.5 text-amber-500" />
                   <span>
                     Copy this key now. For your security, it will never be displayed again.
                   </span>
                 </div>
 
-                <div className="flex items-center justify-between rounded-lg border border-surface-border bg-surface-raised px-3 py-2 text-xs font-mono text-white">
+                <div className="flex items-center justify-between rounded-lg border border-surface-border bg-surface-raised px-3 py-2 text-xs font-mono text-zinc-900 dark:text-white">
                   <span className="truncate mr-2">{newKeyCreated}</span>
                   <button
                     onClick={copyKey}
-                    className="flex items-center gap-1 rounded bg-zinc-800 px-2 py-1 text-xs text-brand-200 hover:text-white"
+                    className="flex items-center gap-1 rounded bg-zinc-200 dark:bg-zinc-800 px-2.5 py-1 text-xs text-zinc-800 dark:text-zinc-200 hover:text-black dark:hover:text-white transition-colors"
                   >
                     {copied ? (
                       <>
-                        <Check className="h-3 w-3 text-emerald-400" />
-                        <span className="text-emerald-400">Copied</span>
+                        <Check className="h-3 w-3 text-emerald-500" />
+                        <span className="text-emerald-500 font-medium">Copied</span>
                       </>
                     ) : (
                       <>
@@ -213,7 +218,7 @@ export default function APIKeysPage() {
                       setIsCreateOpen(false);
                       setNewKeyCreated(null);
                     }}
-                    className="rounded bg-white px-4 py-1.5 text-xs font-medium text-black hover:bg-zinc-200"
+                    className="rounded-md bg-zinc-900 px-4 py-1.5 text-xs font-medium text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200 transition-colors"
                   >
                     Done
                   </button>
@@ -222,7 +227,7 @@ export default function APIKeysPage() {
             ) : (
               <form onSubmit={handleCreate} className="space-y-4">
                 <div>
-                  <label className="block text-[11px] text-brand-400 mb-1">
+                  <label className="block text-[11px] text-zinc-600 dark:text-zinc-400 mb-1">
                     Name
                   </label>
                   <input
@@ -230,18 +235,18 @@ export default function APIKeysPage() {
                     value={keyName}
                     onChange={(e) => setKeyName(e.target.value)}
                     placeholder="Production Server, Marketing Script, etc."
-                    className="w-full rounded-md border border-surface-border bg-surface-raised px-3 py-1.5 text-xs text-white focus:outline-none focus:border-brand-500"
+                    className="w-full rounded-md border border-surface-border bg-surface-raised px-3 py-1.5 text-xs text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-600 focus:outline-none focus:border-zinc-500"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-[11px] text-brand-400 mb-1">
+                  <label className="block text-[11px] text-zinc-600 dark:text-zinc-400 mb-1">
                     Permission Scope
                   </label>
                   <select
                     value={permission}
                     onChange={(e) => setPermission(e.target.value as any)}
-                    className="w-full rounded-md border border-surface-border bg-surface-raised px-3 py-1.5 text-xs text-white focus:outline-none"
+                    className="w-full rounded-md border border-surface-border bg-surface-raised px-3 py-1.5 text-xs text-zinc-900 dark:text-white focus:outline-none"
                   >
                     <option value="full_access">Full Access (Send & Manage)</option>
                     <option value="sending_access">Sending Access Only</option>
@@ -250,13 +255,13 @@ export default function APIKeysPage() {
 
                 {permission === "sending_access" && (
                   <div>
-                    <label className="block text-[11px] text-brand-400 mb-1">
+                    <label className="block text-[11px] text-zinc-600 dark:text-zinc-400 mb-1">
                       Restrict to Domain (Optional)
                     </label>
                     <select
                       value={selectedDomainId}
                       onChange={(e) => setSelectedDomainId(e.target.value)}
-                      className="w-full rounded-md border border-surface-border bg-surface-raised px-3 py-1.5 text-xs text-white focus:outline-none"
+                      className="w-full rounded-md border border-surface-border bg-surface-raised px-3 py-1.5 text-xs text-zinc-900 dark:text-white focus:outline-none"
                     >
                       <option value="">All Domains</option>
                       {domains.map((d) => (
@@ -272,13 +277,13 @@ export default function APIKeysPage() {
                   <button
                     type="button"
                     onClick={() => setIsCreateOpen(false)}
-                    className="rounded px-3 py-1.5 text-xs text-brand-400 hover:bg-surface-raised"
+                    className="rounded-md border border-surface-border px-3 py-1.5 text-xs text-zinc-700 hover:bg-surface-raised hover:text-zinc-900 dark:text-zinc-300 dark:hover:text-white transition-colors"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
-                    className="rounded bg-white px-4 py-1.5 text-xs font-medium text-black hover:bg-zinc-200"
+                    className="rounded-md bg-zinc-900 px-4 py-1.5 text-xs font-medium text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200 transition-colors"
                   >
                     Generate API Key
                   </button>

@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { api, WebhookView } from "@/lib/api";
+import { useToast } from "@/lib/toast-context";
 import {
   Webhook,
   Plus,
@@ -23,6 +24,7 @@ const availableEvents = [
 ];
 
 export default function WebhooksPage() {
+  const { toast } = useToast();
   const [webhooks, setWebhooks] = useState<WebhookView[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isOpen, setIsOpen] = useState(false);
@@ -39,8 +41,9 @@ export default function WebhooksPage() {
     try {
       const res = await api.listWebhooks();
       setWebhooks(res.data || []);
-    } catch (err) {
+    } catch (err: any) {
       console.error("Failed to load webhooks", err);
+      toast.error("Failed to load webhooks: " + (err.response?.data?.message || err.message));
     } finally {
       setIsLoading(false);
     }
@@ -53,7 +56,7 @@ export default function WebhooksPage() {
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     if (selectedEvents.length === 0) {
-      alert("Please select at least one event");
+      toast.error("Please select at least one event");
       return;
     }
     try {
@@ -62,21 +65,22 @@ export default function WebhooksPage() {
         events: selectedEvents,
         status: "active",
       });
+      toast.success("Webhook endpoint registered");
       setIsOpen(false);
       setUrl("");
       fetchWebhooks();
     } catch (err: any) {
-      alert("Failed to create webhook: " + err.message);
+      toast.error("Failed to create webhook: " + (err.response?.data?.message || err.message));
     }
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this webhook endpoint?")) return;
     try {
       await api.deleteWebhook(id);
+      toast.success("Webhook deleted");
       fetchWebhooks();
     } catch (err: any) {
-      alert("Failed to delete webhook: " + err.message);
+      toast.error("Failed to delete webhook: " + (err.response?.data?.message || err.message));
     }
   };
 
@@ -91,35 +95,45 @@ export default function WebhooksPage() {
   const copySecret = (sec: string, id: string) => {
     navigator.clipboard.writeText(sec);
     setCopiedSecret(id);
+    toast.info("Signing secret copied to clipboard");
     setTimeout(() => setCopiedSecret(null), 2000);
   };
 
   return (
-    <div className="max-w-6xl mx-auto px-8 py-8 space-y-6 animate-fade-in">
+    <div className="max-w-6xl mx-auto px-4 sm:px-8 py-8 space-y-6 animate-fade-in">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-surface-border pb-6">
         <div>
-          <h1 className="text-xl font-semibold tracking-tight text-white">
+          <h1 className="text-xl font-semibold tracking-tight text-zinc-900 dark:text-white">
             Webhooks
           </h1>
-          <p className="text-xs text-brand-400 mt-1">
+          <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
             Receive real-time HTTP callbacks for email delivery, bounce, and engagement events.
           </p>
         </div>
 
-        <button
-          onClick={() => setIsOpen(true)}
-          className="flex items-center gap-1.5 rounded-md bg-white px-3.5 py-1.5 text-xs font-medium text-black hover:bg-zinc-200 transition-colors"
-        >
-          <Plus className="h-3.5 w-3.5" />
-          <span>Add Webhook</span>
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setIsOpen(true)}
+            className="flex items-center gap-1.5 rounded-md bg-zinc-900 px-3.5 py-1.5 text-xs font-medium text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200 transition-colors"
+          >
+            <Plus className="h-3.5 w-3.5" />
+            <span>Add Webhook</span>
+          </button>
+          <button
+            onClick={fetchWebhooks}
+            className="flex h-8 w-8 items-center justify-center rounded-md border border-surface-border bg-surface text-zinc-500 hover:bg-surface-raised hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white transition-colors"
+            title="Refresh webhooks"
+          >
+            <RefreshCw className={`h-3.5 w-3.5 ${isLoading ? "animate-spin" : ""}`} />
+          </button>
+        </div>
       </div>
 
       {/* Webhooks Table */}
-      <div className="overflow-hidden rounded-xl border border-surface-border bg-surface">
-        <table className="w-full text-left text-xs">
-          <thead className="border-b border-surface-border bg-surface-raised text-[11px] font-medium uppercase tracking-wider text-brand-400">
+      <div className="overflow-x-auto rounded-xl border border-surface-border bg-surface">
+        <table className="w-full text-left text-xs min-w-[700px]">
+          <thead className="border-b border-surface-border bg-surface-raised text-[11px] font-medium uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
             <tr>
               <th className="px-5 py-3">Endpoint URL</th>
               <th className="px-5 py-3">Subscribed Events</th>
@@ -132,7 +146,7 @@ export default function WebhooksPage() {
             {webhooks.length > 0 ? (
               webhooks.map((wh) => (
                 <tr key={wh.id} className="hover:bg-surface-raised/40 transition-colors">
-                  <td className="px-5 py-3 text-white max-w-xs truncate" title={wh.url}>
+                  <td className="px-5 py-3 text-zinc-900 dark:text-white max-w-xs truncate" title={wh.url}>
                     {wh.url}
                   </td>
                   <td className="px-5 py-3 font-sans">
@@ -140,7 +154,7 @@ export default function WebhooksPage() {
                       {wh.events?.map((ev) => (
                         <span
                           key={ev}
-                          className="rounded bg-surface-raised px-1.5 py-0.5 text-[10px] text-brand-300 border border-surface-border"
+                          className="rounded bg-surface-raised px-1.5 py-0.5 text-[10px] text-zinc-700 dark:text-zinc-300 border border-surface-border"
                         >
                           {ev}
                         </span>
@@ -151,22 +165,23 @@ export default function WebhooksPage() {
                     <span
                       className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium border ${
                         wh.status === "active"
-                          ? "bg-emerald-950/60 text-emerald-400 border-emerald-800/40"
-                          : "bg-zinc-800 text-brand-400 border-zinc-700"
+                          ? "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/60 dark:text-emerald-400 dark:border-emerald-800/40"
+                          : "bg-zinc-100 text-zinc-600 border-zinc-200 dark:bg-zinc-800 dark:text-zinc-400 dark:border-zinc-700"
                       }`}
                     >
                       {wh.status}
                     </span>
                   </td>
-                  <td className="px-5 py-3 text-brand-400">
+                  <td className="px-5 py-3 text-zinc-500 dark:text-zinc-400">
                     {wh.signing_secret ? (
                       <button
                         onClick={() => copySecret(wh.signing_secret!, wh.id)}
-                        className="flex items-center gap-1 text-[11px] hover:text-white"
+                        className="flex items-center gap-1 text-[11px] hover:text-zinc-900 dark:hover:text-white transition-colors"
+                        title="Click to copy secret"
                       >
                         <span>••••••••••••••••</span>
                         {copiedSecret === wh.id ? (
-                          <Check className="h-3 w-3 text-emerald-400" />
+                          <Check className="h-3 w-3 text-emerald-500" />
                         ) : (
                           <Copy className="h-3 w-3" />
                         )}
@@ -178,7 +193,8 @@ export default function WebhooksPage() {
                   <td className="px-5 py-3 text-right">
                     <button
                       onClick={() => handleDelete(wh.id)}
-                      className="rounded p-1 text-brand-500 hover:text-red-400 transition-colors"
+                      className="rounded p-1 text-zinc-400 hover:text-red-500 transition-colors"
+                      title="Delete webhook"
                     >
                       <Trash2 className="h-4 w-4" />
                     </button>
@@ -187,7 +203,7 @@ export default function WebhooksPage() {
               ))
             ) : (
               <tr>
-                <td colSpan={5} className="py-12 text-center text-xs text-brand-500 font-sans">
+                <td colSpan={5} className="py-12 text-center text-xs text-zinc-500 dark:text-zinc-400 font-sans">
                   {isLoading
                     ? "Loading webhooks..."
                     : "No webhook endpoints registered yet."}
@@ -200,12 +216,12 @@ export default function WebhooksPage() {
 
       {/* Add Webhook Modal */}
       {isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-fade-in">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
           <div className="relative flex flex-col w-full max-w-md rounded-xl border border-surface-border bg-surface p-6 shadow-2xl space-y-4">
-            <h2 className="text-sm font-semibold text-white">Add Webhook Endpoint</h2>
+            <h2 className="text-sm font-semibold text-zinc-900 dark:text-white">Add Webhook Endpoint</h2>
             <form onSubmit={handleCreate} className="space-y-4">
               <div>
-                <label className="block text-[11px] text-brand-400 mb-1">
+                <label className="block text-[11px] font-medium text-zinc-600 dark:text-zinc-300 mb-1">
                   Endpoint URL (must be HTTPS)
                 </label>
                 <input
@@ -214,25 +230,25 @@ export default function WebhooksPage() {
                   onChange={(e) => setUrl(e.target.value)}
                   placeholder="https://api.yourdomain.com/webhooks/resend"
                   required
-                  className="w-full rounded-md border border-surface-border bg-surface-raised px-3 py-1.5 text-xs text-white focus:outline-none font-mono"
+                  className="w-full rounded-md border border-surface-border bg-surface-raised px-3 py-1.5 text-xs text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-600 focus:outline-none font-mono"
                 />
               </div>
 
               <div>
-                <label className="block text-[11px] text-brand-400 mb-2">
+                <label className="block text-[11px] font-medium text-zinc-600 dark:text-zinc-300 mb-2">
                   Select Events to Subscribe
                 </label>
                 <div className="grid grid-cols-2 gap-2">
                   {availableEvents.map((ev) => (
                     <label
                       key={ev.id}
-                      className="flex items-center gap-2 rounded border border-surface-border bg-surface-raised p-2 text-xs text-brand-200 cursor-pointer hover:border-brand-700"
+                      className="flex items-center gap-2 rounded-md border border-surface-border bg-surface-raised p-2 text-xs text-zinc-700 dark:text-zinc-300 cursor-pointer hover:border-zinc-400 dark:hover:border-zinc-600 transition-colors"
                     >
                       <input
                         type="checkbox"
                         checked={selectedEvents.includes(ev.id)}
                         onChange={() => toggleEvent(ev.id)}
-                        className="rounded border-surface-border bg-surface text-black"
+                        className="rounded border-surface-border bg-surface text-zinc-900 dark:text-white focus:ring-0"
                       />
                       <span>{ev.label}</span>
                     </label>
@@ -244,13 +260,13 @@ export default function WebhooksPage() {
                 <button
                   type="button"
                   onClick={() => setIsOpen(false)}
-                  className="rounded px-3 py-1.5 text-xs text-brand-400 hover:bg-surface-raised"
+                  className="rounded-md border border-surface-border px-3 py-1.5 text-xs font-medium text-zinc-600 hover:bg-surface-raised dark:text-zinc-400 dark:hover:text-white transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="rounded bg-white px-4 py-1.5 text-xs font-medium text-black hover:bg-zinc-200"
+                  className="rounded-md bg-zinc-900 px-4 py-1.5 text-xs font-medium text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200 transition-colors"
                 >
                   Create Webhook
                 </button>

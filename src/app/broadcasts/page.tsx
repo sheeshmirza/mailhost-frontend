@@ -17,8 +17,10 @@ import {
   RefreshCw,
   Users,
 } from "lucide-react";
+import { useToast } from "@/lib/toast-context";
 
 export default function BroadcastsPage() {
+  const toast = useToast();
   const [broadcasts, setBroadcasts] = useState<BroadcastView[]>([]);
   const [audiences, setAudiences] = useState<AudienceView[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -82,12 +84,13 @@ export default function BroadcastsPage() {
         html,
         audience_id: selectedAudienceId || undefined,
       });
+      toast.success("Broadcast campaign created!");
       setIsOpen(false);
       setName("");
       setSubject("");
       fetchData();
     } catch (err: any) {
-      alert("Failed to create broadcast: " + err.message);
+      toast.error("Failed to create broadcast: " + err.message);
     }
   };
 
@@ -95,18 +98,20 @@ export default function BroadcastsPage() {
     if (!confirm("Are you sure you want to send this broadcast to all recipients in the audience?")) return;
     try {
       await api.sendBroadcast(id);
+      toast.success("Broadcast is sending to all recipients!");
       fetchData();
     } catch (err: any) {
-      alert("Failed to send broadcast: " + err.message);
+      toast.error("Failed to send broadcast: " + err.message);
     }
   };
 
   const handleDuplicate = async (id: string) => {
     try {
       await api.duplicateBroadcast(id);
+      toast.success("Broadcast duplicated");
       fetchData();
     } catch (err: any) {
-      alert("Failed to duplicate broadcast: " + err.message);
+      toast.error("Failed to duplicate broadcast: " + err.message);
     }
   };
 
@@ -114,9 +119,10 @@ export default function BroadcastsPage() {
     if (!confirm("Are you sure you want to delete this broadcast?")) return;
     try {
       await api.deleteBroadcast(id);
+      toast.success("Broadcast deleted");
       fetchData();
     } catch (err: any) {
-      alert("Failed to delete broadcast: " + err.message);
+      toast.error("Failed to delete broadcast: " + err.message);
     }
   };
 
@@ -125,17 +131,17 @@ export default function BroadcastsPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-surface-border pb-6">
         <div>
-          <h1 className="text-xl font-semibold tracking-tight text-white">
+          <h1 className="text-xl font-semibold tracking-tight text-zinc-900 dark:text-white">
             Broadcasts
           </h1>
-          <p className="text-xs text-brand-400 mt-1">
+          <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
             Send newsletters, product announcements, and bulk campaigns to your audience.
           </p>
         </div>
 
         <button
           onClick={() => setIsOpen(true)}
-          className="flex items-center gap-1.5 rounded-md bg-white px-3.5 py-1.5 text-xs font-medium text-black hover:bg-zinc-200 transition-colors"
+          className="flex items-center gap-1.5 rounded-md bg-zinc-900 px-3.5 py-1.5 text-xs font-medium text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200 transition-colors"
         >
           <Plus className="h-3.5 w-3.5" />
           <span>New Broadcast</span>
@@ -143,9 +149,9 @@ export default function BroadcastsPage() {
       </div>
 
       {/* Broadcasts Table */}
-      <div className="overflow-hidden rounded-xl border border-surface-border bg-surface">
-        <table className="w-full text-left text-xs">
-          <thead className="border-b border-surface-border bg-surface-raised text-[11px] font-medium uppercase tracking-wider text-brand-400">
+      <div className="overflow-x-auto rounded-xl border border-surface-border bg-surface">
+        <table className="w-full text-left text-xs min-w-[600px]">
+          <thead className="border-b border-surface-border bg-surface-raised text-[11px] font-medium uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
             <tr>
               <th className="px-5 py-3">Campaign Name</th>
               <th className="px-5 py-3">Subject</th>
@@ -159,30 +165,30 @@ export default function BroadcastsPage() {
             {broadcasts.length > 0 ? (
               broadcasts.map((b) => (
                 <tr key={b.id} className="hover:bg-surface-raised/40 transition-colors">
-                  <td className="px-5 py-3 font-medium text-white max-w-xs truncate">
+                  <td className="px-5 py-3 font-medium text-zinc-900 dark:text-white max-w-xs truncate">
                     {b.name}
                   </td>
-                  <td className="px-5 py-3 text-brand-300 max-w-xs truncate">
+                  <td className="px-5 py-3 text-zinc-700 dark:text-zinc-300 max-w-xs truncate">
                     {b.subject}
                   </td>
-                  <td className="px-5 py-3 font-mono text-brand-400 text-[11px] truncate">
+                  <td className="px-5 py-3 font-mono text-zinc-500 dark:text-zinc-400 text-[11px] truncate">
                     {b.from}
                   </td>
                   <td className="px-5 py-3">
                     <span
                       className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium border ${
                         b.status === "sent"
-                          ? "bg-emerald-950/60 text-emerald-400 border-emerald-800/40"
+                          ? "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/60 dark:text-emerald-400 dark:border-emerald-800/40"
                           : b.status === "sending" || b.status === "queued"
-                          ? "bg-sky-950/60 text-sky-400 border-sky-800/40"
-                          : "bg-zinc-800 text-brand-300 border-zinc-700"
+                          ? "bg-sky-50 text-sky-700 border-sky-200 dark:bg-sky-950/60 dark:text-sky-400 dark:border-sky-800/40"
+                          : "bg-zinc-100 text-zinc-700 border-zinc-200 dark:bg-zinc-800 dark:text-zinc-300 dark:border-zinc-700"
                       }`}
                     >
                       {b.status === "sent" && <CheckCircle2 className="h-2.5 w-2.5" />}
                       {b.status}
                     </span>
                   </td>
-                  <td className="px-5 py-3 font-mono text-brand-500 text-[11px]">
+                  <td className="px-5 py-3 font-mono text-zinc-500 dark:text-zinc-400 text-[11px]">
                     {new Date(b.created_at).toLocaleDateString()}
                   </td>
                   <td className="px-5 py-3 text-right">
@@ -191,7 +197,7 @@ export default function BroadcastsPage() {
                         <button
                           onClick={() => handleSend(b.id)}
                           title="Send broadcast now"
-                          className="rounded p-1 text-emerald-400 hover:bg-surface-raised"
+                          className="rounded p-1 text-emerald-600 hover:text-emerald-700 dark:text-emerald-400 hover:bg-surface-raised"
                         >
                           <Send className="h-3.5 w-3.5" />
                         </button>
@@ -199,14 +205,14 @@ export default function BroadcastsPage() {
                       <button
                         onClick={() => handleDuplicate(b.id)}
                         title="Duplicate broadcast"
-                        className="rounded p-1 text-brand-400 hover:text-white hover:bg-surface-raised"
+                        className="rounded p-1 text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white hover:bg-surface-raised"
                       >
                         <Copy className="h-3.5 w-3.5" />
                       </button>
                       <button
                         onClick={() => handleDelete(b.id)}
                         title="Delete broadcast"
-                        className="rounded p-1 text-brand-500 hover:text-red-400 hover:bg-surface-raised"
+                        className="rounded p-1 text-zinc-400 hover:text-red-500 dark:text-zinc-500 dark:hover:text-red-400 hover:bg-surface-raised"
                       >
                         <Trash2 className="h-3.5 w-3.5" />
                       </button>
@@ -216,7 +222,7 @@ export default function BroadcastsPage() {
               ))
             ) : (
               <tr>
-                <td colSpan={6} className="py-12 text-center text-xs text-brand-500">
+                <td colSpan={6} className="py-12 text-center text-xs text-zinc-500 dark:text-zinc-400">
                   {isLoading
                     ? "Loading broadcasts..."
                     : "No broadcasts found. Create your first campaign above."}
@@ -229,12 +235,12 @@ export default function BroadcastsPage() {
 
       {/* New Broadcast Modal */}
       {isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-fade-in">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
           <div className="relative flex flex-col w-full max-w-lg rounded-xl border border-surface-border bg-surface p-6 shadow-2xl space-y-4">
-            <h2 className="text-sm font-semibold text-white">Create Broadcast Campaign</h2>
+            <h2 className="text-sm font-semibold text-zinc-900 dark:text-white">Create Broadcast Campaign</h2>
             <form onSubmit={handleCreate} className="space-y-3">
               <div>
-                <label className="block text-[11px] text-brand-400 mb-1">
+                <label className="block text-[11px] text-zinc-600 dark:text-zinc-400 mb-1">
                   Internal Campaign Name
                 </label>
                 <input
@@ -243,18 +249,18 @@ export default function BroadcastsPage() {
                   onChange={(e) => setName(e.target.value)}
                   placeholder="e.g. October Product Launch"
                   required
-                  className="w-full rounded-md border border-surface-border bg-surface-raised px-3 py-1.5 text-xs text-white focus:outline-none"
+                  className="w-full rounded-md border border-surface-border bg-surface-raised px-3 py-1.5 text-xs text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-600 focus:outline-none"
                 />
               </div>
 
               <div>
-                <label className="block text-[11px] text-brand-400 mb-1">
+                <label className="block text-[11px] text-zinc-600 dark:text-zinc-400 mb-1">
                   Target Audience
                 </label>
                 <select
                   value={selectedAudienceId}
                   onChange={(e) => setSelectedAudienceId(e.target.value)}
-                  className="w-full rounded-md border border-surface-border bg-surface-raised px-3 py-1.5 text-xs text-white focus:outline-none"
+                  className="w-full rounded-md border border-surface-border bg-surface-raised px-3 py-1.5 text-xs text-zinc-900 dark:text-white focus:outline-none"
                 >
                   <option value="">Select Audience...</option>
                   {audiences.map((aud) => (
@@ -266,7 +272,7 @@ export default function BroadcastsPage() {
               </div>
 
               <div>
-                <label className="block text-[11px] text-brand-400 mb-1">
+                <label className="block text-[11px] text-zinc-600 dark:text-zinc-400 mb-1">
                   From Address
                 </label>
                 <input
@@ -275,12 +281,12 @@ export default function BroadcastsPage() {
                   onChange={(e) => setFrom(e.target.value)}
                   placeholder="Company <news@yourdomain.com>"
                   required
-                  className="w-full rounded-md border border-surface-border bg-surface-raised px-3 py-1.5 text-xs text-white focus:outline-none"
+                  className="w-full rounded-md border border-surface-border bg-surface-raised px-3 py-1.5 text-xs text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-600 focus:outline-none"
                 />
               </div>
 
               <div>
-                <label className="block text-[11px] text-brand-400 mb-1">
+                <label className="block text-[11px] text-zinc-600 dark:text-zinc-400 mb-1">
                   Subject Line
                 </label>
                 <input
@@ -289,19 +295,19 @@ export default function BroadcastsPage() {
                   onChange={(e) => setSubject(e.target.value)}
                   placeholder="Announcing Version 2.0!"
                   required
-                  className="w-full rounded-md border border-surface-border bg-surface-raised px-3 py-1.5 text-xs text-white focus:outline-none"
+                  className="w-full rounded-md border border-surface-border bg-surface-raised px-3 py-1.5 text-xs text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-600 focus:outline-none"
                 />
               </div>
 
               <div>
-                <label className="block text-[11px] text-brand-400 mb-1">
+                <label className="block text-[11px] text-zinc-600 dark:text-zinc-400 mb-1">
                   HTML Content
                 </label>
                 <textarea
                   value={html}
                   onChange={(e) => setHtml(e.target.value)}
                   rows={6}
-                  className="w-full rounded-md border border-surface-border bg-surface-raised p-3 font-mono text-xs text-white focus:outline-none"
+                  className="w-full rounded-md border border-surface-border bg-surface-raised p-3 font-mono text-xs text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-600 focus:outline-none"
                 />
               </div>
 
@@ -309,13 +315,13 @@ export default function BroadcastsPage() {
                 <button
                   type="button"
                   onClick={() => setIsOpen(false)}
-                  className="rounded px-3 py-1.5 text-xs text-brand-400 hover:bg-surface-raised"
+                  className="rounded-md border border-surface-border px-3 py-1.5 text-xs text-zinc-700 hover:bg-surface-raised hover:text-zinc-900 dark:text-zinc-300 dark:hover:text-white transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="rounded bg-white px-4 py-1.5 text-xs font-medium text-black hover:bg-zinc-200"
+                  className="rounded-md bg-zinc-900 px-4 py-1.5 text-xs font-medium text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200 transition-colors"
                 >
                   Save Campaign
                 </button>

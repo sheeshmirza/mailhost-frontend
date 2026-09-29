@@ -45,10 +45,10 @@ export default function Sidebar() {
   const pathname = usePathname();
 
   return (
-    <aside className="fixed left-0 top-14 bottom-0 z-30 flex w-56 flex-col justify-between border-r border-surface-border bg-black px-3 py-4">
+    <aside className="hidden lg:flex fixed left-0 top-14 bottom-0 z-30 w-56 flex-col justify-between border-r border-surface-border bg-surface px-3 py-4 transition-colors">
       {/* Navigation Links */}
       <nav className="space-y-1">
-        <div className="px-2 pb-2 text-[10px] font-medium uppercase tracking-wider text-brand-500">
+        <div className="px-2.5 pb-2 text-[10px] font-semibold uppercase tracking-wider text-zinc-400 dark:text-zinc-500">
           Platform
         </div>
         {navItems.map((item) => {
@@ -65,14 +65,16 @@ export default function Sidebar() {
               className={clsx(
                 "group flex items-center gap-2.5 rounded-md px-2.5 py-1.5 text-xs font-medium transition-colors",
                 isActive
-                  ? "bg-surface-raised text-white"
-                  : "text-brand-400 hover:bg-surface hover:text-brand-200"
+                  ? "bg-surface-raised text-zinc-900 dark:text-white font-semibold shadow-sm"
+                  : "text-zinc-600 dark:text-zinc-400 hover:bg-surface-raised hover:text-zinc-900 dark:hover:text-white"
               )}
             >
               <Icon
                 className={clsx(
                   "h-4 w-4 transition-colors",
-                  isActive ? "text-white" : "text-brand-500 group-hover:text-brand-300"
+                  isActive
+                    ? "text-zinc-900 dark:text-white"
+                    : "text-zinc-400 dark:text-zinc-500 group-hover:text-zinc-700 dark:group-hover:text-zinc-300"
                 )}
               />
               <span>{item.label}</span>
@@ -87,12 +89,12 @@ export default function Sidebar() {
           href="/backend/openapi.json"
           target="_blank"
           rel="noreferrer"
-          className="flex items-center gap-2 rounded-md px-2.5 py-1.5 text-xs font-medium text-brand-400 hover:bg-surface hover:text-brand-200 transition-colors"
+          className="flex items-center gap-2 rounded-md px-2.5 py-1.5 text-xs font-medium text-zinc-600 dark:text-zinc-400 hover:bg-surface-raised hover:text-zinc-900 dark:hover:text-white transition-colors"
         >
-          <Code2 className="h-4 w-4 text-brand-500" />
+          <Code2 className="h-4 w-4 text-zinc-400 dark:text-zinc-500" />
           <span>OpenAPI Spec</span>
         </a>
-        <div className="px-2.5 pt-2 text-[10px] text-brand-600 font-mono">
+        <div className="px-2.5 pt-2 text-[10px] text-zinc-400 dark:text-zinc-600 font-mono">
           Mailhost v1.0.0 (Go)
         </div>
       </div>

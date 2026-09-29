@@ -100,8 +100,8 @@ func main() {
               onClick={() => setActiveTab(tab)}
               className={`rounded px-2.5 py-1 text-xs font-mono uppercase transition-colors ${
                 activeTab === tab
-                  ? "bg-surface-raised text-white font-medium shadow-sm"
-                  : "text-brand-500 hover:text-brand-300"
+                  ? "bg-surface-raised text-zinc-900 dark:text-white font-semibold shadow-sm"
+                  : "text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200"
               }`}
             >
               {tab === "curl" ? "cURL" : tab === "node" ? "Node.js" : tab === "python" ? "Python" : "Go"}
@@ -111,12 +111,12 @@ func main() {
 
         <button
           onClick={handleCopy}
-          className="flex items-center gap-1.5 rounded px-2 py-1 text-xs text-brand-400 hover:bg-surface-raised hover:text-white transition-colors"
+          className="flex items-center gap-1.5 rounded px-2 py-1 text-xs text-zinc-500 dark:text-zinc-400 hover:bg-surface-raised hover:text-zinc-900 dark:hover:text-white transition-colors"
         >
           {copied ? (
             <>
-              <Check className="h-3.5 w-3.5 text-emerald-400" />
-              <span className="text-emerald-400">Copied</span>
+              <Check className="h-3.5 w-3.5 text-emerald-500" />
+              <span className="text-emerald-500">Copied</span>
             </>
           ) : (
             <>
@@ -128,7 +128,7 @@ func main() {
       </div>
 
       {/* Code Display */}
-      <pre className="overflow-x-auto p-4 font-mono text-xs leading-relaxed text-brand-200 selection:bg-brand-800">
+      <pre className="overflow-x-auto p-4 font-mono text-xs leading-relaxed text-zinc-800 dark:text-zinc-200 bg-surface">
         <code>{snippets[activeTab]}</code>
       </pre>
     </div>
