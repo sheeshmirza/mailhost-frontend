@@ -11,9 +11,13 @@ import {
   Inbox,
   Users,
   Radio,
+  GitBranch,
+  Zap,
   FileText,
   Webhook,
+  ShieldAlert,
   Server,
+  Settings,
   Activity,
   Code2,
 } from "lucide-react";
@@ -27,9 +31,13 @@ const navItems = [
   { label: "Inbound", href: "/inbound", icon: Inbox },
   { label: "Audiences", href: "/audiences", icon: Users },
   { label: "Broadcasts", href: "/broadcasts", icon: Radio },
+  { label: "Automations", href: "/automations", icon: GitBranch },
+  { label: "Events", href: "/events", icon: Zap },
   { label: "Templates", href: "/templates", icon: FileText },
   { label: "Webhooks", href: "/webhooks", icon: Webhook },
+  { label: "Suppressions", href: "/suppressions", icon: ShieldAlert },
   { label: "SMTP", href: "/smtp", icon: Server },
+  { label: "Settings & Team", href: "/settings", icon: Settings },
   { label: "Logs & Health", href: "/logs", icon: Activity },
 ];
 

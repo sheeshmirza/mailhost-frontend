@@ -91,6 +91,22 @@ export default function DomainsPage() {
     }
   };
 
+  const handleUpdateDomainConfig = async (patch: {
+    open_tracking?: boolean;
+    click_tracking?: boolean;
+    tls?: string;
+    inbound_webhook_url?: string | null;
+  }) => {
+    if (!selectedDomain) return;
+    try {
+      const updated = await api.updateDomain(selectedDomain.id, patch);
+      setSelectedDomain(updated);
+      fetchDomains();
+    } catch (err: any) {
+      alert("Failed to update domain setting: " + err.message);
+    }
+  };
+
   const copyText = (val: string, key: string) => {
     navigator.clipboard.writeText(val);
     setCopiedKey(key);
@@ -293,6 +309,81 @@ export default function DomainsPage() {
                     )}
                   </tbody>
                 </table>
+              </div>
+
+              {/* Domain Delivery & Tracking Settings */}
+              <div className="space-y-3 pt-4 border-t border-surface-border">
+                <h3 className="text-xs font-semibold text-white uppercase tracking-wider">
+                  Deliverability & Tracking Configuration
+                </h3>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+                  {/* Open Tracking */}
+                  <div className="flex items-center justify-between rounded-lg border border-surface-border bg-surface-raised p-3">
+                    <div>
+                      <span className="font-medium text-white block">Open Tracking</span>
+                      <span className="text-[10px] text-brand-500">Inject 1x1 transparent tracking pixel</span>
+                    </div>
+                    <button
+                      onClick={() =>
+                        handleUpdateDomainConfig({
+                          open_tracking: !selectedDomain.open_tracking,
+                        })
+                      }
+                      className={`relative inline-flex h-5 w-9 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+                        selectedDomain.open_tracking ? "bg-white" : "bg-zinc-800"
+                      }`}
+                    >
+                      <span
+                        className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-black shadow ring-0 transition duration-200 ease-in-out ${
+                          selectedDomain.open_tracking ? "translate-x-4" : "translate-x-0"
+                        }`}
+                      />
+                    </button>
+                  </div>
+
+                  {/* Click Tracking */}
+                  <div className="flex items-center justify-between rounded-lg border border-surface-border bg-surface-raised p-3">
+                    <div>
+                      <span className="font-medium text-white block">Click Tracking</span>
+                      <span className="text-[10px] text-brand-500">Rewrite links to track CTR</span>
+                    </div>
+                    <button
+                      onClick={() =>
+                        handleUpdateDomainConfig({
+                          click_tracking: !selectedDomain.click_tracking,
+                        })
+                      }
+                      className={`relative inline-flex h-5 w-9 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+                        selectedDomain.click_tracking ? "bg-white" : "bg-zinc-800"
+                      }`}
+                    >
+                      <span
+                        className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-black shadow ring-0 transition duration-200 ease-in-out ${
+                          selectedDomain.click_tracking ? "translate-x-4" : "translate-x-0"
+                        }`}
+                      />
+                    </button>
+                  </div>
+
+                  {/* TLS Mode */}
+                  <div className="flex items-center justify-between rounded-lg border border-surface-border bg-surface-raised p-3">
+                    <div>
+                      <span className="font-medium text-white block">TLS Mode</span>
+                      <span className="text-[10px] text-brand-500">Outbound encryption</span>
+                    </div>
+                    <select
+                      value={selectedDomain.tls || "opportunistic"}
+                      onChange={(e) =>
+                        handleUpdateDomainConfig({ tls: e.target.value })
+                      }
+                      className="rounded border border-surface-border bg-black px-2 py-1 text-xs text-white focus:outline-none font-mono"
+                    >
+                      <option value="opportunistic">Opportunistic</option>
+                      <option value="enforced">Enforced</option>
+                    </select>
+                  </div>
+                </div>
               </div>
             </div>
           ) : (

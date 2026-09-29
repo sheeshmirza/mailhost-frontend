@@ -234,6 +234,93 @@ export interface AuditLogView {
   created_at: string;
 }
 
+export interface SegmentView {
+  id: string;
+  name: string;
+  filter?: any;
+  created_at: string;
+}
+
+export interface TopicView {
+  id: string;
+  name: string;
+  description?: string;
+  default_subscription: boolean;
+  created_at: string;
+}
+
+export interface TemplateVersion {
+  id: string;
+  template_id: string;
+  version: number;
+  subject: string;
+  html: string;
+  text: string;
+  created_at: string;
+}
+
+export interface AutomationStep {
+  id: string;
+  type: "send_email" | "delay" | "condition" | "add_to_segment" | "remove_from_segment" | string;
+  config: {
+    template_id?: string;
+    from?: string;
+    subject?: string;
+    html?: string;
+    text?: string;
+    delay_seconds?: number;
+    field?: string;
+    operator?: string;
+    value?: any;
+    segment_id?: string;
+  };
+  then_steps?: AutomationStep[];
+  else_steps?: AutomationStep[];
+}
+
+export interface AutomationTrigger {
+  type: "event" | "contact.created" | "email.opened" | "email.clicked" | string;
+  event_name?: string;
+}
+
+export interface AutomationView {
+  id: string;
+  name: string;
+  status: "active" | "draft" | "paused" | string;
+  trigger: AutomationTrigger;
+  steps: AutomationStep[];
+  created_at: string;
+  updated_at: string;
+}
+
+export interface AutomationRun {
+  id: string;
+  automation_id: string;
+  trigger_event_id?: string;
+  contact_id?: string;
+  status: "running" | "waiting" | "completed" | "failed" | string;
+  current_step?: string;
+  started_at: string;
+  completed_at?: string;
+}
+
+export interface CustomEvent {
+  id: string;
+  name: string;
+  contact_email: string;
+  data: Record<string, any>;
+  created_at: string;
+}
+
+export interface UserSession {
+  id: string;
+  account_id: string;
+  created_at: string;
+  last_used_at?: string;
+  expires_at: string;
+}
+
+
 export interface AnalyticsCounts {
   sent: number;
   delivered: number;
@@ -733,6 +820,165 @@ export class APIClient {
       `/v1/suppressions/${encodeURIComponent(address)}`,
       { method: "DELETE" }
     );
+  }
+
+  // Domain Settings
+  async updateDomain(
+    id: string,
+    data: {
+      open_tracking?: boolean;
+      click_tracking?: boolean;
+      tls?: string;
+      inbound_webhook_url?: string | null;
+    }
+  ) {
+    return this.request<DomainView>(`/v1/domains/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify(data),
+    });
+  }
+
+  // Segments & Topics
+  async listSegments() {
+    return this.request<{ data: SegmentView[] }>("/v1/segments");
+  }
+
+  async createSegment(data: { name: string; filter?: any }) {
+    return this.request<SegmentView>("/v1/segments", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  }
+
+  async deleteSegment(id: string) {
+    return this.request<{ id: string; deleted: boolean }>(`/v1/segments/${id}`, {
+      method: "DELETE",
+    });
+  }
+
+  async listTopics() {
+    return this.request<{ data: TopicView[] }>("/v1/topics");
+  }
+
+  async createTopic(data: { name: string; description?: string; default_subscription?: boolean }) {
+    return this.request<TopicView>("/v1/topics", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  }
+
+  async deleteTopic(id: string) {
+    return this.request<{ id: string; deleted: boolean }>(`/v1/topics/${id}`, {
+      method: "DELETE",
+    });
+  }
+
+  // Template Versions & Rollback
+  async listTemplateVersions(templateId: string) {
+    return this.request<{ data: TemplateVersion[] }>(`/v1/templates/${templateId}/versions`);
+  }
+
+  async rollbackTemplate(templateId: string, version: number) {
+    return this.request<TemplateView>(`/v1/templates/${templateId}/rollback/${version}`, {
+      method: "POST",
+    });
+  }
+
+  // Automations
+  async listAutomations() {
+    return this.request<{ data: AutomationView[] }>("/v1/automations");
+  }
+
+  async getAutomation(id: string) {
+    return this.request<AutomationView>(`/v1/automations/${id}`);
+  }
+
+  async createAutomation(data: {
+    name: string;
+    status?: "active" | "draft" | "paused";
+    trigger: AutomationTrigger;
+    steps: AutomationStep[];
+  }) {
+    return this.request<AutomationView>("/v1/automations", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  }
+
+  async updateAutomation(
+    id: string,
+    data: {
+      name?: string;
+      status?: "active" | "draft" | "paused";
+      trigger?: AutomationTrigger;
+      steps?: AutomationStep[];
+    }
+  ) {
+    return this.request<AutomationView>(`/v1/automations/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify(data),
+    });
+  }
+
+  async deleteAutomation(id: string) {
+    return this.request<{ id: string; deleted: boolean }>(`/v1/automations/${id}`, {
+      method: "DELETE",
+    });
+  }
+
+  async listAutomationRuns(automationId: string) {
+    return this.request<{ data: AutomationRun[] }>(`/v1/automations/${automationId}/runs`);
+  }
+
+  // Custom Events
+  async triggerEvent(data: { name: string; email: string; data?: Record<string, any> }) {
+    return this.request<CustomEvent>("/v1/events", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  }
+
+  async listEvents(limit = 50) {
+    return this.request<{ data: CustomEvent[] }>(`/v1/events?limit=${limit}`);
+  }
+
+  // User Profile & Sessions & Accounts
+  async updateCurrentUser(data: { name?: string; avatar_url?: string }) {
+    return this.request<UserView>("/v1/users/me", {
+      method: "PATCH",
+      body: JSON.stringify(data),
+    });
+  }
+
+  async changePassword(data: { current_password?: string; new_password: string }) {
+    return this.request<{ message: string }>("/v1/users/change-password", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  }
+
+  async changeEmail(newEmail: string) {
+    return this.request<{ message: string }>("/v1/users/change-email", {
+      method: "POST",
+      body: JSON.stringify({ email: newEmail }),
+    });
+  }
+
+  async createAccount(name: string) {
+    return this.request<UserAccountView>("/v1/users/accounts", {
+      method: "POST",
+      body: JSON.stringify({ name }),
+    });
+  }
+
+  async listSessions() {
+    return this.request<{ data: UserSession[] }>("/v1/users/sessions");
+  }
+
+  async revokeSession(id: string) {
+    return this.request<{ id: string; deleted: boolean }>(`/v1/users/sessions/${id}`, {
+      method: "DELETE",
+    });
   }
 }
 

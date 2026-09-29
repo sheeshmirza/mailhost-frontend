@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { api, TemplateView } from "@/lib/api";
 import {
   FileText,
   Plus,
@@ -12,7 +11,10 @@ import {
   Send,
   UploadCloud,
   RefreshCw,
+  History,
+  RotateCcw,
 } from "lucide-react";
+import { api, TemplateView, TemplateVersion } from "@/lib/api";
 
 export default function TemplatesPage() {
   const [templates, setTemplates] = useState<TemplateView[]>([]);
@@ -47,6 +49,37 @@ export default function TemplatesPage() {
   useEffect(() => {
     fetchTemplates();
   }, []);
+
+  const [versions, setVersions] = useState<TemplateVersion[]>([]);
+
+  const loadVersions = async (templateId: string) => {
+    try {
+      const res = await api.listTemplateVersions(templateId);
+      setVersions(res.data || []);
+    } catch {
+      setVersions([]);
+    }
+  };
+
+  useEffect(() => {
+    if (selectedTemplate?.id) {
+      loadVersions(selectedTemplate.id);
+    } else {
+      setVersions([]);
+    }
+  }, [selectedTemplate?.id]);
+
+  const handleRollback = async (templateId: string, version: number) => {
+    if (!confirm(`Rollback to version ${version}?`)) return;
+    try {
+      const res = await api.rollbackTemplate(templateId, version);
+      setSelectedTemplate(res);
+      fetchTemplates();
+      loadVersions(templateId);
+    } catch (err: any) {
+      alert("Rollback failed: " + err.message);
+    }
+  };
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -209,6 +242,57 @@ export default function TemplatesPage() {
                 <div className="rounded-lg border border-surface-border bg-white p-5 text-black min-h-[220px]">
                   <div dangerouslySetInnerHTML={{ __html: selectedTemplate.html }} />
                 </div>
+              </div>
+
+              {/* Version History & Rollback */}
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-semibold text-brand-400 uppercase tracking-wider flex items-center gap-1.5">
+                    <History className="h-3.5 w-3.5 text-brand-400" />
+                    Version History ({versions.length})
+                  </span>
+                  <button
+                    onClick={() => loadVersions(selectedTemplate.id)}
+                    className="text-[11px] text-brand-400 hover:text-white flex items-center gap-1"
+                  >
+                    <RefreshCw className="h-3 w-3" />
+                    Refresh
+                  </button>
+                </div>
+
+                {versions.length === 0 ? (
+                  <div className="rounded-lg border border-surface-border bg-surface-raised/50 p-4 text-center text-xs text-brand-500">
+                    No historical snapshots found. Snapshots are created on each update and publish.
+                  </div>
+                ) : (
+                  <div className="divide-y divide-surface-border rounded-lg border border-surface-border bg-surface-raised overflow-hidden">
+                    {versions.map((v) => (
+                      <div
+                        key={v.id || v.version}
+                        className="flex items-center justify-between p-3 hover:bg-surface/50 transition-colors text-xs"
+                      >
+                        <div className="space-y-0.5">
+                          <div className="flex items-center gap-2">
+                            <span className="font-mono font-medium text-white px-1.5 py-0.5 rounded bg-surface border border-surface-border">
+                              v{v.version}
+                            </span>
+                            <span className="text-brand-300 truncate max-w-[200px] sm:max-w-xs">{v.subject}</span>
+                          </div>
+                          <span className="text-[10px] text-brand-500 block">
+                            {new Date(v.created_at).toLocaleString()}
+                          </span>
+                        </div>
+                        <button
+                          onClick={() => handleRollback(selectedTemplate.id, v.version)}
+                          className="flex items-center gap-1 rounded border border-surface-border bg-surface px-2.5 py-1 text-xs text-brand-300 hover:text-white hover:border-zinc-500 transition-colors"
+                        >
+                          <RotateCcw className="h-3 w-3" />
+                          <span>Rollback</span>
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
 
               {/* Code Payload reference */}
