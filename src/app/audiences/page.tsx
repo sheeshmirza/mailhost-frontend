@@ -752,7 +752,7 @@ export default function AudiencesPage() {
                   >
                     <td className="px-4 py-3 text-zinc-900 dark:text-white font-medium flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        <Filter className="h-4 w-4 text-sky-500" />
+                        <Filter className="h-4 w-4 text-teal-600 dark:text-teal-300" />
                         <span>{seg.name}</span>
                       </div>
                       <span className="text-[11px] text-zinc-500 dark:text-zinc-400 opacity-0 group-hover:opacity-100 flex items-center gap-1 transition-opacity">
@@ -821,7 +821,7 @@ export default function AudiencesPage() {
                 topics.map((top) => (
                   <tr key={top.id} className="hover:bg-surface-raised/40 transition-colors">
                     <td className="px-5 py-3 text-zinc-900 dark:text-white font-semibold flex items-center gap-2">
-                      <Tag className="h-3.5 w-3.5 text-purple-500" />
+                      <Tag className="h-3.5 w-3.5 text-teal-600 dark:text-teal-300" />
                       <span>{top.name}</span>
                     </td>
                     <td className="px-5 py-3 text-zinc-700 dark:text-zinc-300 font-sans">
@@ -897,7 +897,7 @@ export default function AudiencesPage() {
                 </button>
                 <button
                   type="submit"
-                  className="rounded-md bg-zinc-900 px-4 py-1.5 text-xs font-medium text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200 transition-colors"
+                  className="btn-primary px-4 py-1.5 text-xs"
                 >
                   Create
                 </button>
@@ -988,7 +988,7 @@ export default function AudiencesPage() {
                 </button>
                 <button
                   type="submit"
-                  className="rounded-md bg-zinc-900 px-4 py-1.5 text-xs font-medium text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200 transition-colors"
+                  className="btn-primary px-4 py-1.5 text-xs"
                 >
                   Save Contact
                 </button>
@@ -1041,7 +1041,7 @@ export default function AudiencesPage() {
                 </button>
                 <button
                   type="submit"
-                  className="rounded-md bg-zinc-900 px-4 py-1.5 text-xs font-medium text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200 transition-colors"
+                  className="btn-primary px-4 py-1.5 text-xs"
                 >
                   {editingSegmentId ? "Save Changes" : "Save Segment"}
                 </button>
@@ -1106,7 +1106,7 @@ export default function AudiencesPage() {
                 </button>
                 <button
                   type="submit"
-                  className="rounded-md bg-zinc-900 px-4 py-1.5 text-xs font-medium text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200 transition-colors"
+                  className="btn-primary px-4 py-1.5 text-xs"
                 >
                   {editingTopicId ? "Save Changes" : "Save Topic"}
                 </button>
@@ -1199,7 +1199,7 @@ export default function AudiencesPage() {
             <div className="space-y-3 pt-2 border-t border-surface-border">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-semibold text-zinc-900 dark:text-white uppercase tracking-wider flex items-center gap-1.5">
-                  <Filter className="h-3.5 w-3.5 text-sky-500" />
+                  <Filter className="h-3.5 w-3.5 text-teal-600 dark:text-teal-300" />
                   Enrolled Segments ({contactSegments.length})
                 </span>
               </div>
@@ -1256,7 +1256,7 @@ export default function AudiencesPage() {
             {/* Topics Preferences */}
             <div className="space-y-3 pt-2 border-t border-surface-border">
               <span className="text-xs font-semibold text-zinc-900 dark:text-white uppercase tracking-wider flex items-center gap-1.5">
-                <Tag className="h-3.5 w-3.5 text-purple-500" />
+                <Tag className="h-3.5 w-3.5 text-teal-600 dark:text-teal-300" />
                 Topic Preferences ({contactTopics.length})
               </span>
 
@@ -1318,7 +1318,7 @@ export default function AudiencesPage() {
             <div className="flex items-center justify-between border-b border-surface-border pb-3">
               <div>
                 <h2 className="text-sm font-semibold text-zinc-900 dark:text-white flex items-center gap-2">
-                  <Filter className="h-4 w-4 text-sky-500" />
+                  <Filter className="h-4 w-4 text-teal-600 dark:text-teal-300" />
                   <span>{selectedSegment.name}</span>
                 </h2>
                 <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">

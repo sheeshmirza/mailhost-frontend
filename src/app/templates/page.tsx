@@ -395,7 +395,7 @@ export default function TemplatesPage() {
                 <pre className="rounded-lg border border-surface-border bg-surface-raised p-3 font-mono text-xs text-zinc-700 dark:text-zinc-300 overflow-x-auto">
                   <code>{`// Send using this template:
 await resend.emails.send({
-  from: 'team@yourdomain.com',
+  from: 'SENDER_ADDRESS',
   to: [process.env.RECIPIENT_ADDRESS],
   template: '${selectedTemplate.alias || selectedTemplate.id}',
   variables: {

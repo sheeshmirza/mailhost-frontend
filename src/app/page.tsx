@@ -173,7 +173,7 @@ export default function HomePage() {
         <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
           <Link
             href="/overview"
-            className="w-full sm:w-auto flex items-center justify-center gap-2 rounded-md bg-zinc-900 px-6 py-2.5 text-sm font-semibold text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200 transition-all shadow-md active:scale-95"
+            className="btn-primary w-full sm:w-auto px-6 py-2.5 text-sm shadow-md active:scale-95"
           >
             <span>Get Started</span>
             <ArrowRight className="h-4 w-4" />
@@ -293,7 +293,7 @@ export default function HomePage() {
           {/* Card 2: Inbound Email Webhooks */}
           <div className="rounded-2xl border border-surface-border bg-surface p-6 sm:p-8 space-y-4 hover:border-zinc-300 dark:hover:border-zinc-700 transition-all shadow-sm">
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-white">
-              <Mail className="h-5 w-5 text-purple-500" />
+              <Mail className="h-5 w-5 text-teal-600 dark:text-teal-300" />
             </div>
             <h3 className="text-xl font-semibold text-zinc-900 dark:text-white">
               Inbound Webhooks
@@ -315,7 +315,7 @@ export default function HomePage() {
           {/* Card 3: Audiences, Contacts & Cohort Segments */}
           <div className="rounded-2xl border border-surface-border bg-surface p-6 sm:p-8 space-y-4 hover:border-zinc-300 dark:hover:border-zinc-700 transition-all shadow-sm">
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-white">
-              <Users className="h-5 w-5 text-sky-500" />
+              <Users className="h-5 w-5 text-teal-600 dark:text-teal-300" />
             </div>
             <h3 className="text-xl font-semibold text-zinc-900 dark:text-white">
               Audiences & Segments
@@ -395,7 +395,7 @@ export default function HomePage() {
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
             <Link
               href="/overview"
-              className="w-full sm:w-auto flex items-center justify-center gap-2 rounded-md bg-zinc-900 px-6 py-2.5 text-sm font-semibold text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200 transition-all shadow-md active:scale-95"
+              className="btn-primary w-full sm:w-auto px-6 py-2.5 text-sm shadow-md active:scale-95"
             >
               <span>Explore Dashboard</span>
               <ArrowRight className="h-4 w-4" />

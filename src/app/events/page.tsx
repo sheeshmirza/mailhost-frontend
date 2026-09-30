@@ -164,7 +164,7 @@ export default function EventsPage() {
               events.map((ev) => (
                 <tr key={ev.id} className="hover:bg-surface-raised/40 transition-colors">
                   <td className="px-5 py-3 text-zinc-900 dark:text-white font-semibold flex items-center gap-2">
-                    <Zap className="h-3.5 w-3.5 text-purple-500" />
+                    <Zap className="h-3.5 w-3.5 text-teal-600 dark:text-teal-300" />
                     <span>{ev.name}</span>
                   </td>
                   <td className="px-5 py-3 text-zinc-700 dark:text-zinc-300">{ev.contact_email}</td>
@@ -206,7 +206,7 @@ export default function EventsPage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
           <div className="dialog-scroll relative flex flex-col w-full max-w-md rounded-xl border border-surface-border bg-surface p-6 shadow-2xl space-y-4">
             <div className="flex items-center gap-2">
-              <Zap className="h-4 w-4 text-purple-500" />
+              <Zap className="h-4 w-4 text-teal-600 dark:text-teal-300" />
               <h2 className="text-sm font-semibold text-zinc-900 dark:text-white">Trigger Custom Event</h2>
             </div>
             <p className="text-xs text-zinc-500 dark:text-zinc-400">
@@ -265,7 +265,7 @@ export default function EventsPage() {
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="rounded-md bg-zinc-900 px-4 py-1.5 text-xs font-medium text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200 transition-colors disabled:opacity-50"
+                  className="btn-primary px-4 py-1.5 text-xs"
                 >
                   {isSubmitting ? "Triggering..." : "Fire Event"}
                 </button>

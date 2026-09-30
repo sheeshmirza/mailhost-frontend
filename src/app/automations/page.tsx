@@ -388,12 +388,12 @@ export default function AutomationsPage() {
                   </div>
 
                   {/* Trigger Node */}
-                  <div className="flex items-center gap-3 rounded-lg border border-purple-200 bg-purple-50 dark:border-purple-800/40 dark:bg-purple-950/20 p-3.5">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-md bg-purple-100 text-purple-600 dark:bg-purple-900/60 dark:text-purple-300">
+                  <div className="flex items-center gap-3 rounded-lg border border-teal-200 bg-teal-50 dark:border-teal-800/40 dark:bg-teal-950/20 p-3.5">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-md bg-teal-100 text-teal-700 dark:bg-teal-900/60 dark:text-teal-300">
                       <Zap className="h-4 w-4" />
                     </div>
                     <div>
-                      <span className="text-[10px] uppercase font-mono text-purple-600 dark:text-purple-400 block font-semibold">
+                      <span className="text-[10px] uppercase font-mono text-teal-700 dark:text-teal-300 block font-semibold">
                         Trigger
                       </span>
                       <span className="text-xs font-medium text-zinc-900 dark:text-white">
@@ -419,7 +419,7 @@ export default function AutomationsPage() {
                               {step.type === "delay" ? (
                                 <Clock className="h-3.5 w-3.5 text-amber-500" />
                               ) : step.type === "condition" ? (
-                                <Filter className="h-3.5 w-3.5 text-sky-500" />
+                                <Filter className="h-3.5 w-3.5 text-teal-600 dark:text-teal-300" />
                               ) : (
                                 <Mail className="h-3.5 w-3.5 text-zinc-900 dark:text-white" />
                               )}
@@ -615,7 +615,7 @@ export default function AutomationsPage() {
                   type="email"
                   value={emailFrom}
                   onChange={(e) => setEmailFrom(e.target.value)}
-                  placeholder="Sender email (e.g. sender@yourdomain.com)"
+                  placeholder="Sender email address"
                   required
                   className="w-full rounded-md border border-surface-border bg-surface-raised px-3 py-1.5 text-xs text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-600 focus:outline-none"
                 />
@@ -645,7 +645,7 @@ export default function AutomationsPage() {
                 </button>
                 <button
                   type="submit"
-                  className="rounded-md bg-zinc-900 px-4 py-1.5 text-xs font-medium text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200 transition-colors"
+                  className="btn-primary px-4 py-1.5 text-xs"
                 >
                   Deploy Automation
                 </button>

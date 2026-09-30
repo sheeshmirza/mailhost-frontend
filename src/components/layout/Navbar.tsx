@@ -233,7 +233,7 @@ export default function Navbar({
               {token && user ? (
                 <Link
                   href="/overview"
-                  className="flex items-center gap-1.5 rounded-md bg-zinc-900 text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200 px-3.5 py-1.5 text-xs font-medium transition-all shadow-sm"
+                  className="btn-primary px-3.5 py-1.5 text-xs shadow-sm"
                 >
                   <span>Dashboard</span>
                   <ArrowRight className="h-3 w-3" />
@@ -248,7 +248,7 @@ export default function Navbar({
                   </Link>
                   <Link
                     href="/login"
-                    className="flex items-center gap-1.5 rounded-md bg-zinc-900 text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200 px-3.5 py-1.5 text-xs font-medium transition-all shadow-sm"
+                    className="btn-primary px-3.5 py-1.5 text-xs shadow-sm"
                   >
                     <span>Get Started</span>
                     <ArrowRight className="h-3 w-3" />

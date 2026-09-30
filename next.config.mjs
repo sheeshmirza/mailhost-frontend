@@ -1,7 +1,7 @@
 import path from "path";
 
 const nextConfig = {
-  distDir: process.env.NEXT_DIST_DIR || ".next",
+  ...(process.env.NEXT_DIST_DIR ? { distDir: process.env.NEXT_DIST_DIR } : {}),
   // Optimize static images by disabling Next.js server-side image optimization
   images: {
     domains: [],

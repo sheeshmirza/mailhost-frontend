@@ -20,6 +20,17 @@
   --selection-bg: rgba(15, 118, 110, 0.16);
   --selection-color: #123b37;
   --ring: #0f766e;
+  --neutral-50: 247 250 249;
+  --neutral-100: 237 242 240;
+  --neutral-200: 223 231 228;
+  --neutral-300: 200 212 208;
+  --neutral-400: 154 169 163;
+  --neutral-500: 100 115 110;
+  --neutral-600: 82 97 92;
+  --neutral-700: 52 66 62;
+  --neutral-800: 38 51 47;
+  --neutral-900: 23 33 31;
+  --neutral-950: 16 23 21;
 }
 
 .dark {

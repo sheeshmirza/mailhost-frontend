@@ -529,7 +529,7 @@ export default function DomainsPage() {
                 </button>
                 <button
                   type="submit"
-                  className="rounded-md bg-zinc-900 px-4 py-1.5 text-xs font-medium text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200 transition-colors"
+                  className="btn-primary px-4 py-1.5 text-xs"
                 >
                   Add Domain
                 </button>

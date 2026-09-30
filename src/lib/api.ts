@@ -1,7 +1,6 @@
 // Resend / Mailhost API Client
 
 const getBaseUrl = (): string => {
-  process.env.NEXT_PUBLIC_API_URL = "https://api.buy4cashback.com"
   const configuredUrl = process.env.NEXT_PUBLIC_API_URL?.trim();
   if (!configuredUrl) {
     throw new Error("NEXT_PUBLIC_API_URL is not configured.");

@@ -716,7 +716,7 @@ export default function SettingsPage() {
         <div className="space-y-6">
           <div className="rounded-xl border border-surface-border bg-surface p-6 space-y-4">
             <div className="flex items-center gap-2">
-              <Bot className="h-5 w-5 text-purple-500" />
+              <Bot className="h-5 w-5 text-teal-600 dark:text-teal-300" />
               <h2 className="text-base font-semibold text-zinc-900 dark:text-white">Remote Model Context Protocol (MCP)</h2>
             </div>
             <p className="text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed">

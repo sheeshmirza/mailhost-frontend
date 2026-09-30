@@ -199,15 +199,15 @@ export default function OverviewPage() {
         <div className="rounded-xl border border-surface-border bg-surface p-5 space-y-3 shadow-sm">
           <div className="flex items-center justify-between">
             <span className="text-xs text-zinc-500 uppercase tracking-wider font-medium">Opened</span>
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-sky-50 dark:bg-sky-500/10">
-              <Eye className="h-4 w-4 text-sky-600 dark:text-sky-400" />
+            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-teal-50 dark:bg-teal-500/10">
+              <Eye className="h-4 w-4 text-teal-700 dark:text-teal-300" />
             </div>
           </div>
           <div>
             <div className="text-2xl font-semibold text-zinc-900 dark:text-white tracking-tight">
               {totals.opened.toLocaleString()}
             </div>
-            <div className="text-[11px] text-sky-600 dark:text-sky-400 font-medium mt-1">
+            <div className="text-[11px] text-teal-700 dark:text-teal-300 font-medium mt-1">
               {(rates.open_rate * 100).toFixed(1)}% rate
             </div>
           </div>
@@ -217,15 +217,15 @@ export default function OverviewPage() {
         <div className="rounded-xl border border-surface-border bg-surface p-5 space-y-3 shadow-sm">
           <div className="flex items-center justify-between">
             <span className="text-xs text-zinc-500 uppercase tracking-wider font-medium">Clicked</span>
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-purple-50 dark:bg-purple-500/10">
-              <MousePointer className="h-4 w-4 text-purple-600 dark:text-purple-400" />
+            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-teal-50 dark:bg-teal-500/10">
+              <MousePointer className="h-4 w-4 text-teal-700 dark:text-teal-300" />
             </div>
           </div>
           <div>
             <div className="text-2xl font-semibold text-zinc-900 dark:text-white tracking-tight">
               {totals.clicked.toLocaleString()}
             </div>
-            <div className="text-[11px] text-purple-600 dark:text-purple-400 font-medium mt-1">
+            <div className="text-[11px] text-teal-700 dark:text-teal-300 font-medium mt-1">
               {(rates.click_rate * 100).toFixed(1)}% rate
             </div>
           </div>
@@ -267,7 +267,7 @@ export default function OverviewPage() {
               <span className="h-2 w-2 rounded-full bg-emerald-500" /> Delivered
             </span>
             <span className="flex items-center gap-1.5 text-zinc-500 dark:text-zinc-400">
-              <span className="h-2 w-2 rounded-full bg-sky-500" /> Opened
+              <span className="h-2 w-2 rounded-full bg-teal-600" /> Opened
             </span>
           </div>
         </div>
