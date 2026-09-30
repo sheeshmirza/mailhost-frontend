@@ -2,13 +2,8 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import {
-  FileText,
   Plus,
   Trash2,
-  CheckCircle2,
-  Code,
-  Eye,
-  Send,
   UploadCloud,
   RefreshCw,
   History,

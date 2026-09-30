@@ -16,7 +16,6 @@ const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [theme, setThemeState] = useState<Theme>("light");
   const [resolvedTheme, setResolvedTheme] = useState<"light" | "dark">("light");
-  const [mounted, setMounted] = useState(false);
 
   // Apply theme to DOM
   const applyTheme = (t: Theme) => {
@@ -42,7 +41,6 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     const saved = (localStorage.getItem("resend_theme") as Theme) || "light";
     setThemeState(saved);
     applyTheme(saved);
-    setMounted(true);
 
     const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
     const handleChange = () => {

@@ -8,12 +8,7 @@ import { TableSkeleton } from "@/components/ui/LoadingState";
 import { CursorPagination } from "@/components/ui/CursorPagination";
 import {
   Zap,
-  Plus,
   RefreshCw,
-  Send,
-  Code,
-  CheckCircle2,
-  AlertCircle,
 } from "lucide-react";
 
 export default function EventsPage() {

@@ -6,14 +6,11 @@ import { useToast } from "@/lib/toast-context";
 import { ErrorState } from "@/components/ui/ErrorState";
 import { TableSkeleton } from "@/components/ui/LoadingState";
 import {
-  Webhook,
   Plus,
   Trash2,
   Pencil,
-  CheckCircle2,
   Copy,
   Check,
-  Shield,
   RefreshCw,
 } from "lucide-react";
 

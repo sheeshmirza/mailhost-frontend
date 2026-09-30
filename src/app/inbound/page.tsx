@@ -18,7 +18,6 @@ import {
   X,
   RefreshCw,
   ChevronRight,
-  Mail,
 } from "lucide-react";
 import { useToast } from "@/lib/toast-context";
 import { TableSkeleton } from "@/components/ui/LoadingState";

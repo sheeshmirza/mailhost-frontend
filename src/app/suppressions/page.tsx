@@ -9,8 +9,6 @@ import {
   ShieldAlert,
   Trash2,
   RefreshCw,
-  AlertTriangle,
-  CheckCircle2,
 } from "lucide-react";
 
 export default function SuppressionsPage() {

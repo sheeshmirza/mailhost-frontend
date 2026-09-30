@@ -15,9 +15,6 @@ import {
   MousePointer,
   AlertTriangle,
   ArrowRight,
-  Globe,
-  Key,
-  Inbox,
   RefreshCw,
 } from "lucide-react";
 import CodeSnippet from "@/components/ui/CodeSnippet";

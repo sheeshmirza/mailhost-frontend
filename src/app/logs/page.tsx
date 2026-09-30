@@ -10,8 +10,6 @@ import {
   Activity,
   CheckCircle2,
   AlertTriangle,
-  Server,
-  ShieldAlert,
   Flame,
   RefreshCw,
 } from "lucide-react";
@@ -31,7 +29,6 @@ export default function LogsHealthPage() {
   const [readiness, setReadiness] = useState<string | null>(null);
   const [auditLogs, setAuditLogs] = useState<AuditLogView[]>([]);
   const [dedicatedIPs, setDedicatedIPs] = useState<DedicatedIPView[]>([]);
-  const [warmupSchedule, setWarmupSchedule] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [auditLogsError, setAuditLogsError] = useState<string | null>(null);
@@ -73,11 +70,10 @@ export default function LogsHealthPage() {
     setLoadError(null);
     setAuditLogsError(null);
     try {
-      const [readyRes, logsRes, ipsRes, schedRes] = await Promise.allSettled([
+      const [readyRes, logsRes, ipsRes] = await Promise.allSettled([
         api.getReadiness(),
         api.listAuditLogs(),
         api.listDedicatedIPs(),
-        api.getWarmingSchedule(),
       ]);
 
       const failedResources: string[] = [];
@@ -98,11 +94,6 @@ export default function LogsHealthPage() {
         setDedicatedIPs(ipsRes.value.data || []);
       } else {
         failedResources.push("dedicated IP data");
-      }
-      if (schedRes.status === "fulfilled") {
-        setWarmupSchedule(schedRes.value.schedule || []);
-      } else {
-        failedResources.push("warmup schedule");
       }
       if (failedResources.length) {
         setLoadError(`Could not load ${failedResources.join(" and ")}.`);

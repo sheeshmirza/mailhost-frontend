@@ -1,19 +1,16 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { api, SMTPCredView, DomainView } from "@/lib/api";
+import { api, SMTPCredView } from "@/lib/api";
 import { useToast } from "@/lib/toast-context";
 import { ErrorState } from "@/components/ui/ErrorState";
 import { TableSkeleton } from "@/components/ui/LoadingState";
 import {
-  Server,
   Plus,
   Trash2,
   Copy,
   Check,
-  Shield,
   AlertTriangle,
-  Code2,
 } from "lucide-react";
 
 export default function SMTPPage() {
@@ -23,7 +20,6 @@ export default function SMTPPage() {
   const smtpSecurity = process.env.NEXT_PUBLIC_SMTP_SECURITY?.trim() || "Not configured";
   const smtpAuthMechanism = process.env.NEXT_PUBLIC_SMTP_AUTH_MECHANISM?.trim() || "Not configured";
   const [credentials, setCredentials] = useState<SMTPCredView[]>([]);
-  const [domains, setDomains] = useState<DomainView[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
 
@@ -41,28 +37,8 @@ export default function SMTPPage() {
     setIsLoading(true);
     setLoadError(null);
     try {
-      const [credsRes, domainsRes] = await Promise.allSettled([
-        api.listSMTPCredentials(),
-        api.listDomains(),
-      ]);
-      const failedResources: string[] = [];
-      if (credsRes.status === "fulfilled") {
-        setCredentials(credsRes.value.data || []);
-      } else {
-        failedResources.push("SMTP credentials");
-      }
-      if (domainsRes.status === "fulfilled") {
-        const domList = domainsRes.value.data || [];
-        setDomains(domList);
-        if (domList.length > 0 && !email) {
-          setEmail("");
-        }
-      } else {
-        failedResources.push("domains");
-      }
-      if (failedResources.length) {
-        setLoadError(`Could not load ${failedResources.join(" and ")}.`);
-      }
+      const res = await api.listSMTPCredentials();
+      setCredentials(res.data || []);
     } catch (err) {
       console.error("Failed to load SMTP credentials", err);
       setLoadError(err instanceof Error ? err.message : "Could not load SMTP data.");

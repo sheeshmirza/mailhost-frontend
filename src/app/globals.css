@@ -116,20 +116,9 @@ body {
     overscroll-behavior: contain;
   }
 
-  .card-panel {
-    @apply space-y-3 rounded-lg border border-surface-border bg-surface p-5 shadow-sm transition-colors;
-  }
 }
 
 @layer utilities {
-  .focus-ring {
-    @apply focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--background)];
-  }
-
-  .card {
-    @apply bg-surface border border-surface-border rounded-lg shadow-card;
-  }
-
   .badge {
     @apply inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-medium tracking-tight;
   }
@@ -149,9 +138,6 @@ body {
     @apply bg-surface-subtle text-zinc-600 dark:text-zinc-400 border border-surface-border;
   }
 
-  .shimmer {
-    @apply relative overflow-hidden bg-surface-subtle before:absolute before:inset-0 before:-translate-x-full before:animate-[shimmer_1.5s_infinite] before:bg-gradient-to-r before:from-transparent before:via-white/10 before:to-transparent;
-  }
 }
 
 :focus-visible {
@@ -192,11 +178,6 @@ body {
   to { opacity: 1; transform: translateY(0); }
 }
 
-@keyframes slideIn {
-  from { opacity: 0; transform: translateX(16px); }
-  to { opacity: 1; transform: translateX(0); }
-}
-
 .animate-fade-in {
   animation: fadeIn 0.15s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
@@ -205,11 +186,3 @@ body {
   animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
-.animate-slide-in {
-  animation: slideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
-
-.glass-panel {
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-}

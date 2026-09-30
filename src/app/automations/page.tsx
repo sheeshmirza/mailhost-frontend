@@ -7,7 +7,6 @@ import {
   AutomationRun,
   AutomationRunDetail,
   AutomationStep,
-  DomainView,
 } from "@/lib/api";
 import {
   GitBranch,
@@ -16,11 +15,8 @@ import {
   Pause,
   Trash2,
   Clock,
-  CheckCircle2,
-  AlertCircle,
   Mail,
   Filter,
-  ArrowRight,
   RefreshCw,
   Zap,
 } from "lucide-react";
@@ -35,7 +31,6 @@ export default function AutomationsPage() {
   const [runs, setRuns] = useState<AutomationRun[]>([]);
   const [selectedRun, setSelectedRun] = useState<AutomationRunDetail | null>(null);
   const [runDetailLoading, setRunDetailLoading] = useState(false);
-  const [domains, setDomains] = useState<DomainView[]>([]);
   const [activeTab, setActiveTab] = useState<"workflows" | "runs">("workflows");
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
@@ -59,38 +54,18 @@ export default function AutomationsPage() {
     setIsLoading(true);
     setLoadError(null);
     try {
-      const [autoRes, domRes] = await Promise.allSettled([
-        api.listAutomations(),
-        api.listDomains(),
-      ]);
+      const listResponse = await api.listAutomations();
       if (revision !== automationListRevision.current) return;
-      const failedResources: string[] = [];
-      if (autoRes.status === "fulfilled") {
-        const list = autoRes.value.data || [];
-        setAutomations(list);
-        const nextAutomation =
-          list.find((automation) => automation.id === selectedAuto?.id) || list[0] || null;
-        setSelectedAuto(nextAutomation);
-        if (nextAutomation) void loadRuns(nextAutomation.id);
-        else {
-          runsRevision.current += 1;
-          setRuns([]);
-          setRunsLoading(false);
-        }
-      } else {
-        failedResources.push("automations");
-      }
-      if (domRes.status === "fulfilled") {
-        const domList = domRes.value.data || [];
-        setDomains(domList);
-        if (domList.length > 0 && !emailFrom) {
-          setEmailFrom("");
-        }
-      } else {
-        failedResources.push("domains");
-      }
-      if (failedResources.length) {
-        setLoadError(`Could not load ${failedResources.join(" and ")}.`);
+      const list = listResponse.data || [];
+      setAutomations(list);
+      const nextAutomation =
+        list.find((automation) => automation.id === selectedAuto?.id) || list[0] || null;
+      setSelectedAuto(nextAutomation);
+      if (nextAutomation) void loadRuns(nextAutomation.id);
+      else {
+        runsRevision.current += 1;
+        setRuns([]);
+        setRunsLoading(false);
       }
     } catch (err) {
       if (revision !== automationListRevision.current) return;

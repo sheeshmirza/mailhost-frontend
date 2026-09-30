@@ -9,16 +9,12 @@ import {
   TopicView,
 } from "@/lib/api";
 import {
-  Radio,
   Plus,
   Send,
   Copy,
   Trash2,
   Pencil,
-  Clock,
   CheckCircle2,
-  RefreshCw,
-  Users,
 } from "lucide-react";
 import { useToast } from "@/lib/toast-context";
 import { ErrorState } from "@/components/ui/ErrorState";
@@ -32,8 +28,6 @@ export default function BroadcastsPage() {
   const [topics, setTopics] = useState<TopicView[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
-
-  const [domains, setDomains] = useState<any[]>([]);
 
   // New broadcast modal
   const [isOpen, setIsOpen] = useState(false);
@@ -56,10 +50,9 @@ export default function BroadcastsPage() {
     setIsLoading(true);
     setLoadError(null);
     try {
-      const [bcRes, audRes, domRes, segRes, topicRes] = await Promise.allSettled([
+      const [bcRes, audRes, segRes, topicRes] = await Promise.allSettled([
         api.listBroadcasts(),
         api.listAudiences(),
-        api.listDomains(),
         api.listSegments(),
         api.listTopics(),
       ]);
@@ -74,15 +67,6 @@ export default function BroadcastsPage() {
         setAudiences(auds);
       } else {
         failedResources.push("audiences");
-      }
-      if (domRes.status === "fulfilled") {
-        const domList = domRes.value.data || [];
-        setDomains(domList);
-        if (domList.length > 0 && !from) {
-          setFrom("");
-        }
-      } else {
-        failedResources.push("domains");
       }
       if (segRes.status === "fulfilled") setSegments(segRes.value.data || []);
       else failedResources.push("segments");

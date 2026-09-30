@@ -1,11 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import {
-  api,
-  DomainView,
-  DNSRecord,
-} from "@/lib/api";
+import { api, DomainView } from "@/lib/api";
 import {
   Globe,
   Plus,
@@ -17,8 +13,6 @@ import {
   Trash2,
   ShieldCheck,
   ChevronDown,
-  ChevronRight,
-  ExternalLink,
 } from "lucide-react";
 import { useToast } from "@/lib/toast-context";
 import { ErrorState } from "@/components/ui/ErrorState";

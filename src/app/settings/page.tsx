@@ -10,15 +10,12 @@ import {
   UserSession,
 } from "@/lib/api";
 import {
-  Settings,
   User,
   Users,
-  Building,
   Key,
   Lock,
   Bot,
   Trash2,
-  Plus,
   Shield,
   CheckCircle2,
   Copy,
@@ -37,7 +34,7 @@ const formatSessionTime = (value?: string) => {
 };
 
 export default function SettingsPage() {
-  const { user, account, accounts, credentialType, refresh, logout } = useAuth();
+  const { user, account, credentialType, refresh, logout } = useAuth();
   const { toast } = useToast();
 
   const [activeTab, setActiveTab] = useState<

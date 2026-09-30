@@ -1,8 +1,8 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { X, Send, Eye, Code, Plus, Trash2, CheckCircle2, AlertCircle } from "lucide-react";
-import { api, DomainView } from "@/lib/api";
+import { X, Send, Eye, Code, CheckCircle2, AlertCircle } from "lucide-react";
+import { api } from "@/lib/api";
 import { useToast } from "@/lib/toast-context";
 
 interface SendEmailModalProps {
@@ -22,7 +22,6 @@ export default function SendEmailModal({
   const [subject, setSubject] = useState("");
   const [htmlContent, setHtmlContent] = useState("");
   const [textContent, setTextContent] = useState("");
-  const [domains, setDomains] = useState<DomainView[]>([]);
   const [activeTab, setActiveTab] = useState<"html" | "preview" | "text">("html");
   const [previewHtml, setPreviewHtml] = useState("");
   const [isSending, setIsSending] = useState(false);
@@ -66,15 +65,6 @@ export default function SendEmailModal({
     if (isOpen) {
       setError(null);
       setSuccessId(null);
-      // Fetch verified domains to populate sender
-      api.listDomains().then((res) => {
-        setDomains(res.data || []);
-        if (res.data && res.data.length > 0 && !from) {
-          setFrom("");
-        }
-      }).catch(() => {
-        setFrom("");
-      });
     }
   }, [isOpen]);
 

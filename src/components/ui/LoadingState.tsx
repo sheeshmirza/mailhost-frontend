@@ -16,21 +16,6 @@ export function Skeleton({ className = "" }: SkeletonProps) {
   );
 }
 
-export function PageHeaderSkeleton() {
-  return (
-    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-surface-border pb-6 animate-pulse">
-      <div className="space-y-2">
-        <Skeleton className="h-6 w-40" />
-        <Skeleton className="h-3.5 w-64" />
-      </div>
-      <div className="flex items-center gap-2">
-        <Skeleton className="h-8 w-24 rounded-lg" />
-        <Skeleton className="h-8 w-28 rounded-lg" />
-      </div>
-    </div>
-  );
-}
-
 interface TableSkeletonProps {
   rows?: number;
   columns?: number;
@@ -94,34 +79,6 @@ export function CardSkeleton() {
       </div>
       <Skeleton className="h-7 w-24" />
       <Skeleton className="h-2.5 w-32" />
-    </div>
-  );
-}
-
-export function ChartSkeleton() {
-  return (
-    <div className="rounded-xl border border-surface-border bg-surface p-6 space-y-6 animate-pulse">
-      <div className="flex items-center justify-between">
-        <div className="space-y-1.5">
-          <Skeleton className="h-4 w-32" />
-          <Skeleton className="h-3 w-48" />
-        </div>
-        <Skeleton className="h-7 w-24 rounded-lg" />
-      </div>
-      <div className="h-48 flex items-end gap-3 pt-6 px-2">
-        {Array.from({ length: 14 }).map((_, i) => {
-          const heights = [
-            "h-12", "h-24", "h-16", "h-32", "h-20", "h-40", "h-28",
-            "h-36", "h-16", "h-24", "h-44", "h-32", "h-20", "h-36",
-          ];
-          return (
-            <div key={i} className="flex-1 flex flex-col items-center gap-2">
-              <Skeleton className={`w-full rounded-t ${heights[i % heights.length]}`} />
-              <Skeleton className="h-2.5 w-5" />
-            </div>
-          );
-        })}
-      </div>
     </div>
   );
 }

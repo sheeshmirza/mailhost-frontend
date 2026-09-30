@@ -11,13 +11,8 @@ import {
   Mail,
   Users,
   Radio,
-  GitBranch,
   Bot,
-  ExternalLink,
   ChevronRight,
-  Terminal,
-  Server,
-  Activity,
 } from "lucide-react";
 import { useToast } from "@/lib/toast-context";
 

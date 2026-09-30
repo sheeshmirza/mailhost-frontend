@@ -19,10 +19,7 @@ import {
   Filter,
   Tag,
   X,
-  Check,
   ChevronRight,
-  Sliders,
-  CheckCircle2,
   Pencil,
 } from "lucide-react";
 import { useToast } from "@/lib/toast-context";

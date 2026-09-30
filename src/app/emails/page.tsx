@@ -21,7 +21,6 @@ import {
   ChevronRight,
   RefreshCw,
   Ban,
-  ArrowUpRight,
   Users,
 } from "lucide-react";
 import SendEmailModal from "@/components/emails/SendEmailModal";
@@ -475,7 +474,7 @@ function EmailsPageContent() {
       {/* Email Detail Slide-over / Modal */}
       {selectedEmail && (
         <div className="fixed inset-0 z-50 flex items-center justify-end bg-zinc-900/40 dark:bg-black/60 backdrop-blur-sm animate-fade-in">
-          <div className="h-full w-full max-w-2xl border-l border-surface-border bg-surface p-8 shadow-2xl flex flex-col space-y-8 overflow-y-auto animate-slide-in-right">
+          <div className="h-full w-full max-w-2xl border-l border-surface-border bg-surface p-8 shadow-2xl flex flex-col space-y-8 overflow-y-auto">
             {/* Header */}
             <div className="flex items-start justify-between border-b border-surface-border pb-6">
               <div className="space-y-1.5">
@@ -728,7 +727,7 @@ function EmailsPageContent() {
 
 export default function EmailsPage() {
   return (
-    <Suspense fallback={<div className="p-8 text-xs text-brand-500">Loading emails...</div>}>
+    <Suspense fallback={<div className="p-8 text-xs text-zinc-500">Loading emails...</div>}>
       <EmailsPageContent />
     </Suspense>
   );

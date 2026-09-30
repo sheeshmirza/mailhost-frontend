@@ -3,12 +3,10 @@
 import React, { useState, useEffect } from "react";
 import { api, APIKeyView, DomainView } from "@/lib/api";
 import {
-  Key,
   Plus,
   Trash2,
   Copy,
   Check,
-  Shield,
   AlertTriangle,
   RefreshCw,
 } from "lucide-react";
