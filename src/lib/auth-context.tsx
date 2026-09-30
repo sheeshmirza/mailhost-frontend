@@ -31,7 +31,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [accounts, setAccounts] = useState<UserAccountView[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Initialize from localStorage or default credentials
+  // Initialize from localStorage
   useEffect(() => {
     const savedToken = localStorage.getItem("mailhost_token");
     if (savedToken) {
@@ -39,12 +39,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       api.setToken(savedToken);
       fetchCurrentUser(savedToken);
     } else {
-      // Auto-connect with default admin account if available, or try to login
-      const defaultKey = "re_usr_298dae053010c4ef32c57b6c885dbe1a5951842426daeac0345d6b36bb77e211";
-      localStorage.setItem("mailhost_token", defaultKey);
-      setToken(defaultKey);
-      api.setToken(defaultKey);
-      fetchCurrentUser(defaultKey);
+      setIsLoading(false);
     }
   }, []);
 
@@ -72,14 +67,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         });
       }
     } catch (err) {
-      console.warn("Could not fetch current user session, falling back to minimal state", err);
-      // Fallback account info
-      setAccount({
-        id: "default-account",
-        name: "Acme Corp",
-        role: "administrator",
-        created_at: new Date().toISOString(),
-      });
+      console.warn("Invalid or expired session token, resetting auth state", err);
+      setToken(null);
+      setUser(null);
+      setAccount(null);
+      setAccounts([]);
+      localStorage.removeItem("mailhost_token");
+      api.setToken(null);
     } finally {
       setIsLoading(false);
     }
@@ -158,6 +152,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setAccounts([]);
     localStorage.removeItem("mailhost_token");
     api.setToken(null);
+    if (typeof window !== "undefined") {
+      window.location.href = "/login";
+    }
   };
 
   const refresh = async () => {

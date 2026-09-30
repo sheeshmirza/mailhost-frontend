@@ -1,13 +1,13 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
 import { Key, Mail, Lock, Building, User, AlertCircle, ArrowRight, Loader2 } from "lucide-react";
 
 export default function LoginPage() {
   const router = useRouter();
-  const { login, register, connectWithKey } = useAuth();
+  const { token, user, isLoading, login, register, connectWithKey } = useAuth();
 
   const [mode, setMode] = useState<"login" | "register" | "apikey">("login");
   const [email, setEmail] = useState("");
@@ -17,6 +17,20 @@ export default function LoginPage() {
   const [apiKey, setApiKey] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (!isLoading && token && user) {
+      router.replace("/overview");
+    }
+  }, [isLoading, token, user, router]);
+
+  if (!isLoading && token && user) {
+    return (
+      <div className="flex min-h-[calc(100vh-3.5rem)] items-center justify-center">
+        <Loader2 className="h-6 w-6 animate-spin text-zinc-400" />
+      </div>
+    );
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

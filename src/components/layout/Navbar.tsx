@@ -73,10 +73,17 @@ const navGroups = [
   },
 ];
 
-export default function Navbar({ isLanding }: { isLanding?: boolean }) {
+export default function Navbar({
+  isLanding,
+  isLogin,
+}: {
+  isLanding?: boolean;
+  isLogin?: boolean;
+}) {
   const pathname = usePathname();
   const isHomepage = isLanding ?? pathname === "/";
-  const { user, account, accounts, switchAccount, logout } = useAuth();
+  const isLoginPage = isLogin ?? (pathname === "/login" || pathname === "/login/");
+  const { token, user, account, accounts, switchAccount, logout } = useAuth();
   const { resolvedTheme, toggleTheme } = useTheme();
 
   const [isSendOpen, setIsSendOpen] = useState(false);
@@ -89,7 +96,7 @@ export default function Navbar({ isLanding }: { isLanding?: boolean }) {
       <header className="sticky top-0 z-40 flex h-14 w-full items-center justify-between border-b border-surface-border bg-background/85 px-4 sm:px-6 backdrop-blur-md transition-colors">
         {/* Left Section: Logo (+ Mobile Menu or Org Switcher) */}
         <div className="flex items-center gap-3 sm:gap-4">
-          {!isHomepage && (
+          {!isHomepage && !isLoginPage && (
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               className="flex h-8 w-8 items-center justify-center rounded-md border border-surface-border bg-surface text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white lg:hidden transition-colors"
@@ -108,7 +115,7 @@ export default function Navbar({ isLanding }: { isLanding?: boolean }) {
             </span>
           </Link>
 
-          {!isHomepage && (
+          {!isHomepage && !isLoginPage && (
             <>
               <span className="text-zinc-400 dark:text-zinc-600">/</span>
 
@@ -208,22 +215,43 @@ export default function Navbar({ isLanding }: { isLanding?: boolean }) {
             )}
           </button>
 
-          {isHomepage ? (
-            /* Public Landing Action Buttons */
+          {isLoginPage ? (
             <div className="flex items-center gap-2">
               <Link
-                href="/login"
-                className="hidden sm:inline-flex rounded-md px-3 py-1.5 text-xs font-medium text-zinc-700 hover:text-zinc-900 dark:text-zinc-300 dark:hover:text-white transition-colors"
+                href="/"
+                className="rounded-md px-3 py-1.5 text-xs font-medium text-zinc-700 hover:text-zinc-900 dark:text-zinc-300 dark:hover:text-white transition-colors"
               >
-                Sign In
+                Back to Home
               </Link>
-              <Link
-                href="/overview"
-                className="flex items-center gap-1.5 rounded-md bg-zinc-900 text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200 px-3.5 py-1.5 text-xs font-medium transition-all shadow-sm"
-              >
-                <span>Dashboard</span>
-                <ArrowRight className="h-3 w-3" />
-              </Link>
+            </div>
+          ) : isHomepage ? (
+            /* Public Landing Action Buttons */
+            <div className="flex items-center gap-2">
+              {token && user ? (
+                <Link
+                  href="/overview"
+                  className="flex items-center gap-1.5 rounded-md bg-zinc-900 text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200 px-3.5 py-1.5 text-xs font-medium transition-all shadow-sm"
+                >
+                  <span>Dashboard</span>
+                  <ArrowRight className="h-3 w-3" />
+                </Link>
+              ) : (
+                <>
+                  <Link
+                    href="/login"
+                    className="hidden sm:inline-flex rounded-md px-3 py-1.5 text-xs font-medium text-zinc-700 hover:text-zinc-900 dark:text-zinc-300 dark:hover:text-white transition-colors"
+                  >
+                    Sign In
+                  </Link>
+                  <Link
+                    href="/login"
+                    className="flex items-center gap-1.5 rounded-md bg-zinc-900 text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200 px-3.5 py-1.5 text-xs font-medium transition-all shadow-sm"
+                  >
+                    <span>Get Started</span>
+                    <ArrowRight className="h-3 w-3" />
+                  </Link>
+                </>
+              )}
             </div>
           ) : (
             /* Dashboard Action Buttons */
@@ -320,7 +348,7 @@ export default function Navbar({ isLanding }: { isLanding?: boolean }) {
       </header>
 
       {/* Mobile Sidebar Navigation Drawer Overlay (for dashboard) */}
-      {!isHomepage && mobileMenuOpen && (
+      {!isHomepage && !isLoginPage && mobileMenuOpen && (
         <div className="fixed inset-0 z-40 lg:hidden">
           <div
             className="fixed inset-0 bg-black/60 backdrop-blur-sm animate-fade-in"
