@@ -131,9 +131,6 @@ export default function Sidebar() {
           <Code2 className="h-4 w-4 text-zinc-400 dark:text-zinc-500" />
           <span>OpenAPI Spec</span>
         </a>
-        <div className="px-3 pt-2 text-[10px] text-content-subtle font-mono">
-          Mailhost v1.0.0 (Go)
-        </div>
       </div>
     </aside>
   );

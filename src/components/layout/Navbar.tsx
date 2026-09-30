@@ -405,11 +405,10 @@ export default function Navbar({
               </div>
             </div>
 
-            <div className="pt-4 border-t border-surface-border flex items-center justify-between text-[11px] text-zinc-500">
+            <div className="pt-4 border-t border-surface-border text-[11px] text-zinc-500">
               <Link href="/" onClick={() => setMobileMenuOpen(false)} className="hover:underline">
                 View Landing Page
               </Link>
-              <span>Go Engine</span>
             </div>
           </nav>
         </div>

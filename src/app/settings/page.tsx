@@ -24,7 +24,7 @@ import {
   Check,
   RefreshCw,
 } from "lucide-react";
-import { TableSkeleton } from "@/components/ui/LoadingState";
+import { Skeleton, TableSkeleton } from "@/components/ui/LoadingState";
 import { ErrorState } from "@/components/ui/ErrorState";
 
 const formatSessionTime = (value?: string) => {
@@ -630,7 +630,25 @@ export default function SettingsPage() {
             {sessionsError ? (
               <ErrorState message={sessionsError} onRetry={fetchTeamAndSessions} />
             ) : isLoading && sessions.length === 0 ? (
-              <TableSkeleton rows={3} cols={4} />
+              <div className="divide-y divide-surface-border" aria-label="Loading sessions">
+                {Array.from({ length: 3 }, (_, index) => (
+                  <div key={index} className="grid gap-4 py-4 first:pt-0 sm:grid-cols-[minmax(0,1.5fr)_repeat(3,minmax(110px,1fr))_auto] sm:items-center">
+                    <div className="flex items-center gap-3">
+                      <Skeleton className="h-9 w-9 rounded-md" />
+                      <div className="space-y-2">
+                        <Skeleton className="h-3 w-32" />
+                        <Skeleton className="h-2.5 w-24" />
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-3 sm:contents">
+                      <Skeleton className="h-8 w-28" />
+                      <Skeleton className="h-8 w-28" />
+                      <Skeleton className="h-8 w-28" />
+                    </div>
+                    <Skeleton className="h-8 w-16 justify-self-end" />
+                  </div>
+                ))}
+              </div>
             ) : sessions.length === 0 ? (
               <div className="rounded-md bg-surface-raised px-4 py-8 text-center">
                 <p className="text-sm font-medium text-zinc-800 dark:text-zinc-200">No active sessions</p>

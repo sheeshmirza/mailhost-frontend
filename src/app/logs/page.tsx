@@ -17,14 +17,6 @@ import {
   RefreshCw,
 } from "lucide-react";
 
-const SERVICE_NAMES: Record<string, string> = {
-  database: "Relational Datastore",
-  read_replica: "Replica Datastore",
-  mongodb: "Payload Archive",
-  redis: "Cache & Queue",
-  secretbox: "Key Encryption Engine",
-};
-
 function formatAuditIP(ip?: string) {
   if (!ip || ip === "127.0.0.1" || ip === "::1" || ip.startsWith("172.") || ip.startsWith("10.") || ip.startsWith("192.168.")) {
     return "Authorized Client";
@@ -34,7 +26,7 @@ function formatAuditIP(ip?: string) {
 
 export default function LogsHealthPage() {
   const { toast } = useToast();
-  const [readiness, setReadiness] = useState<Record<string, string>>({});
+  const [readiness, setReadiness] = useState<string | null>(null);
   const [auditLogs, setAuditLogs] = useState<AuditLogView[]>([]);
   const [dedicatedIPs, setDedicatedIPs] = useState<DedicatedIPView[]>([]);
   const [warmupSchedule, setWarmupSchedule] = useState<any[]>([]);
@@ -51,7 +43,9 @@ export default function LogsHealthPage() {
       ]);
 
       if (readyRes.status === "fulfilled") {
-        setReadiness(readyRes.value.checks || {});
+        setReadiness(readyRes.value.status);
+      } else {
+        setReadiness("unavailable");
       }
       if (logsRes.status === "fulfilled") {
         setAuditLogs(logsRes.value.data || []);
@@ -83,7 +77,7 @@ export default function LogsHealthPage() {
             System Health & Audit Logs
           </h1>
           <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
-            Real-time backend dependency status, IP auto-warming schedules, and audit trail.
+            Service availability, IP auto-warming schedules, and audit trail.
           </p>
         </div>
 
@@ -99,39 +93,20 @@ export default function LogsHealthPage() {
       </div>
 
       {/* Platform Service Status */}
-      <div className="rounded-xl border border-surface-border bg-surface p-5 space-y-4">
-        <div className="flex items-center justify-between">
-          <h2 className="text-xs font-semibold text-zinc-900 dark:text-white uppercase tracking-wider">
-            Platform Service Status
-          </h2>
-          <span className="flex items-center gap-1.5 text-xs text-emerald-600 dark:text-emerald-400 font-medium">
-            <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-            Operational
+      <div className="flex flex-col gap-3 rounded-lg border border-surface-border bg-surface p-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex items-center gap-3">
+          <span className="flex h-9 w-9 items-center justify-center rounded-md bg-surface-subtle text-content-muted">
+            <Activity className="h-4 w-4" />
           </span>
+          <div>
+            <h2 className="text-[13px] font-semibold text-content-primary">Service availability</h2>
+            <p className="mt-0.5 text-xs text-content-muted">Current API readiness</p>
+          </div>
         </div>
-
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          {Object.entries(readiness).map(([service, status]) => (
-            <div
-              key={service}
-              className="rounded-lg border border-surface-border bg-surface-raised p-3 text-xs"
-            >
-              <div className="flex items-center justify-between">
-                <span className="font-medium text-zinc-700 dark:text-zinc-300">
-                  {SERVICE_NAMES[service] || service.replace("_", " ")}
-                </span>
-                {status === "ok" ? (
-                  <CheckCircle2 className="h-4 w-4 text-emerald-500" />
-                ) : (
-                  <AlertTriangle className="h-4 w-4 text-amber-500" />
-                )}
-              </div>
-              <span className="mt-1 block font-mono text-[11px] text-zinc-400 dark:text-zinc-500">
-                {status === "ok" ? "Operational" : "Degraded"}
-              </span>
-            </div>
-          ))}
-        </div>
+        <span className={`inline-flex items-center gap-2 text-[13px] font-medium ${readiness === "ready" ? "text-emerald-700 dark:text-emerald-300" : "text-amber-700 dark:text-amber-300"}`}>
+          {readiness === "ready" ? <CheckCircle2 className="h-4 w-4" /> : <AlertTriangle className="h-4 w-4" />}
+          {readiness === "ready" ? "Available" : readiness === "degraded" ? "Degraded" : "Unavailable"}
+        </span>
       </div>
 
       {/* Dedicated IP Auto-Warming Schedule */}

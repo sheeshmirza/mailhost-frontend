@@ -380,7 +380,7 @@ export default function HomePage() {
               100%
             </div>
             <div className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
-              Open-Source Go Engine
+              Open-Source Delivery Engine
             </div>
           </div>
         </div>
@@ -618,7 +618,7 @@ export default function HomePage() {
 
           <div className="rounded-2xl border border-surface-border bg-surface p-6 space-y-4">
             <p className="text-xs text-zinc-600 dark:text-zinc-300 leading-relaxed italic">
-              &ldquo;The React Email support combined with the Go engine speed is completely unmatched. We discarded our legacy SendGrid stack completely.&rdquo;
+              &ldquo;The React Email support combined with the delivery performance is completely unmatched. We discarded our legacy SendGrid stack completely.&rdquo;
             </p>
             <div className="text-xs font-semibold text-zinc-900 dark:text-white">
               David Chen

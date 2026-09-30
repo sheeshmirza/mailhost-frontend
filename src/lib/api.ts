@@ -479,9 +479,7 @@ export class APIClient {
   }
 
   async getReadiness() {
-    return this.request<{ checks: Record<string, string>; status: string }>(
-      "/readyz"
-    );
+    return this.request<{ status: string }>("/readyz");
   }
 
   // Auth
