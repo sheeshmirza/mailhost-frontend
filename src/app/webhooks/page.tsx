@@ -162,8 +162,8 @@ export default function WebhooksPage() {
       ) : loadError && webhooks.length === 0 ? (
         <ErrorState message={loadError} onRetry={fetchWebhooks} />
       ) : (
-      <div className="rounded-xl border border-surface-border overflow-hidden bg-surface">
-        <table className="w-full text-left">
+      <div className="overflow-x-auto rounded-xl border border-surface-border bg-surface">
+        <table className="w-full min-w-[760px] text-left">
           <thead className="bg-surface-raised border-b border-surface-border text-[11px] font-medium uppercase tracking-wider text-zinc-500">
             <tr>
               <th className="px-4 py-3">Endpoint URL</th>
@@ -272,7 +272,7 @@ export default function WebhooksPage() {
       {/* Add Webhook Modal */}
       {isOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-fade-in">
-          <div className="relative flex flex-col w-full max-w-lg rounded-xl border border-surface-border bg-surface p-6 shadow-2xl space-y-4">
+          <div className="dialog-scroll relative flex flex-col w-full max-w-lg rounded-xl border border-surface-border bg-surface p-6 shadow-2xl space-y-4">
             <div>
               <h2 className="text-lg font-semibold text-zinc-900 dark:text-white">
                 {editingWebhookId ? "Edit Webhook Endpoint" : "Add Webhook Endpoint"}

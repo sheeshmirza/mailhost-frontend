@@ -99,6 +99,12 @@ body {
     @apply mx-auto w-full max-w-[1480px] space-y-6 px-4 py-6 animate-fade-in sm:px-6 sm:py-7 xl:px-8;
   }
 
+  .dialog-scroll {
+    max-height: calc(100dvh - 2rem);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+
   .card-panel {
     @apply space-y-3 rounded-lg border border-surface-border bg-surface p-5 shadow-sm transition-colors;
   }

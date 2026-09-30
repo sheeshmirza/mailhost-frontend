@@ -118,7 +118,7 @@ export default function Navbar({
           </Link>
 
           {!isHomepage && !isLoginPage && (
-            <>
+            <div className="hidden items-center gap-3 sm:flex">
               <span className="text-zinc-400 dark:text-zinc-600">/</span>
 
               {/* Organization Switcher Dropdown */}
@@ -175,7 +175,7 @@ export default function Navbar({
                   </>
                 )}
               </div>
-            </>
+            </div>
           )}
         </div>
 
@@ -263,6 +263,8 @@ export default function Navbar({
               <button
                 onClick={() => setIsSendOpen(true)}
                 className="btn-primary"
+                aria-label="Send email"
+                title="Send email"
               >
                 <Send className="h-3.5 w-3.5" />
                 <span className="hidden sm:inline">Send Email</span>
@@ -366,6 +368,32 @@ export default function Navbar({
                   <X className="h-4 w-4" />
                 </button>
               </div>
+
+              {accounts.length > 0 && (
+                <section className="space-y-1 border-b border-surface-border pb-3">
+                  <p className="px-3 text-[10px] font-semibold uppercase tracking-widest text-zinc-400">
+                    Account
+                  </p>
+                  {accounts.map((acct) => (
+                    <button
+                      key={acct.id}
+                      type="button"
+                      onClick={async () => {
+                        try {
+                          await switchAccount(acct.id);
+                          setMobileMenuOpen(false);
+                        } catch (err) {
+                          toast.error("Could not switch account: " + (err instanceof Error ? err.message : "Unknown error"));
+                        }
+                      }}
+                      className="flex min-h-9 w-full items-center justify-between gap-2 rounded-md px-3 text-left text-xs text-zinc-700 hover:bg-surface-raised dark:text-zinc-300 dark:hover:text-white"
+                    >
+                      <span className="min-w-0 truncate">{acct.name}</span>
+                      {acct.id === account?.id && <Check className="h-3.5 w-3.5 shrink-0" />}
+                    </button>
+                  ))}
+                </section>
+              )}
 
               <div className="space-y-4">
                 {navGroups.map((group) => (

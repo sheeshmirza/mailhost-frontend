@@ -320,7 +320,7 @@ export default function SendEmailModal({
               </button>
 
               {showAdvanced && (
-                <div className="grid grid-cols-3 gap-2 pt-2 animate-fade-in">
+                <div className="grid grid-cols-1 gap-2 pt-2 animate-fade-in sm:grid-cols-3">
                   <div>
                     <label className="block text-[10px] text-zinc-500 dark:text-zinc-400 mb-0.5">CC</label>
                     <input

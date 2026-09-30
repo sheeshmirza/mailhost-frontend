@@ -28,6 +28,7 @@ import {
 import { useToast } from "@/lib/toast-context";
 import { ErrorState } from "@/components/ui/ErrorState";
 import { TableSkeleton } from "@/components/ui/LoadingState";
+import { CursorPagination } from "@/components/ui/CursorPagination";
 
 export default function AudiencesPage() {
   const toast = useToast();
@@ -46,6 +47,9 @@ export default function AudiencesPage() {
   const [loadError, setLoadError] = useState<string | null>(null);
   const [contactsError, setContactsError] = useState<string | null>(null);
   const [isContactsLoading, setIsContactsLoading] = useState(false);
+  const [contactsBefore, setContactsBefore] = useState<string | undefined>();
+  const [nextContactsBefore, setNextContactsBefore] = useState<string | undefined>();
+  const [contactsPageHistory, setContactsPageHistory] = useState<(string | undefined)[]>([]);
   const dataLoadRevision = useRef(0);
   const contactsLoadRevision = useRef(0);
 
@@ -61,6 +65,10 @@ export default function AudiencesPage() {
   const [segmentContacts, setSegmentContacts] = useState<ContactView[]>([]);
   const [isSegmentLoading, setIsSegmentLoading] = useState(false);
   const [segmentContactsError, setSegmentContactsError] = useState<string | null>(null);
+  const [segmentContactsBefore, setSegmentContactsBefore] = useState<string | undefined>();
+  const [nextSegmentContactsBefore, setNextSegmentContactsBefore] = useState<string | undefined>();
+  const [segmentContactsPageHistory, setSegmentContactsPageHistory] = useState<(string | undefined)[]>([]);
+  const segmentContactsRevision = useRef(0);
 
   // Modals
   const [isAudienceOpen, setIsAudienceOpen] = useState(false);
@@ -132,20 +140,49 @@ export default function AudiencesPage() {
     }
   };
 
-  const loadContacts = async (audienceId?: string) => {
+  const loadContacts = async (
+    audienceId?: string,
+    before?: string,
+    resetPage = true
+  ): Promise<boolean> => {
     const revision = ++contactsLoadRevision.current;
     setIsContactsLoading(true);
     setContactsError(null);
+    if (resetPage) {
+      setContacts([]);
+      setContactsBefore(undefined);
+      setNextContactsBefore(undefined);
+      setContactsPageHistory([]);
+    }
     try {
-      const res = await api.listContacts(audienceId);
-      if (revision === contactsLoadRevision.current) setContacts(res.data || []);
+      const res = await api.listContacts(audienceId, 50, before);
+      if (revision !== contactsLoadRevision.current) return false;
+      setContacts(res.data || []);
+      setContactsBefore(before);
+      setNextContactsBefore(res.next_before);
+      return true;
     } catch (err) {
-      if (revision !== contactsLoadRevision.current) return;
+      if (revision !== contactsLoadRevision.current) return false;
       console.error("Failed to load contacts", err);
       setContactsError(err instanceof Error ? err.message : "Could not load contacts.");
+      return false;
     } finally {
       if (revision === contactsLoadRevision.current) setIsContactsLoading(false);
     }
+  };
+
+  const loadOlderContacts = async () => {
+    if (!nextContactsBefore || isContactsLoading) return;
+    const currentBefore = contactsBefore;
+    const loaded = await loadContacts(selectedAudience?.id, nextContactsBefore, false);
+    if (loaded) setContactsPageHistory((history) => [...history, currentBefore]);
+  };
+
+  const loadNewerContacts = async () => {
+    if (contactsPageHistory.length === 0 || isContactsLoading) return;
+    const previousBefore = contactsPageHistory[contactsPageHistory.length - 1];
+    const loaded = await loadContacts(selectedAudience?.id, previousBefore, false);
+    if (loaded) setContactsPageHistory((history) => history.slice(0, -1));
   };
 
   useEffect(() => {
@@ -370,19 +407,56 @@ export default function AudiencesPage() {
     }
   };
 
-  const openSegmentDetail = async (seg: SegmentView) => {
+  const loadSegmentContacts = async (
+    seg: SegmentView,
+    before?: string,
+    resetPage = true
+  ): Promise<boolean> => {
+    const revision = ++segmentContactsRevision.current;
     setSelectedSegment(seg);
     setIsSegmentLoading(true);
     setSegmentContactsError(null);
+    if (resetPage) {
+      setSegmentContacts([]);
+      setSegmentContactsBefore(undefined);
+      setNextSegmentContactsBefore(undefined);
+      setSegmentContactsPageHistory([]);
+    }
     try {
-      const res = await api.listSegmentContacts(seg.id);
+      const res = await api.listSegmentContacts(seg.id, 50, before);
+      if (revision !== segmentContactsRevision.current) return false;
       setSegmentContacts(res.data || []);
+      setSegmentContactsBefore(before);
+      setNextSegmentContactsBefore(res.next_before);
+      return true;
     } catch (err) {
+      if (revision !== segmentContactsRevision.current) return false;
       console.error(err);
       setSegmentContacts([]);
       setSegmentContactsError(err instanceof Error ? err.message : "Could not load enrolled contacts.");
+      return false;
     } finally {
-      setIsSegmentLoading(false);
+      if (revision === segmentContactsRevision.current) setIsSegmentLoading(false);
+    }
+  };
+
+  const openSegmentDetail = (seg: SegmentView) => {
+    void loadSegmentContacts(seg);
+  };
+
+  const loadOlderSegmentContacts = async () => {
+    if (!selectedSegment || !nextSegmentContactsBefore || isSegmentLoading) return;
+    const currentBefore = segmentContactsBefore;
+    if (await loadSegmentContacts(selectedSegment, nextSegmentContactsBefore, false)) {
+      setSegmentContactsPageHistory((history) => [...history, currentBefore]);
+    }
+  };
+
+  const loadNewerSegmentContacts = async () => {
+    if (!selectedSegment || segmentContactsPageHistory.length === 0 || isSegmentLoading) return;
+    const previousBefore = segmentContactsPageHistory[segmentContactsPageHistory.length - 1];
+    if (await loadSegmentContacts(selectedSegment, previousBefore, false)) {
+      setSegmentContactsPageHistory((history) => history.slice(0, -1));
     }
   };
 
@@ -477,7 +551,10 @@ export default function AudiencesPage() {
           )}
 
           <button
-            onClick={fetchData}
+            onClick={() => {
+              api.clearCache();
+              void fetchData();
+            }}
             className="flex h-8 w-8 items-center justify-center rounded-lg border border-surface-border bg-surface text-zinc-500 hover:bg-surface-raised hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white transition-colors"
           >
             <RefreshCw className={`h-3.5 w-3.5 ${isLoading ? "animate-spin" : ""}`} />
@@ -510,7 +587,7 @@ export default function AudiencesPage() {
               <button
                 onClick={() => {
                   setSelectedAudience(null);
-                  loadContacts();
+                  void loadContacts();
                 }}
                 className={`w-full flex items-center justify-between rounded-lg px-3 py-2 text-xs transition-colors ${
                   selectedAudience === null
@@ -526,7 +603,7 @@ export default function AudiencesPage() {
                   key={aud.id}
                   onClick={() => {
                     setSelectedAudience(aud);
-                    loadContacts(aud.id);
+                    void loadContacts(aud.id);
                   }}
                   className={`group flex items-center justify-between rounded-lg px-3 py-2 text-xs cursor-pointer transition-colors ${
                     selectedAudience?.id === aud.id
@@ -554,6 +631,16 @@ export default function AudiencesPage() {
               )}
             </div>
             )}
+            {(contactsPageHistory.length > 0 || nextContactsBefore) && (
+              <CursorPagination
+                page={contactsPageHistory.length + 1}
+                canGoNewer={contactsPageHistory.length > 0}
+                canGoOlder={Boolean(nextContactsBefore)}
+                isLoading={isContactsLoading}
+                onNewer={() => void loadNewerContacts()}
+                onOlder={() => void loadOlderContacts()}
+              />
+            )}
           </div>
 
           {/* Right: Contacts Table */}
@@ -568,7 +655,7 @@ export default function AudiencesPage() {
             {isContactsLoading && contacts.length === 0 ? (
               <TableSkeleton rows={5} cols={6} />
             ) : (
-            <div className="overflow-hidden rounded-xl border border-surface-border bg-surface shadow-sm">
+            <div className="overflow-x-auto rounded-xl border border-surface-border bg-surface shadow-sm">
               <table className="w-full text-left text-sm min-w-[550px]">
                 <thead className="border-b border-surface-border bg-surface-raised text-xs font-medium text-zinc-500 dark:text-zinc-400">
                   <tr>
@@ -646,7 +733,7 @@ export default function AudiencesPage() {
         isLoading && segments.length === 0 ? (
           <TableSkeleton rows={5} cols={3} />
         ) : (
-        <div className="overflow-hidden rounded-xl border border-surface-border bg-surface shadow-sm">
+        <div className="overflow-x-auto rounded-xl border border-surface-border bg-surface shadow-sm">
           <table className="w-full text-left text-sm min-w-[450px]">
             <thead className="border-b border-surface-border bg-surface-raised text-xs font-medium text-zinc-500 dark:text-zinc-400">
               <tr>
@@ -784,7 +871,7 @@ export default function AudiencesPage() {
       {/* New Audience Modal */}
       {isAudienceOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
-          <div className="relative flex flex-col w-full max-w-sm rounded-xl border border-surface-border bg-surface p-6 shadow-2xl space-y-4">
+          <div className="dialog-scroll relative flex flex-col w-full max-w-sm rounded-xl border border-surface-border bg-surface p-6 shadow-2xl space-y-4">
             <h2 className="text-sm font-semibold text-zinc-900 dark:text-white">Create Audience</h2>
             <form onSubmit={handleCreateAudience} className="space-y-4">
               <div>
@@ -823,7 +910,7 @@ export default function AudiencesPage() {
       {/* Add Contact Modal */}
       {isContactOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
-          <div className="relative flex flex-col w-full max-w-md rounded-xl border border-surface-border bg-surface p-6 shadow-2xl space-y-4">
+          <div className="dialog-scroll relative flex flex-col w-full max-w-md rounded-xl border border-surface-border bg-surface p-6 shadow-2xl space-y-4">
             <h2 className="text-sm font-semibold text-zinc-900 dark:text-white">Add Contact</h2>
             <form onSubmit={handleCreateContact} className="space-y-3">
               <div>
@@ -914,7 +1001,7 @@ export default function AudiencesPage() {
       {/* New Segment Modal */}
       {isSegmentOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
-          <div className="relative flex flex-col w-full max-w-sm rounded-xl border border-surface-border bg-surface p-6 shadow-2xl space-y-4">
+          <div className="dialog-scroll relative flex flex-col w-full max-w-sm rounded-xl border border-surface-border bg-surface p-6 shadow-2xl space-y-4">
             <h2 className="text-sm font-semibold text-zinc-900 dark:text-white">{editingSegmentId ? "Edit Contact Segment" : "Create Contact Segment"}</h2>
             <form onSubmit={handleCreateSegment} className="space-y-4">
               <div>
@@ -967,7 +1054,7 @@ export default function AudiencesPage() {
       {/* New Topic Modal */}
       {isTopicOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
-          <div className="relative flex flex-col w-full max-w-sm rounded-xl border border-surface-border bg-surface p-6 shadow-2xl space-y-4">
+          <div className="dialog-scroll relative flex flex-col w-full max-w-sm rounded-xl border border-surface-border bg-surface p-6 shadow-2xl space-y-4">
             <h2 className="text-sm font-semibold text-zinc-900 dark:text-white">{editingTopicId ? "Edit Subscription Topic" : "Create Subscription Topic"}</h2>
             <form onSubmit={handleCreateTopic} className="space-y-3">
               <div>
@@ -1235,11 +1322,14 @@ export default function AudiencesPage() {
                   <span>{selectedSegment.name}</span>
                 </h2>
                 <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
-                  {segmentContacts.length} contacts enrolled in this segment
+                  {segmentContacts.length} contacts on this page
                 </p>
               </div>
               <button
-                onClick={() => setSelectedSegment(null)}
+                onClick={() => {
+                  segmentContactsRevision.current += 1;
+                  setSelectedSegment(null);
+                }}
                 className="rounded-md p-1.5 text-zinc-500 hover:bg-surface-raised hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white transition-colors"
               >
                 <X className="h-4 w-4" />
@@ -1278,10 +1368,24 @@ export default function AudiencesPage() {
               )}
             </div>
 
+            {(segmentContactsPageHistory.length > 0 || nextSegmentContactsBefore) && (
+              <CursorPagination
+                page={segmentContactsPageHistory.length + 1}
+                canGoNewer={segmentContactsPageHistory.length > 0}
+                canGoOlder={Boolean(nextSegmentContactsBefore)}
+                isLoading={isSegmentLoading}
+                onNewer={() => void loadNewerSegmentContacts()}
+                onOlder={() => void loadOlderSegmentContacts()}
+              />
+            )}
+
             <div className="flex justify-end pt-2">
               <button
                 type="button"
-                onClick={() => setSelectedSegment(null)}
+                onClick={() => {
+                  segmentContactsRevision.current += 1;
+                  setSelectedSegment(null);
+                }}
                 className="rounded-md border border-surface-border px-4 py-1.5 text-xs text-zinc-700 hover:bg-surface-raised hover:text-zinc-900 dark:text-zinc-300 dark:hover:text-white transition-colors"
               >
                 Close

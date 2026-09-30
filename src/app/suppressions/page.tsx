@@ -88,8 +88,8 @@ export default function SuppressionsPage() {
       ) : loadError && suppressions.length === 0 ? (
         <ErrorState message={loadError} onRetry={fetchSuppressions} />
       ) : (
-      <div className="rounded-xl border border-surface-border overflow-hidden bg-surface">
-        <table className="w-full text-left">
+      <div className="overflow-x-auto rounded-xl border border-surface-border bg-surface">
+        <table className="w-full min-w-[640px] text-left">
           <thead className="bg-surface-raised border-b border-surface-border text-[11px] font-medium uppercase tracking-wider text-zinc-500">
             <tr>
               <th className="px-4 py-3">Suppressed Email Address</th>

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, Suspense } from "react";
+import React, { useState, useEffect, useRef, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import {
   api,
@@ -28,6 +28,7 @@ import SendEmailModal from "@/components/emails/SendEmailModal";
 import { useToast } from "@/lib/toast-context";
 import { ErrorState } from "@/components/ui/ErrorState";
 import { TableSkeleton } from "@/components/ui/LoadingState";
+import { CursorPagination } from "@/components/ui/CursorPagination";
 
 function EmailsPageContent() {
   const toast = useToast();
@@ -57,46 +58,81 @@ function EmailsPageContent() {
   const [lastBatchId, setLastBatchId] = useState<string | null>(null);
   const [batchStatus, setBatchStatus] = useState<BatchStatusView | null>(null);
   const [isCheckingBatch, setIsCheckingBatch] = useState(false);
+  const [emailBefore, setEmailBefore] = useState<string | undefined>();
+  const [nextEmailBefore, setNextEmailBefore] = useState<string | undefined>();
+  const [emailPageHistory, setEmailPageHistory] = useState<(string | undefined)[]>([]);
+  const emailListRevision = useRef(0);
+  const emailDetailRevision = useRef(0);
 
-  const fetchEmails = async () => {
+  const fetchEmails = async (before?: string, resetPage = true): Promise<boolean> => {
+    const revision = ++emailListRevision.current;
     setIsLoading(true);
     setLoadError(null);
     try {
-      const res = await api.listEmails(100);
+      const res = await api.listEmails(100, before, statusFilter);
+      if (revision !== emailListRevision.current) return false;
       setEmails(res.data || []);
-      if (initialId) {
-        loadEmailDetail(initialId);
+      setEmailBefore(before);
+      setNextEmailBefore(res.next_before);
+      if (resetPage) setEmailPageHistory([]);
+      if (resetPage && initialId) {
+        void loadEmailDetail(initialId);
       }
+      return true;
     } catch (err) {
+      if (revision !== emailListRevision.current) return false;
       console.error("Failed to fetch emails", err);
       setLoadError(err instanceof Error ? err.message : "Could not load emails.");
+      return false;
     } finally {
-      setIsLoading(false);
+      if (revision === emailListRevision.current) setIsLoading(false);
+    }
+  };
+
+  const loadOlderEmails = async () => {
+    if (!nextEmailBefore || isLoading) return;
+    const currentBefore = emailBefore;
+    if (await fetchEmails(nextEmailBefore, false)) {
+      setEmailPageHistory((history) => [...history, currentBefore]);
+    }
+  };
+
+  const loadNewerEmails = async () => {
+    if (emailPageHistory.length === 0 || isLoading) return;
+    const previousBefore = emailPageHistory[emailPageHistory.length - 1];
+    if (await fetchEmails(previousBefore, false)) {
+      setEmailPageHistory((history) => history.slice(0, -1));
     }
   };
 
   const loadEmailDetail = async (id: string) => {
+    const revision = ++emailDetailRevision.current;
     try {
       const detail = await api.getEmail(id);
-      setSelectedEmail(detail);
+      if (revision === emailDetailRevision.current) setSelectedEmail(detail);
     } catch (err) {
+      if (revision !== emailDetailRevision.current) return;
       console.error("Failed to load email detail", err);
       toast.error("Failed to load email details: " + (err instanceof Error ? err.message : "Unknown error"));
     }
   };
 
   useEffect(() => {
-    fetchEmails();
-  }, [initialId]);
+    void fetchEmails();
+    return () => {
+      emailListRevision.current += 1;
+      emailDetailRevision.current += 1;
+    };
+  }, [initialId, statusFilter]);
 
   const handleCancelEmail = async (id: string) => {
     try {
       await api.cancelEmail(id);
       toast.success("Email cancelled successfully");
       if (selectedEmail && selectedEmail.id === id) {
-        loadEmailDetail(id);
+        void loadEmailDetail(id);
       }
-      fetchEmails();
+      void fetchEmails();
     } catch (err: any) {
       toast.error(err.message || "Failed to cancel email");
     }
@@ -345,7 +381,10 @@ function EmailsPageContent() {
           </div>
 
           <button
-            onClick={fetchEmails}
+            onClick={() => {
+              api.clearCache();
+              void fetchEmails();
+            }}
             className="flex h-9 w-9 items-center justify-center rounded-lg border border-surface-border bg-surface text-zinc-500 hover:bg-surface-raised hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white transition-colors"
             title="Refresh emails"
           >
@@ -358,7 +397,7 @@ function EmailsPageContent() {
       {isLoading && emails.length === 0 ? (
         <TableSkeleton rows={6} columns={5} />
       ) : loadError && emails.length === 0 ? (
-        <ErrorState message={loadError} onRetry={fetchEmails} />
+        <ErrorState message={loadError} onRetry={() => void fetchEmails()} />
       ) : (
       <div className="overflow-x-auto rounded-xl border border-surface-border bg-surface">
         <table className="w-full text-left text-xs min-w-[600px]">
@@ -376,7 +415,7 @@ function EmailsPageContent() {
               filteredEmails.map((item) => (
                 <tr
                   key={item.id}
-                  onClick={() => loadEmailDetail(item.id)}
+                  onClick={() => void loadEmailDetail(item.id)}
                   className="group cursor-pointer hover:bg-surface-raised/50 transition-colors"
                 >
                   <td className="px-5 py-3 font-medium text-zinc-900 dark:text-white max-w-xs truncate">
@@ -421,7 +460,17 @@ function EmailsPageContent() {
         </table>
       </div>
       )}
-      {loadError && emails.length > 0 && <ErrorState message={loadError} onRetry={fetchEmails} />}
+      {(emailPageHistory.length > 0 || nextEmailBefore) && (
+        <CursorPagination
+          page={emailPageHistory.length + 1}
+          canGoNewer={emailPageHistory.length > 0}
+          canGoOlder={Boolean(nextEmailBefore)}
+          isLoading={isLoading}
+          onNewer={() => void loadNewerEmails()}
+          onOlder={() => void loadOlderEmails()}
+        />
+      )}
+      {loadError && emails.length > 0 && <ErrorState message={loadError} onRetry={() => void fetchEmails()} />}
 
       {/* Email Detail Slide-over / Modal */}
       {selectedEmail && (
@@ -438,7 +487,10 @@ function EmailsPageContent() {
                 </h2>
               </div>
               <button
-                onClick={() => setSelectedEmail(null)}
+                onClick={() => {
+                  emailDetailRevision.current += 1;
+                  setSelectedEmail(null);
+                }}
                 className="rounded-md p-1.5 text-zinc-500 hover:bg-surface-raised hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white transition-colors"
               >
                 <X className="h-5 w-5" />
@@ -565,7 +617,7 @@ function EmailsPageContent() {
       {/* Batch Send Modal */}
       {isBatchOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
-          <div className="relative flex flex-col w-full max-w-xl rounded-xl border border-surface-border bg-surface shadow-2xl overflow-hidden p-6 space-y-4">
+          <div className="dialog-scroll relative flex flex-col w-full max-w-xl rounded-xl border border-surface-border bg-surface shadow-2xl p-6 space-y-4">
             <div className="flex items-center justify-between border-b border-surface-border pb-3">
               <h2 className="text-sm font-semibold text-zinc-900 dark:text-white">Send Batch Emails</h2>
               <button

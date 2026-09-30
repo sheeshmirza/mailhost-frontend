@@ -232,8 +232,8 @@ export default function HomePage() {
               </div>
 
               {/* Code Editor Body */}
-              <pre className="p-5 font-mono text-xs text-zinc-200 overflow-x-auto leading-relaxed h-[320px]">
-                <code>{codeSnippets[selectedLang].code}</code>
+              <pre className="w-full min-w-0 max-w-full overflow-x-auto p-5 font-mono text-xs text-zinc-200 leading-relaxed h-[320px]">
+                <code className="block w-max">{codeSnippets[selectedLang].code}</code>
               </pre>
 
               {/* Code Footer */}
@@ -274,7 +274,7 @@ export default function HomePage() {
             <p className="text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed max-w-xl">
               Automatic SPF, DKIM, DMARC, and MX verification ensures your domain reputation remains pristine. Our intelligent warm-up engine safely ramps daily volume across dedicated IPs while automated suppression lists block known hard bounces and complaints.
             </p>
-            <div className="grid grid-cols-3 gap-3 pt-2 text-xs font-mono">
+            <div className="grid grid-cols-1 gap-3 pt-2 text-xs font-mono sm:grid-cols-3">
               <div className="rounded-lg border border-surface-border bg-surface-raised p-3">
                 <span className="text-[10px] text-zinc-500 block uppercase font-sans">SPF / DKIM</span>
                 <span className="text-emerald-600 dark:text-emerald-400 font-semibold">Automated</span>

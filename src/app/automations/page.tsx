@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   api,
   AutomationView,
@@ -41,6 +41,9 @@ export default function AutomationsPage() {
   const [loadError, setLoadError] = useState<string | null>(null);
   const [runsLoading, setRunsLoading] = useState(false);
   const [runsError, setRunsError] = useState<string | null>(null);
+  const automationListRevision = useRef(0);
+  const runsRevision = useRef(0);
+  const runDetailRevision = useRef(0);
 
   // New automation modal
   const [isOpen, setIsOpen] = useState(false);
@@ -52,6 +55,7 @@ export default function AutomationsPage() {
   const [emailHtml, setEmailHtml] = useState("");
 
   const fetchAutomations = async () => {
+    const revision = ++automationListRevision.current;
     setIsLoading(true);
     setLoadError(null);
     try {
@@ -59,15 +63,19 @@ export default function AutomationsPage() {
         api.listAutomations(),
         api.listDomains(),
       ]);
+      if (revision !== automationListRevision.current) return;
       const failedResources: string[] = [];
       if (autoRes.status === "fulfilled") {
         const list = autoRes.value.data || [];
         setAutomations(list);
-        if (list.length > 0 && !selectedAuto) {
-          setSelectedAuto(list[0]);
-          loadRuns(list[0].id);
-        } else if (selectedAuto) {
-          loadRuns(selectedAuto.id);
+        const nextAutomation =
+          list.find((automation) => automation.id === selectedAuto?.id) || list[0] || null;
+        setSelectedAuto(nextAutomation);
+        if (nextAutomation) void loadRuns(nextAutomation.id);
+        else {
+          runsRevision.current += 1;
+          setRuns([]);
+          setRunsLoading(false);
         }
       } else {
         failedResources.push("automations");
@@ -85,41 +93,54 @@ export default function AutomationsPage() {
         setLoadError(`Could not load ${failedResources.join(" and ")}.`);
       }
     } catch (err) {
+      if (revision !== automationListRevision.current) return;
       console.error("Failed to load automations", err);
       setLoadError(err instanceof Error ? err.message : "Could not load automation data.");
     } finally {
-      setIsLoading(false);
+      if (revision === automationListRevision.current) setIsLoading(false);
     }
   };
 
   const loadRuns = async (automationId: string) => {
+    const revision = ++runsRevision.current;
     setRunsLoading(true);
     setRunsError(null);
     try {
       const res = await api.listAutomationRuns(automationId);
-      setRuns(res.data || []);
+      if (revision === runsRevision.current) setRuns(res.data || []);
     } catch (err) {
+      if (revision !== runsRevision.current) return;
       console.error("Failed to load automation runs", err);
       setRunsError(err instanceof Error ? err.message : "Could not load workflow runs.");
     } finally {
-      setRunsLoading(false);
+      if (revision === runsRevision.current) setRunsLoading(false);
     }
   };
 
   const loadRunDetail = async (runId: string) => {
     if (!selectedAuto) return;
+    const revision = ++runDetailRevision.current;
+    const automationId = selectedAuto.id;
     setRunDetailLoading(true);
     try {
-      setSelectedRun(await api.getAutomationRun(selectedAuto.id, runId));
+      const detail = await api.getAutomationRun(automationId, runId);
+      if (revision === runDetailRevision.current) setSelectedRun(detail);
     } catch (err) {
-      toast.error("Could not load run details: " + (err instanceof Error ? err.message : "Unknown error"));
+      if (revision === runDetailRevision.current) {
+        toast.error("Could not load run details: " + (err instanceof Error ? err.message : "Unknown error"));
+      }
     } finally {
-      setRunDetailLoading(false);
+      if (revision === runDetailRevision.current) setRunDetailLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchAutomations();
+    void fetchAutomations();
+    return () => {
+      automationListRevision.current += 1;
+      runsRevision.current += 1;
+      runDetailRevision.current += 1;
+    };
   }, []);
 
   const handleCreate = async (e: React.FormEvent) => {
@@ -261,7 +282,9 @@ export default function AutomationsPage() {
                     key={a.id}
                     onClick={() => {
                       setSelectedAuto(a);
-                      loadRuns(a.id);
+                      void loadRuns(a.id);
+                      runDetailRevision.current += 1;
+                      setSelectedRun(null);
                     }}
                     className={`cursor-pointer rounded-xl border p-4 transition-all ${
                       selectedAuto?.id === a.id
@@ -434,7 +457,7 @@ export default function AutomationsPage() {
         runsError ? (
           <ErrorState
             message={runsError}
-            onRetry={() => selectedAuto && loadRuns(selectedAuto.id)}
+            onRetry={() => selectedAuto && void loadRuns(selectedAuto.id)}
           />
         ) : runsLoading && runs.length === 0 ? (
           <TableSkeleton rows={5} cols={5} />
@@ -531,7 +554,7 @@ export default function AutomationsPage() {
       {/* New Automation Modal */}
       {isOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
-          <div className="relative flex flex-col w-full max-w-lg rounded-xl border border-surface-border bg-surface p-6 shadow-2xl space-y-4">
+          <div className="dialog-scroll relative flex flex-col w-full max-w-lg rounded-xl border border-surface-border bg-surface p-6 shadow-2xl space-y-4">
             <h2 className="text-sm font-semibold text-zinc-900 dark:text-white">Create Automated Drip Journey</h2>
             <form onSubmit={handleCreate} className="space-y-3">
               <div>

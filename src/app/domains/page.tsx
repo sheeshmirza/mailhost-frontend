@@ -314,7 +314,7 @@ export default function DomainsPage() {
               </div>
 
               {/* Records Table */}
-              <div className="overflow-hidden rounded-lg border border-zinc-200 shadow-sm dark:border-zinc-800 bg-white dark:bg-zinc-950">
+              <div className="overflow-x-auto rounded-lg border border-zinc-200 shadow-sm dark:border-zinc-800 bg-white dark:bg-zinc-950">
                 <div className="overflow-x-auto">
                   <table className="w-full text-left text-sm whitespace-nowrap min-w-[600px]">
                     <thead className="border-b border-zinc-200 bg-zinc-50/80 text-xs text-zinc-500 dark:border-zinc-800 dark:bg-zinc-900/80 dark:text-zinc-400">
@@ -484,7 +484,7 @@ export default function DomainsPage() {
       {/* Add Domain Modal */}
       {isAddOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
-          <div className="relative flex flex-col w-full max-w-md rounded-xl border border-surface-border bg-surface p-6 shadow-2xl space-y-4">
+          <div className="dialog-scroll relative flex flex-col w-full max-w-md rounded-xl border border-surface-border bg-surface p-6 shadow-2xl space-y-4">
             <h2 className="text-sm font-semibold text-zinc-900 dark:text-white">Add Sending Domain</h2>
             <p className="text-xs text-zinc-500 dark:text-zinc-400">
               Enter your apex domain or subdomain to generate DKIM cryptographic keys.

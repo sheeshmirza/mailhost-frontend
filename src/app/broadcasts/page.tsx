@@ -244,7 +244,7 @@ export default function BroadcastsPage() {
       ) : loadError && broadcasts.length === 0 ? (
         <ErrorState message={loadError} onRetry={fetchData} />
       ) : (
-      <div className="rounded-xl border border-surface-border overflow-hidden bg-surface">
+      <div className="overflow-x-auto rounded-xl border border-surface-border bg-surface">
         <table className="w-full text-left text-sm min-w-[600px]">
           <thead className="bg-surface-raised border-b border-surface-border">
             <tr>
@@ -339,7 +339,7 @@ export default function BroadcastsPage() {
       {/* New Broadcast Modal */}
       {isOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-fade-in p-4">
-          <div className="relative flex flex-col w-full max-w-lg rounded-xl border border-surface-border bg-surface p-6 shadow-2xl">
+          <div className="dialog-scroll relative flex flex-col w-full max-w-lg rounded-xl border border-surface-border bg-surface p-6 shadow-2xl">
             <h2 className="text-lg font-semibold text-zinc-900 dark:text-white">
               {editingBroadcastId ? "Edit Draft Broadcast" : "Create Broadcast Campaign"}
             </h2>
@@ -467,7 +467,7 @@ export default function BroadcastsPage() {
 
       {scheduledBroadcastId && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
-          <section role="dialog" aria-modal="true" aria-labelledby="broadcast-send-title" className="w-full max-w-md space-y-4 rounded-lg border border-surface-border bg-surface p-5 shadow-2xl">
+          <section role="dialog" aria-modal="true" aria-labelledby="broadcast-send-title" className="dialog-scroll w-full max-w-md space-y-4 rounded-lg border border-surface-border bg-surface p-5 shadow-2xl">
             <div>
               <h2 id="broadcast-send-title" className="text-sm font-semibold text-content-primary">Send broadcast</h2>
               <p className="mt-1 text-xs text-content-muted">Send immediately, or choose a future delivery time.</p>

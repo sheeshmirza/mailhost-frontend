@@ -1,10 +1,11 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { api, CustomEvent } from "@/lib/api";
 import { useToast } from "@/lib/toast-context";
 import { ErrorState } from "@/components/ui/ErrorState";
 import { TableSkeleton } from "@/components/ui/LoadingState";
+import { CursorPagination } from "@/components/ui/CursorPagination";
 import {
   Zap,
   Plus,
@@ -27,23 +28,65 @@ export default function EventsPage() {
   const [email, setEmail] = useState("");
   const [jsonData, setJsonData] = useState("{}");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [eventsBefore, setEventsBefore] = useState<string | undefined>();
+  const [nextEventsBefore, setNextEventsBefore] = useState<string | undefined>();
+  const [eventsPageHistory, setEventsPageHistory] = useState<(string | undefined)[]>([]);
+  const [isPageLoading, setIsPageLoading] = useState(false);
+  const eventsLoadRevision = useRef(0);
 
-  const fetchEvents = async () => {
+  const fetchEvents = async (before?: string, resetPage = true): Promise<boolean> => {
+    const revision = ++eventsLoadRevision.current;
     setIsLoading(true);
     setLoadError(null);
     try {
-      const res = await api.listEvents();
+      const res = await api.listEvents(50, before);
+      if (revision !== eventsLoadRevision.current) return false;
       setEvents(res.data || []);
+      setEventsBefore(before);
+      setNextEventsBefore(res.next_before);
+      if (resetPage) setEventsPageHistory([]);
+      return true;
     } catch (err) {
+      if (revision !== eventsLoadRevision.current) return false;
       console.error("Failed to load events", err);
       setLoadError(err instanceof Error ? err.message : "Could not load events.");
+      return false;
     } finally {
-      setIsLoading(false);
+      if (revision === eventsLoadRevision.current) setIsLoading(false);
+    }
+  };
+
+  const loadOlderEvents = async () => {
+    if (!nextEventsBefore || isPageLoading) return;
+    setIsPageLoading(true);
+    const currentBefore = eventsBefore;
+    try {
+      if (await fetchEvents(nextEventsBefore, false)) {
+        setEventsPageHistory((history) => [...history, currentBefore]);
+      }
+    } finally {
+      setIsPageLoading(false);
+    }
+  };
+
+  const loadNewerEvents = async () => {
+    if (eventsPageHistory.length === 0 || isPageLoading) return;
+    setIsPageLoading(true);
+    const previousBefore = eventsPageHistory[eventsPageHistory.length - 1];
+    try {
+      if (await fetchEvents(previousBefore, false)) {
+        setEventsPageHistory((history) => history.slice(0, -1));
+      }
+    } finally {
+      setIsPageLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchEvents();
+    void fetchEvents();
+    return () => {
+      eventsLoadRevision.current += 1;
+    };
   }, []);
 
   const handleTrigger = async (e: React.FormEvent) => {
@@ -58,7 +101,7 @@ export default function EventsPage() {
       });
       toast.success(`Event "${name}" triggered successfully`);
       setIsOpen(false);
-      fetchEvents();
+      void fetchEvents();
     } catch (err: any) {
       toast.error("Failed to trigger event: " + (err.response?.data?.message || err.message));
     } finally {
@@ -88,7 +131,10 @@ export default function EventsPage() {
             <span>Trigger Event</span>
           </button>
           <button
-            onClick={fetchEvents}
+            onClick={() => {
+              api.clearCache();
+              void fetchEvents();
+            }}
             className="flex h-8 w-8 items-center justify-center rounded-lg border border-surface-border bg-surface text-zinc-500 hover:bg-surface-raised hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white transition-colors"
             title="Refresh events"
           >
@@ -141,14 +187,24 @@ export default function EventsPage() {
         </table>
       </div>
       )}
+      {(eventsPageHistory.length > 0 || nextEventsBefore) && (
+        <CursorPagination
+          page={eventsPageHistory.length + 1}
+          canGoNewer={eventsPageHistory.length > 0}
+          canGoOlder={Boolean(nextEventsBefore)}
+          isLoading={isPageLoading || isLoading}
+          onNewer={() => void loadNewerEvents()}
+          onOlder={() => void loadOlderEvents()}
+        />
+      )}
       {loadError && events.length > 0 && (
-        <ErrorState message={loadError} onRetry={fetchEvents} />
+        <ErrorState message={loadError} onRetry={() => void fetchEvents()} />
       )}
 
       {/* Trigger Event Modal */}
       {isOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
-          <div className="relative flex flex-col w-full max-w-md rounded-xl border border-surface-border bg-surface p-6 shadow-2xl space-y-4">
+          <div className="dialog-scroll relative flex flex-col w-full max-w-md rounded-xl border border-surface-border bg-surface p-6 shadow-2xl space-y-4">
             <div className="flex items-center gap-2">
               <Zap className="h-4 w-4 text-purple-500" />
               <h2 className="text-sm font-semibold text-zinc-900 dark:text-white">Trigger Custom Event</h2>

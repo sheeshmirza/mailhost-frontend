@@ -252,7 +252,7 @@ export default function LogsHealthPage() {
 
       {editingIP && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
-          <section role="dialog" aria-modal="true" aria-labelledby="ip-warmup-title" className="w-full max-w-md space-y-4 rounded-lg border border-surface-border bg-surface p-5 shadow-2xl sm:p-6">
+          <section role="dialog" aria-modal="true" aria-labelledby="ip-warmup-title" className="dialog-scroll w-full max-w-md space-y-4 rounded-lg border border-surface-border bg-surface p-5 shadow-2xl sm:p-6">
             <div>
               <h2 id="ip-warmup-title" className="text-sm font-semibold text-content-primary">Manage dedicated IP</h2>
               <p className="mt-1 font-mono text-xs text-content-muted">{editingIP.ip_address}</p>

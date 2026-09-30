@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   api,
   InboundEmailSummary,
@@ -23,6 +23,7 @@ import {
 import { useToast } from "@/lib/toast-context";
 import { TableSkeleton } from "@/components/ui/LoadingState";
 import { ErrorState } from "@/components/ui/ErrorState";
+import { CursorPagination } from "@/components/ui/CursorPagination";
 
 export default function InboundPage() {
   const toast = useToast();
@@ -34,6 +35,12 @@ export default function InboundPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isDownloadingRaw, setIsDownloadingRaw] = useState(false);
+  const [inboundBefore, setInboundBefore] = useState<string | undefined>();
+  const [nextInboundBefore, setNextInboundBefore] = useState<string | undefined>();
+  const [inboundPageHistory, setInboundPageHistory] = useState<(string | undefined)[]>([]);
+  const [isPageLoading, setIsPageLoading] = useState(false);
+  const dataLoadRevision = useRef(0);
+  const detailLoadRevision = useRef(0);
 
   // New alias modal
   const [isAliasOpen, setIsAliasOpen] = useState(false);
@@ -43,18 +50,23 @@ export default function InboundPage() {
   const [forwardTo, setForwardTo] = useState("");
   const [storeAliasCopy, setStoreAliasCopy] = useState(true);
 
-  const fetchData = async () => {
+  const fetchData = async (before?: string, resetPage = true): Promise<boolean> => {
+    const revision = ++dataLoadRevision.current;
     setIsLoading(true);
     setError(null);
     try {
       const [inboundRes, aliasesRes, domainsRes] = await Promise.allSettled([
-        api.listInbound(),
+        api.listInbound(50, before),
         api.listAliases(),
         api.listDomains(),
       ]);
+      if (revision !== dataLoadRevision.current) return false;
       let hasSuccess = false;
       if (inboundRes.status === "fulfilled") {
         setInboundEmails(inboundRes.value.data || []);
+        setInboundBefore(before);
+        setNextInboundBefore(inboundRes.value.next_before);
+        if (resetPage) setInboundPageHistory([]);
         hasSuccess = true;
       }
       if (aliasesRes.status === "fulfilled") {
@@ -73,23 +85,58 @@ export default function InboundPage() {
         const reason = (inboundRes.status === "rejected" ? (inboundRes as PromiseRejectedResult).reason : (aliasesRes as PromiseRejectedResult).reason)?.message || "Failed to load inbound data";
         setError(reason);
       }
+      return hasSuccess;
     } catch (err: any) {
+      if (revision !== dataLoadRevision.current) return false;
       console.error("Failed to load inbound data", err);
       setError(err?.message || "Failed to load inbound data");
+      return false;
     } finally {
-      setIsLoading(false);
+      if (revision === dataLoadRevision.current) setIsLoading(false);
+    }
+  };
+
+  const loadOlderInbound = async () => {
+    if (!nextInboundBefore || isPageLoading) return;
+    const currentBefore = inboundBefore;
+    setIsPageLoading(true);
+    try {
+      if (await fetchData(nextInboundBefore, false)) {
+        setInboundPageHistory((history) => [...history, currentBefore]);
+      }
+    } finally {
+      setIsPageLoading(false);
+    }
+  };
+
+  const loadNewerInbound = async () => {
+    if (inboundPageHistory.length === 0 || isPageLoading) return;
+    const previousBefore = inboundPageHistory[inboundPageHistory.length - 1];
+    setIsPageLoading(true);
+    try {
+      if (await fetchData(previousBefore, false)) {
+        setInboundPageHistory((history) => history.slice(0, -1));
+      }
+    } finally {
+      setIsPageLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchData();
+    void fetchData();
+    return () => {
+      dataLoadRevision.current += 1;
+      detailLoadRevision.current += 1;
+    };
   }, []);
 
   const loadDetail = async (id: string) => {
+    const revision = ++detailLoadRevision.current;
     try {
       const detail = await api.getInbound(id);
-      setSelectedInbound(detail);
+      if (revision === detailLoadRevision.current) setSelectedInbound(detail);
     } catch (err) {
+      if (revision !== detailLoadRevision.current) return;
       console.error("Failed to fetch inbound detail", err);
       toast.error("Could not load inbound message details: " + (err instanceof Error ? err.message : "Unknown error"));
     }
@@ -213,7 +260,10 @@ export default function InboundPage() {
           )}
 
           <button
-            onClick={fetchData}
+            onClick={() => {
+              api.clearCache();
+              void fetchData();
+            }}
             className="flex h-8 w-8 items-center justify-center rounded-lg border border-surface-border bg-surface text-zinc-500 hover:bg-surface-raised hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white transition-colors"
           >
             <RefreshCw className={`h-3.5 w-3.5 ${isLoading ? "animate-spin" : ""}`} />
@@ -244,7 +294,7 @@ export default function InboundPage() {
                   inboundEmails.map((item) => (
                     <tr
                       key={item.id}
-                      onClick={() => loadDetail(item.id)}
+                      onClick={() => void loadDetail(item.id)}
                       className="cursor-pointer hover:bg-surface-raised/40 transition-colors"
                     >
                       <td className="px-5 py-3 font-medium text-zinc-900 dark:text-white max-w-xs truncate">
@@ -344,6 +394,16 @@ export default function InboundPage() {
             </tbody>
           </table>
         </div>
+      )}
+      {activeTab === "emails" && (inboundPageHistory.length > 0 || nextInboundBefore) && (
+        <CursorPagination
+          page={inboundPageHistory.length + 1}
+          canGoNewer={inboundPageHistory.length > 0}
+          canGoOlder={Boolean(nextInboundBefore)}
+          isLoading={isPageLoading || isLoading}
+          onNewer={() => void loadNewerInbound()}
+          onOlder={() => void loadOlderInbound()}
+        />
       )}
 
       {/* Inbound Email Detail Modal */}
@@ -456,7 +516,7 @@ export default function InboundPage() {
       {/* Create Alias Modal */}
       {isAliasOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
-          <div className="relative flex flex-col w-full max-w-md rounded-xl border border-surface-border bg-surface p-6 shadow-2xl space-y-4">
+          <div className="dialog-scroll relative flex flex-col w-full max-w-md rounded-xl border border-surface-border bg-surface p-6 shadow-2xl space-y-4">
             <h2 className="text-sm font-semibold text-zinc-900 dark:text-white">{editingAliasId ? "Edit Alias Routing" : "Create Inbound Alias"}</h2>
             <p className="text-xs text-zinc-500 dark:text-zinc-400">
               Forward all emails received at this alias to one or more destination mailboxes.

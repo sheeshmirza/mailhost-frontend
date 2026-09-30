@@ -231,7 +231,7 @@ export default function APIKeysPage() {
       {/* Create Key Modal */}
       {isCreateOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
-          <div className="relative flex flex-col w-full max-w-md rounded-xl border border-surface-border bg-surface p-6 shadow-2xl space-y-4 animate-slide-up">
+          <div className="dialog-scroll relative flex flex-col w-full max-w-md rounded-xl border border-surface-border bg-surface p-6 shadow-2xl space-y-4 animate-slide-up">
             <h2 className="text-sm font-semibold text-zinc-900 dark:text-white">Create API Key</h2>
 
             {newKeyCreated ? (

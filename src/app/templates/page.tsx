@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   FileText,
   Plus,
@@ -29,6 +29,8 @@ export default function TemplatesPage() {
   const [isOpen, setIsOpen] = useState(false);
   const [editingTemplateId, setEditingTemplateId] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+  const templateListRevision = useRef(0);
+  const versionsRevision = useRef(0);
 
   // Form fields
   const [name, setName] = useState("");
@@ -39,25 +41,31 @@ export default function TemplatesPage() {
   const [variablesJson, setVariablesJson] = useState("[]");
 
   const fetchTemplates = async () => {
+    const revision = ++templateListRevision.current;
     setIsLoading(true);
     setLoadError(null);
     try {
       const res = await api.listTemplates();
+      if (revision !== templateListRevision.current) return;
       const list = res.data || [];
       setTemplates(list);
       if (list.length > 0 && !selectedTemplate) {
         setSelectedTemplate(list[0]);
       }
     } catch (err) {
+      if (revision !== templateListRevision.current) return;
       console.error("Failed to load templates", err);
       setLoadError(err instanceof Error ? err.message : "Could not load templates.");
     } finally {
-      setIsLoading(false);
+      if (revision === templateListRevision.current) setIsLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchTemplates();
+    void fetchTemplates();
+    return () => {
+      templateListRevision.current += 1;
+    };
   }, []);
 
   const [versions, setVersions] = useState<TemplateVersion[]>([]);
@@ -65,25 +73,33 @@ export default function TemplatesPage() {
   const [versionsError, setVersionsError] = useState<string | null>(null);
 
   const loadVersions = async (templateId: string) => {
+    const revision = ++versionsRevision.current;
     setIsVersionsLoading(true);
     setVersionsError(null);
     try {
       const res = await api.listTemplateVersions(templateId);
-      setVersions(res.data || []);
+      if (revision === versionsRevision.current) setVersions(res.data || []);
     } catch (err) {
-      setVersions([]);
-      setVersionsError(err instanceof Error ? err.message : "Could not load template history.");
+      if (revision === versionsRevision.current) {
+        setVersions([]);
+        setVersionsError(err instanceof Error ? err.message : "Could not load template history.");
+      }
     } finally {
-      setIsVersionsLoading(false);
+      if (revision === versionsRevision.current) setIsVersionsLoading(false);
     }
   };
 
   useEffect(() => {
     if (selectedTemplate?.id) {
-      loadVersions(selectedTemplate.id);
+      void loadVersions(selectedTemplate.id);
     } else {
+      versionsRevision.current += 1;
       setVersions([]);
+      setIsVersionsLoading(false);
     }
+    return () => {
+      versionsRevision.current += 1;
+    };
   }, [selectedTemplate?.id]);
 
   const handleRollback = async (templateId: string, version: number) => {
@@ -401,7 +417,7 @@ await resend.emails.send({
       {/* New Template Modal */}
       {isOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
-          <div className="relative flex flex-col w-full max-w-lg rounded-xl border border-surface-border bg-surface p-6 shadow-2xl space-y-4">
+          <div className="dialog-scroll relative flex flex-col w-full max-w-lg rounded-xl border border-surface-border bg-surface p-6 shadow-2xl space-y-4">
             <h2 className="text-sm font-semibold text-zinc-900 dark:text-white">
               {editingTemplateId ? "Edit Email Template" : "New Email Template"}
             </h2>

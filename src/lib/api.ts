@@ -425,6 +425,11 @@ export interface AnalyticsResponse {
   series: AnalyticsBucket[];
 }
 
+export interface APIPage<T> {
+  data: T[];
+  next_before?: string;
+}
+
 export class APIError extends Error {
   constructor(
     message: string,
@@ -476,12 +481,14 @@ export class APIClient {
     endpoint: string,
     options: RequestInit = {},
     cacheTTL = API_CACHE_TTL_MS,
-    responseType: "json" | "blob" = "json"
+    responseType: "json" | "blob" | "text" | "response" = "json",
+    retryStaleRead = true
   ): Promise<T> {
     const base = getBaseUrl();
     const url = `${base}${endpoint}`;
     const method = (options.method || "GET").toUpperCase();
     const requestToken = this.token;
+    if (method !== "GET") this.clearCache();
     const canCache = method === "GET" && cacheTTL > 0 && responseType === "json";
     const cacheKey = `${method}:${responseType}:${url}`;
 
@@ -506,6 +513,12 @@ export class APIClient {
 
     try {
       const result = await requestPromise;
+      if (canCache && revision !== this.cacheRevision && retryStaleRead) {
+        if (this.pendingGETs.get(cacheKey) === requestPromise) {
+          this.pendingGETs.delete(cacheKey);
+        }
+        return this.request<T>(endpoint, options, cacheTTL, responseType, false);
+      }
       if (canCache && revision === this.cacheRevision) {
         this.responseCache.set(cacheKey, {
           value: result,
@@ -516,8 +529,6 @@ export class APIClient {
           if (oldestKey === undefined) break;
           this.responseCache.delete(oldestKey);
         }
-      } else if (method !== "GET") {
-        this.clearCache();
       }
       return result;
     } finally {
@@ -531,7 +542,7 @@ export class APIClient {
     url: string,
     options: RequestInit,
     requestToken: string | null,
-    responseType: "json" | "blob"
+    responseType: "json" | "blob" | "text" | "response"
   ): Promise<T> {
     const headers = new Headers(options.headers);
     if (!headers.has("Accept")) headers.set("Accept", "application/json");
@@ -566,6 +577,12 @@ export class APIClient {
         headers,
         signal: controller.signal,
       });
+      if (requestToken !== this.token) {
+        throw new APIError("The active credential changed before the request completed.", 0);
+      }
+      if (responseType === "response" && res.status >= 300 && res.status < 400) {
+        return res as T;
+      }
       const responseText = responseType === "blob" && res.ok ? "" : await res.text();
       let data: unknown;
       if (responseText.trim()) {
@@ -606,6 +623,8 @@ export class APIClient {
         return {} as T;
       }
       if (responseType === "blob") return await res.blob() as T;
+      if (responseType === "text") return responseText as T;
+      if (responseType === "response") return res as T;
       if (data === undefined) {
         throw new APIError(
           responseText.trim()
@@ -636,11 +655,90 @@ export class APIClient {
 
   // System
   async getHealth() {
-    return this.request<{ status: string }>("/healthz");
+    return this.request<{ status: string }>("/healthz", {}, 0);
   }
 
   async getReadiness() {
-    return this.request<{ status: string }>("/readyz");
+    return this.request<{ status: string }>("/readyz", {}, 0);
+  }
+
+  async getMetrics() {
+    return this.request<string>("/metrics", { headers: { Accept: "text/plain" } }, 0, "text");
+  }
+
+  async getPluginManifest() {
+    return this.request<Record<string, unknown>>("/.well-known/ai-plugin.json");
+  }
+
+  async getOpenAPISpec() {
+    return this.request<Record<string, unknown>>("/openapi.json");
+  }
+
+  async getOpenAPIYAML() {
+    return this.request<string>("/openapi.yaml", { headers: { Accept: "application/x-yaml" } }, 0, "text");
+  }
+
+  async getPluginLogo() {
+    return this.request<Blob>("/logo.png", { headers: { Accept: "image/svg+xml" } }, 0, "blob");
+  }
+
+  async getLegalTerms() {
+    return this.request<string>("/legal", { headers: { Accept: "text/plain" } }, 0, "text");
+  }
+
+  async getMCPStatus() {
+    return this.request<{ status: string; service: string; version: string; tools: number }>(
+      "/mcp",
+      {},
+      0
+    );
+  }
+
+  async callMCP<T = unknown>(request: {
+    jsonrpc: "2.0";
+    id?: string | number;
+    method: string;
+    params?: Record<string, unknown>;
+  }) {
+    return this.request<T>("/mcp", {
+      method: "POST",
+      body: JSON.stringify(request),
+    });
+  }
+
+  async trackOpen(deliveryId: string) {
+    return this.request<Blob>(
+      `/v1/track/open/${encodeURIComponent(deliveryId)}`,
+      { headers: { Accept: "image/gif" } },
+      0,
+      "blob"
+    );
+  }
+
+  async trackClick(deliveryId: string, targetURL: string) {
+    const query = new URLSearchParams({ url: targetURL });
+    return this.request<Response>(
+      `/v1/track/click/${encodeURIComponent(deliveryId)}?${query}`,
+      { redirect: "manual" },
+      0,
+      "response"
+    );
+  }
+
+  async unsubscribeContact(deliveryId: string) {
+    return this.request<{ id: string; email: string; unsubscribed: boolean; message: string }>(
+      `/v1/unsubscribe/${encodeURIComponent(deliveryId)}`,
+      { method: "POST", headers: { Accept: "application/json" } }
+    );
+  }
+
+  async getUnsubscribePage(deliveryId: string) {
+    return this.request<string>(
+      `/v1/unsubscribe/${encodeURIComponent(deliveryId)}`,
+      { headers: { Accept: "text/html" } },
+      0,
+      "text"
+    );
   }
 
   // Auth
@@ -682,6 +780,11 @@ export class APIClient {
       method: "POST",
       body: JSON.stringify({ token }),
     });
+  }
+
+  async verifyEmailFromLink(token: string) {
+    const query = new URLSearchParams({ token });
+    return this.request<{ message: string }>(`/v1/users/verify-email?${query}`, {}, 0);
   }
 
   async resendVerification(email: string) {
@@ -854,10 +957,11 @@ export class APIClient {
   }
 
   // Inbound & Aliases
-  async listInbound(limit = 50) {
-    return this.request<{ data: InboundEmailSummary[] }>(
-      `/v1/inbound?limit=${limit}`
-    );
+  async listInbound(limit = 50, before?: string, domainId?: string) {
+    const query = new URLSearchParams({ limit: String(limit) });
+    if (before) query.set("before", before);
+    if (domainId) query.set("domain_id", domainId);
+    return this.request<APIPage<InboundEmailSummary>>(`/v1/inbound?${query}`);
   }
 
   async getInbound(id: string) {
@@ -877,8 +981,10 @@ export class APIClient {
     return this.request<InboundEmailDetail>(`/v1/emails/receiving/${id}`);
   }
 
-  async listReceivedEmails(limit = 50) {
-    return this.request<{ data: InboundEmailSummary[] }>(`/v1/emails/receiving?limit=${limit}`);
+  async listReceivedEmails(limit = 50, before?: string) {
+    const query = new URLSearchParams({ limit: String(limit) });
+    if (before) query.set("before", before);
+    return this.request<APIPage<InboundEmailSummary>>(`/v1/emails/receiving?${query}`);
   }
 
   async listReceivedAttachments(id: string) {
@@ -950,9 +1056,13 @@ export class APIClient {
     });
   }
 
-  async listContacts(audienceId?: string) {
-    const url = audienceId ? `/v1/audiences/${audienceId}/contacts` : "/v1/contacts";
-    return this.request<{ data: ContactView[] }>(url);
+  async listContacts(audienceId?: string, limit = 50, before?: string) {
+    const query = new URLSearchParams({ limit: String(limit) });
+    if (before) query.set("before", before);
+    const path = audienceId
+      ? `/v1/audiences/${encodeURIComponent(audienceId)}/contacts`
+      : "/v1/contacts";
+    return this.request<APIPage<ContactView>>(`${path}?${query}`);
   }
 
   async createContact(data: {
@@ -1207,8 +1317,10 @@ export class APIClient {
   }
 
   // Audit Logs
-  async listAuditLogs(limit = 50) {
-    return this.request<{ data: AuditLogView[] }>(`/v1/audit-logs?limit=${limit}`);
+  async listAuditLogs(limit = 50, before?: string) {
+    const query = new URLSearchParams({ limit: String(limit) });
+    if (before) query.set("before", before);
+    return this.request<APIPage<AuditLogView>>(`/v1/audit-logs?${query}`);
   }
 
   // Suppressions
@@ -1299,8 +1411,12 @@ export class APIClient {
   }
 
   // Segment Contacts
-  async listSegmentContacts(segmentId: string) {
-    return this.request<{ data: ContactView[] }>(`/v1/segments/${segmentId}/contacts`);
+  async listSegmentContacts(segmentId: string, limit = 50, before?: string) {
+    const query = new URLSearchParams({ limit: String(limit) });
+    if (before) query.set("before", before);
+    return this.request<APIPage<ContactView>>(
+      `/v1/segments/${encodeURIComponent(segmentId)}/contacts?${query}`
+    );
   }
 
   // Contact Segments
@@ -1417,8 +1533,10 @@ export class APIClient {
     });
   }
 
-  async listEvents(limit = 50) {
-    return this.request<{ data: CustomEvent[] }>(`/v1/events?limit=${limit}`);
+  async listEvents(limit = 50, before?: string) {
+    const query = new URLSearchParams({ limit: String(limit) });
+    if (before) query.set("before", before);
+    return this.request<APIPage<CustomEvent>>(`/v1/events?${query}`);
   }
 
   async getEvent(id: string) {
