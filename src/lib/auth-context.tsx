@@ -31,8 +31,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [accounts, setAccounts] = useState<UserAccountView[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Initialize from localStorage
+  // Initialize from localStorage and register unauthorized event listener
   useEffect(() => {
+    const handleUnauthorized = () => {
+      console.warn("Session invalidated or expired. Logging out.");
+      setToken(null);
+      setUser(null);
+      setAccount(null);
+      setAccounts([]);
+      localStorage.removeItem("mailhost_token");
+      api.setToken(null);
+      if (typeof window !== "undefined" && !window.location.pathname.startsWith("/login")) {
+        window.location.href = "/login?session_expired=1";
+      }
+    };
+
+    window.addEventListener("mailhost:unauthorized", handleUnauthorized);
+    api.setOnUnauthorized(handleUnauthorized);
+
     const savedToken = localStorage.getItem("mailhost_token");
     if (savedToken) {
       setToken(savedToken);
@@ -41,6 +57,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } else {
       setIsLoading(false);
     }
+
+    return () => {
+      window.removeEventListener("mailhost:unauthorized", handleUnauthorized);
+    };
   }, []);
 
   const fetchCurrentUser = async (tok: string) => {
@@ -145,15 +165,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const logout = () => {
-    setToken(null);
-    setUser(null);
-    setAccount(null);
-    setAccounts([]);
-    localStorage.removeItem("mailhost_token");
-    api.setToken(null);
-    if (typeof window !== "undefined") {
-      window.location.href = "/login";
+  const logout = async () => {
+    try {
+      if (token && token.startsWith("re_usr_")) {
+        await api.logout();
+      }
+    } catch (err) {
+      console.warn("Backend logout notification warning:", err);
+    } finally {
+      setToken(null);
+      setUser(null);
+      setAccount(null);
+      setAccounts([]);
+      localStorage.removeItem("mailhost_token");
+      api.setToken(null);
+      if (typeof window !== "undefined") {
+        window.location.href = "/login?logout=1";
+      }
     }
   };
 

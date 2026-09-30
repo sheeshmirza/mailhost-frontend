@@ -19,14 +19,21 @@ import {
   Trash2,
   Plus,
   Shield,
+  ShieldAlert,
   CheckCircle2,
   Copy,
   Check,
   RefreshCw,
+  Laptop,
+  Smartphone,
+  Globe,
+  LogOut,
+  Clock,
+  AlertTriangle,
 } from "lucide-react";
 
 export default function SettingsPage() {
-  const { user, account, accounts, refresh } = useAuth();
+  const { user, account, accounts, refresh, logout } = useAuth();
   const { toast } = useToast();
 
   const [activeTab, setActiveTab] = useState<
@@ -164,13 +171,45 @@ export default function SettingsPage() {
     }
   };
 
-  const handleRevokeSession = async (id: string) => {
+  const [revokingAll, setRevokingAll] = useState(false);
+
+  const handleRevokeSession = async (id: string, isCurrent?: boolean) => {
+    if (isCurrent) {
+      if (!confirm("This is your active session on this device. Revoking it will log you out immediately. Proceed?")) {
+        return;
+      }
+      try {
+        await api.revokeSession(id);
+        toast.success("Current session revoked. Logging out...");
+        logout();
+      } catch (err: any) {
+        toast.error("Failed to revoke session: " + (err.response?.data?.message || err.message));
+      }
+      return;
+    }
+
     try {
       await api.revokeSession(id);
-      toast.success("Session revoked");
+      toast.success("Session revoked successfully");
       fetchTeamAndSessions();
     } catch (err: any) {
       toast.error("Failed to revoke session: " + (err.response?.data?.message || err.message));
+    }
+  };
+
+  const handleRevokeAllOtherSessions = async () => {
+    if (!confirm("Are you sure you want to sign out of all other active sessions and devices?")) {
+      return;
+    }
+    setRevokingAll(true);
+    try {
+      const res = await api.revokeAllOtherSessions();
+      toast.success(res.message || "All other sessions revoked");
+      fetchTeamAndSessions();
+    } catch (err: any) {
+      toast.error("Failed to revoke other sessions: " + (err.response?.data?.message || err.message));
+    } finally {
+      setRevokingAll(false);
     }
   };
 
@@ -514,41 +553,146 @@ export default function SettingsPage() {
             </form>
           </div>
 
-          {/* Active Sessions */}
-          <div className="rounded-xl border border-surface-border bg-surface p-6 space-y-4">
-            <h2 className="text-sm font-semibold text-zinc-900 dark:text-white">Active Sessions</h2>
-            <div className="overflow-x-auto rounded-lg border border-surface-border">
-              <table className="w-full text-left text-xs font-mono min-w-[500px]">
-                <thead className="border-b border-surface-border bg-surface-raised text-[10px] uppercase text-zinc-500 dark:text-zinc-400">
-                  <tr>
-                    <th className="px-4 py-2.5">Session ID</th>
-                    <th className="px-4 py-2.5">Created</th>
-                    <th className="px-4 py-2.5">Expires</th>
-                    <th className="px-4 py-2.5 text-right">Revoke</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-surface-border">
-                  {sessions.map((s) => (
-                    <tr key={s.id} className="hover:bg-surface-raised/40 transition-colors">
-                      <td className="px-4 py-2.5 text-zinc-900 dark:text-white truncate max-w-xs">{s.id}</td>
-                      <td className="px-4 py-2.5 text-zinc-500 dark:text-zinc-400 text-[11px]">
-                        {new Date(s.created_at).toLocaleDateString()}
-                      </td>
-                      <td className="px-4 py-2.5 text-zinc-400 dark:text-zinc-500 text-[11px]">
-                        {new Date(s.expires_at).toLocaleDateString()}
-                      </td>
-                      <td className="px-4 py-2.5 text-right">
-                        <button
-                          onClick={() => handleRevokeSession(s.id)}
-                          className="text-zinc-500 hover:text-red-500 font-sans transition-colors"
-                        >
-                          Revoke
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+          {/* Active Sessions & Devices Management */}
+          <div className="rounded-xl border border-surface-border bg-surface p-6 space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-surface-border pb-4">
+              <div>
+                <h2 className="text-base font-semibold text-zinc-900 dark:text-white flex items-center gap-2">
+                  <Shield className="h-4 w-4 text-emerald-500" />
+                  <span>Active Sessions & Devices</span>
+                </h2>
+                <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
+                  Manage devices and browsers logged into your account. Terminate any sessions you don&apos;t recognize.
+                </p>
+              </div>
+
+              {sessions.filter((s) => !s.is_current).length > 0 && (
+                <button
+                  onClick={handleRevokeAllOtherSessions}
+                  disabled={revokingAll}
+                  className="inline-flex items-center gap-1.5 rounded-lg border border-red-200 dark:border-red-900/50 bg-red-50/50 dark:bg-red-950/20 px-3 py-1.5 text-xs font-medium text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors disabled:opacity-50"
+                >
+                  <LogOut className="h-3.5 w-3.5" />
+                  <span>{revokingAll ? "Revoking..." : "Revoke All Other Sessions"}</span>
+                </button>
+              )}
+            </div>
+
+            {/* Current Session Card */}
+            {sessions.find((s) => s.is_current) && (
+              <div className="rounded-xl border border-emerald-500/20 bg-emerald-50/30 dark:bg-emerald-950/10 p-4 space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2.5">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-300">
+                      <Laptop className="h-4 w-4" />
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-semibold text-zinc-900 dark:text-white">
+                          Current Device & Session
+                        </span>
+                        <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-medium text-emerald-800 dark:bg-emerald-900/60 dark:text-emerald-300">
+                          <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                          This Device
+                        </span>
+                      </div>
+                      <span className="text-[11px] text-zinc-500 font-mono">
+                        {sessions.find((s) => s.is_current)?.id}
+                      </span>
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={() => {
+                      const curr = sessions.find((s) => s.is_current);
+                      if (curr) handleRevokeSession(curr.id, true);
+                    }}
+                    className="inline-flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors"
+                  >
+                    <LogOut className="h-3.5 w-3.5" />
+                    <span>Sign Out</span>
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 pt-2 text-xs border-t border-emerald-500/10">
+                  <div>
+                    <span className="text-[10px] uppercase font-semibold text-zinc-400 block">Created</span>
+                    <span className="text-zinc-700 dark:text-zinc-300 text-[11px]">
+                      {new Date(sessions.find((s) => s.is_current)!.created_at).toLocaleString()}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-[10px] uppercase font-semibold text-zinc-400 block">Last Active</span>
+                    <span className="text-emerald-600 dark:text-emerald-400 font-medium text-[11px]">
+                      Active right now
+                    </span>
+                  </div>
+                  <div className="col-span-2 sm:col-span-1">
+                    <span className="text-[10px] uppercase font-semibold text-zinc-400 block">Expires</span>
+                    <span className="text-zinc-500 text-[11px]">
+                      {new Date(sessions.find((s) => s.is_current)!.expires_at).toLocaleDateString()}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Other Sessions List */}
+            <div className="space-y-3">
+              <h3 className="text-xs font-semibold uppercase tracking-wider text-zinc-500">
+                Other Active Sessions ({sessions.filter((s) => !s.is_current).length})
+              </h3>
+
+              {sessions.filter((s) => !s.is_current).length === 0 ? (
+                <div className="rounded-xl border border-dashed border-surface-border p-6 text-center text-xs text-zinc-500">
+                  No other active sessions. You are securely signed in on this device only.
+                </div>
+              ) : (
+                <div className="overflow-x-auto rounded-lg border border-surface-border">
+                  <table className="w-full text-left text-xs font-mono min-w-[500px]">
+                    <thead className="border-b border-surface-border bg-surface-raised text-[10px] uppercase text-zinc-500 dark:text-zinc-400">
+                      <tr>
+                        <th className="px-4 py-2.5">Session ID</th>
+                        <th className="px-4 py-2.5">Created</th>
+                        <th className="px-4 py-2.5">Last Active</th>
+                        <th className="px-4 py-2.5">Expires</th>
+                        <th className="px-4 py-2.5 text-right">Action</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-surface-border font-sans">
+                      {sessions
+                        .filter((s) => !s.is_current)
+                        .map((s) => (
+                          <tr key={s.id} className="hover:bg-surface-raised/40 transition-colors">
+                            <td className="px-4 py-3 font-mono text-zinc-800 dark:text-zinc-200">
+                              <div className="flex items-center gap-2">
+                                <Globe className="h-3.5 w-3.5 text-zinc-400" />
+                                <span className="truncate max-w-[160px]">{s.id}</span>
+                              </div>
+                            </td>
+                            <td className="px-4 py-3 text-zinc-500 dark:text-zinc-400 text-xs">
+                              {new Date(s.created_at).toLocaleDateString()}
+                            </td>
+                            <td className="px-4 py-3 text-zinc-500 dark:text-zinc-400 text-xs">
+                              {s.last_used_at ? new Date(s.last_used_at).toLocaleDateString() : "Unknown"}
+                            </td>
+                            <td className="px-4 py-3 text-zinc-400 text-xs">
+                              {new Date(s.expires_at).toLocaleDateString()}
+                            </td>
+                            <td className="px-4 py-3 text-right">
+                              <button
+                                onClick={() => handleRevokeSession(s.id, false)}
+                                className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors"
+                              >
+                                <span>Revoke</span>
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
             </div>
           </div>
         </div>

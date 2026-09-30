@@ -319,6 +319,7 @@ export interface UserSession {
   created_at: string;
   last_used_at?: string;
   expires_at: string;
+  is_current?: boolean;
 }
 
 
@@ -359,6 +360,7 @@ export interface AnalyticsResponse {
 
 export class APIClient {
   private token: string | null = null;
+  private onUnauthorizedCallback?: () => void;
 
   constructor(token?: string | null) {
     if (token) this.token = token;
@@ -366,6 +368,10 @@ export class APIClient {
 
   setToken(token: string | null) {
     this.token = token;
+  }
+
+  setOnUnauthorized(cb: () => void) {
+    this.onUnauthorizedCallback = cb;
   }
 
   private async request<T>(
@@ -394,6 +400,16 @@ export class APIClient {
     }
 
     const data = await res.json().catch(() => ({}));
+
+    if (res.status === 401) {
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(new CustomEvent("mailhost:unauthorized"));
+      }
+      if (this.onUnauthorizedCallback) {
+        this.onUnauthorizedCallback();
+      }
+      throw new Error(data.message || data.error || "Session expired or unauthorized. Please sign in again.");
+    }
 
     if (!res.ok) {
       throw new Error(data.message || data.error || `HTTP error ${res.status}`);
@@ -1058,6 +1074,21 @@ export class APIClient {
   async revokeSession(id: string) {
     return this.request<{ id: string; deleted: boolean }>(`/v1/users/sessions/${id}`, {
       method: "DELETE",
+    });
+  }
+
+  async revokeAllOtherSessions() {
+    return this.request<{ object: string; revoked: number; message: string }>(
+      "/v1/users/sessions/revoke-others",
+      {
+        method: "POST",
+      }
+    );
+  }
+
+  async logout() {
+    return this.request<{ message: string }>("/v1/users/logout", {
+      method: "POST",
     });
   }
 }
