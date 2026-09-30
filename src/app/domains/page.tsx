@@ -30,7 +30,7 @@ export default function DomainsPage() {
   const [selectedDomain, setSelectedDomain] = useState<DomainView | null>(null);
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [domainName, setDomainName] = useState("");
-  const [region, setRegion] = useState("us-east-1");
+  const [region, setRegion] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [isVerifying, setIsVerifying] = useState(false);
@@ -74,6 +74,7 @@ export default function DomainsPage() {
       toast.success("Domain added successfully!");
       setIsAddOpen(false);
       setDomainName("");
+      setRegion("");
       await fetchDomains();
       setSelectedDomain(newDom);
     } catch (err: any) {
@@ -462,7 +463,7 @@ export default function DomainsPage() {
                       type="url"
                       value={inboundWebhookURL}
                       onChange={(event) => setInboundWebhookURL(event.target.value)}
-                      placeholder="https://api.example.com/inbound"
+                      placeholder="HTTPS endpoint URL"
                       className="input-base"
                     />
                     <button onClick={saveInboundWebhook} disabled={isSavingInboundWebhook} className="btn-primary shrink-0">
@@ -498,7 +499,7 @@ export default function DomainsPage() {
                   type="text"
                   value={domainName}
                   onChange={(e) => setDomainName(e.target.value)}
-                  placeholder="example.com or mail.example.com"
+                  placeholder="Domain name"
                   required
                   className="w-full rounded-md border border-surface-border bg-surface-raised px-3 py-1.5 text-xs text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-600 focus:outline-none focus:border-zinc-500 font-mono"
                 />
@@ -511,8 +512,10 @@ export default function DomainsPage() {
                 <select
                   value={region}
                   onChange={(e) => setRegion(e.target.value)}
+                  required
                   className="w-full rounded-md border border-surface-border bg-surface-raised px-3 py-1.5 text-xs text-zinc-900 dark:text-white focus:outline-none"
                 >
+                  <option value="" disabled>Select a region...</option>
                   <option value="us-east-1">US East (N. Virginia)</option>
                   <option value="eu-west-1">EU West (Ireland)</option>
                   <option value="ap-southeast-1">Asia Pacific (Singapore)</option>

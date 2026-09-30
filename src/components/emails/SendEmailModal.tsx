@@ -20,13 +20,7 @@ export default function SendEmailModal({
   const [from, setFrom] = useState("");
   const [toInput, setToInput] = useState("");
   const [subject, setSubject] = useState("");
-  const [htmlContent, setHtmlContent] = useState(
-    `<div style="font-family: sans-serif; padding: 20px;">
-  <h2>Welcome to Resend!</h2>
-  <p>This is a transactional email sent directly via the Mailhost engine.</p>
-  <a href="https://resend.com" style="display: inline-block; padding: 10px 20px; background: #000; color: #fff; text-decoration: none; border-radius: 5px;">Get Started</a>
-</div>`
-  );
+  const [htmlContent, setHtmlContent] = useState("");
   const [textContent, setTextContent] = useState("");
   const [domains, setDomains] = useState<DomainView[]>([]);
   const [activeTab, setActiveTab] = useState<"html" | "preview" | "text">("html");
@@ -77,12 +71,12 @@ export default function SendEmailModal({
         setDomains(res.data || []);
         if (res.data && res.data.length > 0) {
           const verified = res.data.find((d) => d.status === "verified") || res.data[0];
-          setFrom(`Acme <onboarding@${verified.name}>`);
+          setFrom(`onboarding@${verified.name}`);
         } else {
-          setFrom("Acme <onboarding@example.com>");
+          setFrom("");
         }
       }).catch(() => {
-        setFrom("Acme <onboarding@example.com>");
+        setFrom("");
       });
     }
   }, [isOpen]);
@@ -214,7 +208,7 @@ export default function SendEmailModal({
                   type="text"
                   value={from}
                   onChange={(e) => setFrom(e.target.value)}
-                  placeholder="Acme <onboarding@yourdomain.com>"
+                  placeholder="Verified sender address"
                   required
                   className="w-full rounded-md border border-surface-border bg-surface-raised px-3 py-1.5 text-xs text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-600 focus:border-zinc-500 focus:outline-none"
                 />
@@ -228,7 +222,7 @@ export default function SendEmailModal({
                   type="text"
                   value={toInput}
                   onChange={(e) => setToInput(e.target.value)}
-                  placeholder="user@example.com, test@domain.com"
+                  placeholder="Recipient addresses, comma-separated"
                   required
                   className="w-full rounded-md border border-surface-border bg-surface-raised px-3 py-1.5 text-xs text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-600 focus:border-zinc-500 focus:outline-none"
                 />
@@ -336,7 +330,7 @@ export default function SendEmailModal({
                       type="text"
                       value={cc}
                       onChange={(e) => setCc(e.target.value)}
-                      placeholder="cc@example.com"
+                      placeholder="CC addresses"
                       className="w-full rounded border border-surface-border bg-surface-raised px-2.5 py-1 text-xs text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-600"
                     />
                   </div>
@@ -346,7 +340,7 @@ export default function SendEmailModal({
                       type="text"
                       value={bcc}
                       onChange={(e) => setBcc(e.target.value)}
-                      placeholder="bcc@example.com"
+                      placeholder="BCC addresses"
                       className="w-full rounded border border-surface-border bg-surface-raised px-2.5 py-1 text-xs text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-600"
                     />
                   </div>
@@ -356,7 +350,7 @@ export default function SendEmailModal({
                       type="text"
                       value={replyTo}
                       onChange={(e) => setReplyTo(e.target.value)}
-                      placeholder="reply@example.com"
+                      placeholder="Reply-to address"
                       className="w-full rounded border border-surface-border bg-surface-raised px-2.5 py-1 text-xs text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-600"
                     />
                   </div>

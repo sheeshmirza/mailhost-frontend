@@ -34,9 +34,9 @@ export default function TemplatesPage() {
   const [name, setName] = useState("");
   const [alias, setAlias] = useState("");
   const [subject, setSubject] = useState("");
-  const [html, setHtml] = useState(`<h2>Welcome {{name}}!</h2>
-<p>Thank you for signing up for our service.</p>
-<p>Your account ID is: <code>{{account_id}}</code></p>`);
+  const [html, setHtml] = useState("");
+  const [text, setText] = useState("");
+  const [variablesJson, setVariablesJson] = useState("[]");
 
   const fetchTemplates = async () => {
     setIsLoading(true);
@@ -103,11 +103,15 @@ export default function TemplatesPage() {
     if (isSaving) return;
     setIsSaving(true);
     try {
+      const variables = JSON.parse(variablesJson) as { key: string; type: string; fallback_value?: string }[];
+      if (!Array.isArray(variables)) throw new Error("Template variables must be a JSON array.");
       const payload = {
         name: name.trim(),
         alias: alias.trim() || undefined,
         subject: subject.trim(),
         html,
+        text,
+        variables,
       };
       const savedTemplate = editingTemplateId
         ? await api.updateTemplate(editingTemplateId, payload)
@@ -118,6 +122,8 @@ export default function TemplatesPage() {
       setName("");
       setAlias("");
       setSubject("");
+      setText("");
+      setVariablesJson("[]");
       await fetchTemplates();
       setSelectedTemplate(savedTemplate);
     } catch (err: any) {
@@ -133,6 +139,8 @@ export default function TemplatesPage() {
     setAlias(template.alias || "");
     setSubject(template.subject);
     setHtml(template.html || "");
+    setText(template.text || "");
+    setVariablesJson(JSON.stringify(template.variables || [], null, 2));
     setIsOpen(true);
   };
 
@@ -176,7 +184,9 @@ export default function TemplatesPage() {
             setName("");
             setAlias("");
             setSubject("");
-            setHtml(`<h2>Welcome {{name}}!</h2>\n<p>Thank you for signing up for our service.</p>\n<p>Your account ID is: <code>{{account_id}}</code></p>`);
+            setText("");
+            setVariablesJson("[]");
+            setHtml("");
             setIsOpen(true);
           }}
           className="btn-primary"
@@ -370,11 +380,11 @@ export default function TemplatesPage() {
                   <code>{`// Send using this template:
 await resend.emails.send({
   from: 'team@yourdomain.com',
-  to: ['recipient@example.com'],
+  to: [process.env.RECIPIENT_ADDRESS],
   template: '${selectedTemplate.alias || selectedTemplate.id}',
   variables: {
-    name: 'Jane',
-    account_id: 'acct_102'
+    name: process.env.RECIPIENT_NAME,
+    account_id: process.env.ACCOUNT_ID
   }
 });`}</code>
                 </pre>
@@ -431,7 +441,7 @@ await resend.emails.send({
                   type="text"
                   value={subject}
                   onChange={(e) => setSubject(e.target.value)}
-                  placeholder="Welcome to Acme, {{name}}!"
+                  placeholder="Subject line with {{variables}}"
                   required
                   className="w-full rounded-md border border-surface-border bg-surface-raised px-3 py-1.5 text-xs text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-600 focus:outline-none"
                 />
@@ -447,6 +457,16 @@ await resend.emails.send({
                   rows={6}
                   className="w-full rounded-md border border-surface-border bg-surface-raised p-3 font-mono text-xs text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-600 focus:outline-none"
                 />
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-medium text-zinc-600 dark:text-zinc-300 mb-1">Plain-text alternative</label>
+                <textarea value={text} onChange={(event) => setText(event.target.value)} rows={4} className="w-full rounded-md border border-surface-border bg-surface-raised p-3 font-mono text-xs text-zinc-900 dark:text-white" />
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-medium text-zinc-600 dark:text-zinc-300 mb-1">Variable definitions (JSON array)</label>
+                <textarea value={variablesJson} onChange={(event) => setVariablesJson(event.target.value)} rows={4} spellCheck={false} className="w-full rounded-md border border-surface-border bg-surface-raised p-3 font-mono text-xs text-zinc-900 dark:text-white" />
               </div>
 
               <div className="flex justify-end gap-2.5 pt-4 border-t border-surface-border mt-4">

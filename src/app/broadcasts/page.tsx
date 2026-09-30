@@ -5,6 +5,8 @@ import {
   api,
   BroadcastView,
   AudienceView,
+  SegmentView,
+  TopicView,
 } from "@/lib/api";
 import {
   Radio,
@@ -26,6 +28,8 @@ export default function BroadcastsPage() {
   const toast = useToast();
   const [broadcasts, setBroadcasts] = useState<BroadcastView[]>([]);
   const [audiences, setAudiences] = useState<AudienceView[]>([]);
+  const [segments, setSegments] = useState<SegmentView[]>([]);
+  const [topics, setTopics] = useState<TopicView[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
 
@@ -41,17 +45,23 @@ export default function BroadcastsPage() {
   const [name, setName] = useState("");
   const [from, setFrom] = useState("");
   const [subject, setSubject] = useState("");
-  const [html, setHtml] = useState("<h1>Special Announcement</h1><p>Here is what is new this month.</p>");
-  const [selectedAudienceId, setSelectedAudienceId] = useState("");
+  const [html, setHtml] = useState("");
+  const [targetType, setTargetType] = useState<"audience" | "segment" | "topic">("audience");
+  const [selectedTargetId, setSelectedTargetId] = useState("");
+  const [replyTo, setReplyTo] = useState("");
+  const [previewText, setPreviewText] = useState("");
+  const [plainText, setPlainText] = useState("");
 
   const fetchData = async () => {
     setIsLoading(true);
     setLoadError(null);
     try {
-      const [bcRes, audRes, domRes] = await Promise.allSettled([
+      const [bcRes, audRes, domRes, segRes, topicRes] = await Promise.allSettled([
         api.listBroadcasts(),
         api.listAudiences(),
         api.listDomains(),
+        api.listSegments(),
+        api.listTopics(),
       ]);
       const failedResources: string[] = [];
       if (bcRes.status === "fulfilled") {
@@ -62,9 +72,6 @@ export default function BroadcastsPage() {
       if (audRes.status === "fulfilled") {
         const auds = audRes.value.data || [];
         setAudiences(auds);
-        if (auds.length > 0 && !selectedAudienceId) {
-          setSelectedAudienceId(auds[0].id);
-        }
       } else {
         failedResources.push("audiences");
       }
@@ -73,13 +80,17 @@ export default function BroadcastsPage() {
         setDomains(domList);
         if (domList.length > 0 && !from) {
           const verified = domList.find((d: any) => d.status === "verified") || domList[0];
-          setFrom(`Acme <newsletter@${verified.name}>`);
+          setFrom(`newsletter@${verified.name}`);
         } else if (!from) {
-          setFrom("Acme <newsletter@example.com>");
+          setFrom("");
         }
       } else {
         failedResources.push("domains");
       }
+      if (segRes.status === "fulfilled") setSegments(segRes.value.data || []);
+      else failedResources.push("segments");
+      if (topicRes.status === "fulfilled") setTopics(topicRes.value.data || []);
+      else failedResources.push("topics");
       if (failedResources.length) {
         setLoadError(`Could not load ${failedResources.join(" and ")}.`);
       }
@@ -105,7 +116,12 @@ export default function BroadcastsPage() {
         from: from.trim(),
         subject: subject.trim(),
         html,
-        audience_id: selectedAudienceId || undefined,
+        text: plainText || undefined,
+        reply_to: replyTo.trim() ? [replyTo.trim()] : undefined,
+        preview_text: previewText.trim() || undefined,
+        ...(targetType === "audience" ? { audience_id: selectedTargetId || undefined } : {}),
+        ...(targetType === "segment" ? { segment_id: selectedTargetId || undefined } : {}),
+        ...(targetType === "topic" ? { topic_id: selectedTargetId || undefined } : {}),
       };
       if (editingBroadcastId) {
         await api.updateBroadcast(editingBroadcastId, payload);
@@ -118,6 +134,10 @@ export default function BroadcastsPage() {
       setEditingBroadcastId(null);
       setName("");
       setSubject("");
+      setReplyTo("");
+      setPreviewText("");
+      setPlainText("");
+      setSelectedTargetId("");
       await fetchData();
     } catch (err: any) {
       toast.error(`${editingBroadcastId ? "Failed to update draft" : "Failed to create broadcast"}: ${err.message}`);
@@ -138,7 +158,12 @@ export default function BroadcastsPage() {
       setFrom(broadcast.from);
       setSubject(broadcast.subject);
       setHtml(broadcast.html || "");
-      setSelectedAudienceId(broadcast.audience_id || "");
+      const nextTargetType = broadcast.segment_id ? "segment" : broadcast.topic_id ? "topic" : "audience";
+      setTargetType(nextTargetType);
+      setSelectedTargetId(broadcast.segment_id || broadcast.topic_id || broadcast.audience_id || "");
+      setReplyTo(broadcast.reply_to?.join(", ") || "");
+      setPreviewText(broadcast.preview_text || "");
+      setPlainText(broadcast.text || "");
       setIsOpen(true);
     } catch (err) {
       toast.error("Could not load draft: " + (err instanceof Error ? err.message : "Unknown error"));
@@ -336,22 +361,35 @@ export default function BroadcastsPage() {
                 />
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">
-                  Target Audience
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300">
+                  Recipient source
+                  <select
+                    value={targetType}
+                    onChange={(event) => { setTargetType(event.target.value as typeof targetType); setSelectedTargetId(""); }}
+                    disabled={!!editingBroadcastId}
+                    className="mt-1 w-full rounded-lg border border-surface-border bg-surface-raised px-3 py-2 text-sm disabled:opacity-60"
+                  >
+                    <option value="audience">Audience</option>
+                    <option value="segment">Segment</option>
+                    <option value="topic">Topic</option>
+                  </select>
                 </label>
-                <select
-                  value={selectedAudienceId}
-                  onChange={(e) => setSelectedAudienceId(e.target.value)}
-                  className="w-full rounded-lg border border-surface-border bg-surface-raised px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-zinc-900/10 dark:focus:ring-white/10"
-                >
-                  <option value="">Select Audience...</option>
-                  {audiences.map((aud) => (
-                    <option key={aud.id} value={aud.id}>
-                      {aud.name}
-                    </option>
-                  ))}
-                </select>
+                <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300">
+                  Recipients
+                  <select
+                    value={selectedTargetId}
+                    onChange={(event) => setSelectedTargetId(event.target.value)}
+                    disabled={!!editingBroadcastId}
+                    required={!editingBroadcastId}
+                    className="mt-1 w-full rounded-lg border border-surface-border bg-surface-raised px-3 py-2 text-sm disabled:opacity-60"
+                  >
+                    <option value="">Choose {targetType}...</option>
+                    {(targetType === "audience" ? audiences : targetType === "segment" ? segments : topics).map((item) => (
+                      <option key={item.id} value={item.id}>{item.name}</option>
+                    ))}
+                  </select>
+                </label>
               </div>
 
               <div>
@@ -362,10 +400,21 @@ export default function BroadcastsPage() {
                   type="text"
                   value={from}
                   onChange={(e) => setFrom(e.target.value)}
-                  placeholder="Company <news@yourdomain.com>"
+                  placeholder="Sender email address"
                   required
                   className="w-full rounded-lg border border-surface-border bg-surface-raised px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-zinc-900/10 dark:focus:ring-white/10"
                 />
+              </div>
+
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300">
+                  Reply-to (optional)
+                  <input type="email" value={replyTo} onChange={(event) => setReplyTo(event.target.value)} className="mt-1 w-full rounded-lg border border-surface-border bg-surface-raised px-3 py-2 text-sm" />
+                </label>
+                <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300">
+                  Inbox preview text (optional)
+                  <input value={previewText} onChange={(event) => setPreviewText(event.target.value)} className="mt-1 w-full rounded-lg border border-surface-border bg-surface-raised px-3 py-2 text-sm" />
+                </label>
               </div>
 
               <div>
@@ -392,6 +441,11 @@ export default function BroadcastsPage() {
                   rows={6}
                   className="w-full rounded-lg border border-surface-border bg-surface-raised px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-zinc-900/10 dark:focus:ring-white/10"
                 />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">Plain-text alternative (optional)</label>
+                <textarea value={plainText} onChange={(event) => setPlainText(event.target.value)} rows={3} className="w-full rounded-lg border border-surface-border bg-surface-raised px-3 py-2 font-mono text-sm" />
               </div>
 
               <div className="flex justify-end gap-2.5 pt-4 border-t border-surface-border mt-6">

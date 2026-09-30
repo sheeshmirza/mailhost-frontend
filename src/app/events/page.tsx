@@ -23,13 +23,9 @@ export default function EventsPage() {
   const [isOpen, setIsOpen] = useState(false);
 
   // Form fields
-  const [name, setName] = useState("user.signup");
-  const [email, setEmail] = useState("alice@example.com");
-  const [jsonData, setJsonData] = useState(`{
-  "plan": "pro",
-  "source": "google_ads",
-  "referrer": "twitter"
-}`);
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [jsonData, setJsonData] = useState("{}");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const fetchEvents = async () => {
@@ -184,7 +180,7 @@ export default function EventsPage() {
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="customer@example.com"
+                  placeholder="Recipient email address"
                   required
                   className="w-full rounded-md border border-surface-border bg-surface-raised px-3 py-1.5 text-xs text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-600 focus:outline-none font-mono"
                 />

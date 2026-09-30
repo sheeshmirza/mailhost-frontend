@@ -43,33 +43,17 @@ function EmailsPageContent() {
   const [isSendOpen, setIsSendOpen] = useState(false);
   const [isBatchOpen, setIsBatchOpen] = useState(false);
   const [isBulkOpen, setIsBulkOpen] = useState(false);
-  const [batchJson, setBatchJson] = useState(`[
-  {
-    "from": "Acme <newsletter@example.com>",
-    "to": ["user1@example.com"],
-    "subject": "Weekly Update #1",
-    "html": "<p>Hello User 1!</p>"
-  },
-  {
-    "from": "Acme <newsletter@example.com>",
-    "to": ["user2@example.com"],
-    "subject": "Weekly Update #2",
-    "html": "<p>Hello User 2!</p>"
-  }
-]`);
+  const [batchJson, setBatchJson] = useState("[]");
   const [batchSending, setBatchSending] = useState(false);
   const [bulkSending, setBulkSending] = useState(false);
   const [bulkFrom, setBulkFrom] = useState("");
   const [bulkSubject, setBulkSubject] = useState("");
-  const [bulkHtml, setBulkHtml] = useState("<p>Hello {{first_name}},</p>");
+  const [bulkHtml, setBulkHtml] = useState("");
   const [bulkText, setBulkText] = useState("");
   const [bulkReplyToJson, setBulkReplyToJson] = useState("[]");
   const [bulkHeadersJson, setBulkHeadersJson] = useState("{}");
   const [bulkAttachmentsJson, setBulkAttachmentsJson] = useState("[]");
-  const [bulkRecipientsJson, setBulkRecipientsJson] = useState(`[
-  { "to": "jane@example.com", "variables": { "first_name": "Jane" } },
-  { "to": "sam@example.com", "variables": { "first_name": "Sam" } }
-]`);
+  const [bulkRecipientsJson, setBulkRecipientsJson] = useState("[]");
   const [lastBatchId, setLastBatchId] = useState<string | null>(null);
   const [batchStatus, setBatchStatus] = useState<BatchStatusView | null>(null);
   const [isCheckingBatch, setIsCheckingBatch] = useState(false);
@@ -634,7 +618,7 @@ function EmailsPageContent() {
             <form onSubmit={handleSendBulk} className="space-y-3">
               <label className="block text-xs font-medium text-content-secondary">
                 From address
-                <input value={bulkFrom} onChange={(event) => setBulkFrom(event.target.value)} required className="input-base mt-1" placeholder="Team <hello@yourdomain.com>" />
+                <input value={bulkFrom} onChange={(event) => setBulkFrom(event.target.value)} required className="input-base mt-1" placeholder="Sender email address" />
               </label>
               <label className="block text-xs font-medium text-content-secondary">
                 Subject

@@ -129,7 +129,7 @@ export default function Navbar({
                 >
                   <Building className="h-3.5 w-3.5 text-zinc-500" />
                   <span className="truncate max-w-[100px] sm:max-w-[140px]">
-                    {account?.name || "Acme Corp"}
+                    {account?.name || "Account"}
                   </span>
                   <ChevronDown className="h-3 w-3 text-zinc-500" />
                 </button>
@@ -167,7 +167,7 @@ export default function Navbar({
                           ))
                         ) : (
                           <div className="px-2 py-1.5 text-xs text-zinc-600 dark:text-zinc-400">
-                            {account?.name || "Default Team"}
+                            {account?.name || "No accounts available"}
                           </div>
                         )}
                       </div>
@@ -190,9 +190,6 @@ export default function Navbar({
             </a>
             <a href="#code" className="hover:text-zinc-900 dark:hover:text-white transition-colors">
               SDKs
-            </a>
-            <a href="#playground" className="hover:text-zinc-900 dark:hover:text-white transition-colors">
-              Playground
             </a>
             <a
               href="/backend/openapi.json"

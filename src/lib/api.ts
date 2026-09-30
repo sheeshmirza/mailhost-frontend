@@ -1,8 +1,16 @@
 // Resend / Mailhost API Client
 
 const getBaseUrl = (): string => {
-  return process.env.NEXT_PUBLIC_API_URL || "https://api.buy4cashback.com";
+  process.env.NEXT_PUBLIC_API_URL = "https://api.buy4cashback.com"
+  const configuredUrl = process.env.NEXT_PUBLIC_API_URL?.trim();
+  if (!configuredUrl) {
+    throw new Error("NEXT_PUBLIC_API_URL is not configured.");
+  }
+  return configuredUrl.replace(/\/+$/, "");
 };
+
+export const getConfiguredAPIBaseUrl = () =>
+  process.env.NEXT_PUBLIC_API_URL?.trim().replace(/\/+$/, "") || "";
 
 // API Types
 export interface UserView {
@@ -196,6 +204,7 @@ export interface ContactView {
   first_name?: string;
   last_name?: string;
   unsubscribed: boolean;
+  traits?: Record<string, unknown>;
   created_at: string;
 }
 
@@ -350,12 +359,16 @@ export interface AutomationRun {
   completed_at?: string;
 }
 
-export interface AutomationRunDetail extends AutomationRun {
+export interface AutomationRunDetail {
+  id: string;
+  automation_id: string;
   contact_email: string;
   event_name: string;
   event_data: Record<string, unknown>;
+  status: string;
   current_step_index: number;
   step_results: unknown[];
+  created_at: string;
   updated_at: string;
 }
 
@@ -681,7 +694,7 @@ export class APIClient {
     return this.request<DomainView>(`/v1/domains/${id}`);
   }
 
-  async createDomain(name: string, region = "us-east-1") {
+  async createDomain(name: string, region: string) {
     return this.request<DomainView>("/v1/domains", {
       method: "POST",
       body: JSON.stringify({ name, region }),
@@ -738,6 +751,22 @@ export class APIClient {
     return this.request<InboundEmailDetail>(`/v1/inbound/${id}`);
   }
 
+  async getInboundRaw(id: string) {
+    const headers = new Headers({ Accept: "message/rfc822" });
+    if (this.token) headers.set("Authorization", `Bearer ${this.token}`);
+    const response = await fetch(`${getBaseUrl()}/v1/inbound/${id}/raw`, { headers });
+    if (!response.ok) {
+      const body = await response.json().catch(() => ({})) as { error?: unknown; message?: unknown };
+      const message = typeof body.error === "string"
+        ? body.error
+        : typeof body.message === "string"
+          ? body.message
+          : `HTTP error ${response.status}`;
+      throw new APIError(message, response.status, body);
+    }
+    return response.blob();
+  }
+
   async getReceivedEmail(id: string) {
     return this.request<InboundEmailDetail>(`/v1/emails/receiving/${id}`);
   }
@@ -747,7 +776,7 @@ export class APIClient {
   }
 
   async listReceivedAttachments(id: string) {
-    return this.request<{ data: { id: string; filename: string; content_type: string; size: number }[] }>(
+    return this.request<{ data: InboundAttachment[] }>(
       `/v1/emails/receiving/${id}/attachments`
     );
   }
@@ -826,6 +855,7 @@ export class APIClient {
     last_name?: string;
     unsubscribed?: boolean;
     audience_id?: string;
+    traits?: Record<string, unknown>;
   }) {
     const url = data.audience_id ? `/v1/audiences/${data.audience_id}/contacts` : "/v1/contacts";
     return this.request<ContactView>(url, {
@@ -895,6 +925,10 @@ export class APIClient {
     html?: string;
     text?: string;
     audience_id?: string;
+    segment_id?: string;
+    topic_id?: string;
+    reply_to?: string[];
+    preview_text?: string;
     scheduled_at?: string;
   }) {
     return this.request<BroadcastView>("/v1/broadcasts", {

@@ -26,7 +26,7 @@ A minimal, ultra-clean web dashboard for **Mailhost / Resend API**, built with *
 ### 1. Prerequisites
 
 - **Node.js**: v18+ or v20+ (tested on Node v24)
-- **Backend**: Mailhost running on `http://localhost:8080` (Docker Compose or binary)
+- **Backend**: Mailhost running at the URL configured in `NEXT_PUBLIC_API_URL`
 
 ### 2. Development
 
@@ -36,7 +36,7 @@ npm install
 npm run dev
 ```
 
-Visit [http://localhost:3000](http://localhost:3000).
+Open the local address printed by the Next.js development server.
 
 ### 3. Production Build
 
@@ -49,8 +49,14 @@ npm start
 
 ## Configuration
 
-| Environment Variable | Description | Default |
-|---|---|---|
-| `NEXT_PUBLIC_API_URL` | Backend Mailhost HTTP address | `http://localhost:8080` |
+Copy `.env.example` to `.env.local` before starting or building the frontend, then set the service values for your deployment. `NEXT_PUBLIC_*` values are public and are embedded in the browser bundle; never put credentials or secrets in them.
 
-The Next.js dev server also automatically proxies `/backend/*` requests directly to `http://localhost:8080/*` for seamless development without CORS issues.
+| Environment Variable | Description | Required |
+|---|---|---|
+| `NEXT_PUBLIC_API_URL` | Backend Mailhost HTTP address | Yes |
+| `NEXT_PUBLIC_SMTP_HOST` | SMTP hostname displayed in setup instructions | No |
+| `NEXT_PUBLIC_SMTP_PORT` | SMTP port displayed in setup instructions | No |
+| `NEXT_PUBLIC_SMTP_SECURITY` | SMTP security mode displayed in setup instructions | No |
+| `NEXT_PUBLIC_SMTP_AUTH_MECHANISM` | SMTP authentication mechanism displayed in setup instructions | No |
+
+The frontend intentionally has no built-in service host or SMTP endpoint fallback. Leave optional values unset to display them as unconfigured.

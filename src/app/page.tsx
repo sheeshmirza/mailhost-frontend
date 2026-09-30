@@ -6,7 +6,6 @@ import {
   ArrowRight,
   Check,
   Copy,
-  Zap,
   Shield,
   Code2,
   Mail,
@@ -17,10 +16,8 @@ import {
   ExternalLink,
   ChevronRight,
   Terminal,
-  Sparkles,
   Server,
   Activity,
-  Play,
 } from "lucide-react";
 import { useToast } from "@/lib/toast-context";
 
@@ -31,13 +28,13 @@ const codeSnippets: Record<CodeLang, { lang: string; code: string }> = {
     lang: "typescript",
     code: `import { Resend } from 'resend';
 
-const resend = new Resend('re_123456789');
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 await resend.emails.send({
-  from: 'Acme <onboarding@resend.dev>',
-  to: ['alex@example.com'],
-  subject: 'Welcome to Acme!',
-  html: '<strong>Welcome to the modern email platform!</strong>',
+  from: 'SENDER_ADDRESS',
+  to: ['RECIPIENT_ADDRESS'],
+  subject: 'SUBJECT',
+  html: '<p>MESSAGE_CONTENT</p>',
   tags: [
     { name: 'category', value: 'onboarding' },
   ],
@@ -45,15 +42,16 @@ await resend.emails.send({
   },
   python: {
     lang: "python",
-    code: `import resend
+    code: `import os
+import resend
 
-resend.api_key = "re_123456789"
+resend.api_key = os.environ["RESEND_API_KEY"]
 
 params = {
-    "from": "Acme <onboarding@resend.dev>",
-    "to": ["alex@example.com"],
-    "subject": "Welcome to Acme!",
-    "html": "<strong>Welcome to the modern email platform!</strong>",
+    "from": "SENDER_ADDRESS",
+    "to": ["RECIPIENT_ADDRESS"],
+    "subject": "SUBJECT",
+    "html": "<p>MESSAGE_CONTENT</p>",
 }
 
 email = resend.Emails.send(params)`,
@@ -64,17 +62,18 @@ email = resend.Emails.send(params)`,
 
 import (
 	"context"
+  "os"
 	"github.com/resend/resend-go/v2"
 )
 
 func main() {
-	client := resend.NewClient("re_123456789")
+  client := resend.NewClient(os.Getenv("RESEND_API_KEY"))
 
 	params := &resend.SendEmailRequest{
-		From:    "Acme <onboarding@resend.dev>",
-		To:      []string{"alex@example.com"},
-		Subject: "Welcome to Acme!",
-		Html:    "<strong>Welcome to the modern email platform!</strong>",
+    From:    "SENDER_ADDRESS",
+    To:      []string{"RECIPIENT_ADDRESS"},
+    Subject: "SUBJECT",
+    Html:    "<p>MESSAGE_CONTENT</p>",
 	}
 
 	sent, err := client.Emails.SendWithContext(context.TODO(), params)
@@ -84,13 +83,13 @@ func main() {
     lang: "ruby",
     code: `require "resend"
 
-Resend.api_key = "re_123456789"
+Resend.api_key = ENV.fetch("RESEND_API_KEY")
 
 params = {
-  "from": "Acme <onboarding@resend.dev>",
-  "to": ["alex@example.com"],
-  "subject": "Welcome to Acme!",
-  "html": "<strong>Welcome to the modern email platform!</strong>"
+  "from": "SENDER_ADDRESS",
+  "to": ["RECIPIENT_ADDRESS"],
+  "subject": "SUBJECT",
+  "html": "<p>MESSAGE_CONTENT</p>"
 }
 
 Resend::Emails.send(params)`,
@@ -99,13 +98,13 @@ Resend::Emails.send(params)`,
     lang: "php",
     code: `<?php
 
-$resend = Resend::client('re_123456789');
+$resend = Resend::client(getenv('RESEND_API_KEY'));
 
 $resend->emails->send([
-  'from' => 'Acme <onboarding@resend.dev>',
-  'to' => ['alex@example.com'],
-  'subject' => 'Welcome to Acme!',
-  'html' => '<strong>Welcome to the modern email platform!</strong>',
+  'from' => 'SENDER_ADDRESS',
+  'to' => ['RECIPIENT_ADDRESS'],
+  'subject' => 'SUBJECT',
+  'html' => '<p>MESSAGE_CONTENT</p>',
 ]);`,
   },
   rust: {
@@ -115,28 +114,28 @@ use resend_rs::Resend;
 
 #[tokio::main]
 async fn main() {
-    let resend = Resend::new("re_123456789");
+    let resend = Resend::new(&std::env::var("RESEND_API_KEY").expect("RESEND_API_KEY required"));
 
     let email = CreateEmailBaseOptions::new(
-        "Acme <onboarding@resend.dev>",
-        vec!["alex@example.com"],
-        "Welcome to Acme!",
+        "SENDER_ADDRESS",
+        vec!["RECIPIENT_ADDRESS"],
+        "SUBJECT",
     )
-    .with_html("<strong>Welcome to the modern email platform!</strong>");
+    .with_html("<p>MESSAGE_CONTENT</p>");
 
     let _ = resend.emails.send(email).await;
 }`,
   },
   curl: {
     lang: "bash",
-    code: `curl -X POST 'https://api.resend.com/emails' \\
-  -H 'Authorization: Bearer re_123456789' \\
+    code: `curl -X POST "\${NEXT_PUBLIC_API_URL}/v1/emails" \\
+  -H "Authorization: Bearer \${RESEND_API_KEY}" \\
   -H 'Content-Type: application/json' \\
   -d $'{
-    "from": "Acme <onboarding@resend.dev>",
-    "to": ["alex@example.com"],
-    "subject": "Welcome to Acme!",
-    "html": "<strong>Welcome to the modern email platform!</strong>"
+    "from": "SENDER_ADDRESS",
+    "to": ["RECIPIENT_ADDRESS"],
+    "subject": "SUBJECT",
+    "html": "<p>MESSAGE_CONTENT</p>"
   }'`,
   },
 };
@@ -146,39 +145,11 @@ export default function HomePage() {
   const [selectedLang, setSelectedLang] = useState<CodeLang>("nodejs");
   const [copied, setCopied] = useState(false);
 
-  // Playground state
-  const [testEmail, setTestEmail] = useState("developer@example.com");
-  const [testTemplate, setTestTemplate] = useState("welcome");
-  const [isSimulating, setIsSimulating] = useState(false);
-  const [simulateResult, setSimulateResult] = useState<any | null>(null);
-
   const handleCopyCode = () => {
     navigator.clipboard.writeText(codeSnippets[selectedLang].code);
     setCopied(true);
     toast.info("Code snippet copied to clipboard");
     setTimeout(() => setCopied(false), 2000);
-  };
-
-  const handleSimulateSend = (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSimulating(true);
-    setSimulateResult(null);
-
-    setTimeout(() => {
-      setIsSimulating(false);
-      const generatedId = "email_" + Math.random().toString(36).substring(2, 11);
-      setSimulateResult({
-        id: generatedId,
-        from: "Acme <onboarding@resend.dev>",
-        to: [testEmail],
-        status: "delivered",
-        latency_ms: 38,
-        spf: "pass",
-        dkim: "pass",
-        dmarc: "pass",
-      });
-      toast.success("Simulation dispatched: email delivered in 38ms!");
-    }, 600);
   };
 
   return (
@@ -188,13 +159,6 @@ export default function HomePage() {
 
       {/* Hero Section */}
       <section className="max-w-6xl mx-auto px-4 sm:px-6 pt-24 sm:pt-32 pb-20 sm:pb-24 text-center space-y-8 animate-fade-in">
-        {/* Announcement Pill */}
-        <div className="inline-flex items-center gap-2 rounded-full border border-surface-border bg-surface px-3.5 py-1 text-xs text-zinc-600 dark:text-zinc-300 shadow-sm hover:border-zinc-400 dark:hover:border-zinc-600 transition-all">
-          <Sparkles className="h-3.5 w-3.5 text-amber-500" />
-          <span className="font-medium">Introducing Audiences & Automated Drip Journeys</span>
-          <ArrowRight className="h-3 w-3 text-zinc-400" />
-        </div>
-
         {/* Hero Title */}
         <div className="space-y-4 max-w-3xl mx-auto">
           <h1 className="text-4xl sm:text-6xl md:text-7xl font-bold tracking-tight text-zinc-900 dark:text-white leading-[1.08]">
@@ -223,20 +187,13 @@ export default function HomePage() {
             <Code2 className="h-4 w-4 text-zinc-400" />
             <span>OpenAPI Documentation</span>
           </a>
-          <a
-            href="#playground"
-            className="w-full sm:w-auto flex items-center justify-center gap-1.5 rounded-md px-4 py-2.5 text-sm font-medium text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white transition-colors"
-          >
-            <Play className="h-3.5 w-3.5" />
-            <span>Try Live Playground</span>
-          </a>
         </div>
 
         {/* Hero Code Showcase & Live Preview (The Iconic Resend Hero) */}
         <div id="code" className="pt-8 sm:pt-12 text-left">
-          <div className="rounded-2xl border border-surface-border bg-surface shadow-2xl overflow-hidden grid grid-cols-1 lg:grid-cols-12 divide-y lg:divide-y-0 lg:divide-x divide-surface-border">
+          <div className="rounded-lg border border-surface-border bg-surface shadow-2xl overflow-hidden">
             {/* Left: Code Snippet Panel */}
-            <div className="lg:col-span-7 flex flex-col justify-between bg-zinc-950 text-white">
+            <div className="flex flex-col justify-between bg-zinc-950 text-white">
               {/* Language Tabs */}
               <div className="flex items-center justify-between border-b border-zinc-800 px-4 py-2.5 bg-zinc-900/60 overflow-x-auto">
                 <div className="flex items-center gap-1">
@@ -280,107 +237,9 @@ export default function HomePage() {
               </pre>
 
               {/* Code Footer */}
-              <div className="border-t border-zinc-800/80 px-4 py-2.5 text-[11px] font-mono text-zinc-500 flex items-center justify-between">
-                <span>SDK Response: 200 OK</span>
-                <span className="text-emerald-400">P99: 38ms</span>
+              <div className="border-t border-zinc-800/80 px-4 py-2.5 text-[11px] font-mono text-zinc-500">
+                Example request. Configure the API base URL and credentials for your environment.
               </div>
-            </div>
-
-            {/* Right: Live Rendered Email Preview */}
-            <div className="lg:col-span-5 flex flex-col justify-between bg-surface-raised/40 p-5 sm:p-6 space-y-4">
-              <div className="flex items-center justify-between text-xs text-zinc-500">
-                <span className="font-semibold uppercase tracking-wider text-[10px] text-zinc-400">
-                  Rendered Email Preview
-                </span>
-                <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-950/60 dark:text-emerald-400 dark:border-emerald-800/40 px-2 py-0.5 text-[10px] font-medium font-mono">
-                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-                  SPF/DKIM/DMARC Pass
-                </span>
-              </div>
-
-              {/* Email Envelope Container */}
-              <div className="rounded-xl border border-surface-border bg-surface p-5 shadow-sm space-y-4">
-                <div className="border-b border-surface-border pb-3 text-xs space-y-1">
-                  <div className="flex justify-between text-zinc-500 dark:text-zinc-400">
-                    <span>From:</span>
-                    <span className="font-mono text-zinc-800 dark:text-zinc-200">
-                      Acme &lt;onboarding@resend.dev&gt;
-                    </span>
-                  </div>
-                  <div className="flex justify-between text-zinc-500 dark:text-zinc-400">
-                    <span>To:</span>
-                    <span className="font-mono text-zinc-800 dark:text-zinc-200">alex@example.com</span>
-                  </div>
-                  <div className="flex justify-between text-zinc-500 dark:text-zinc-400">
-                    <span>Subject:</span>
-                    <span className="font-medium text-zinc-900 dark:text-white">Welcome to Acme!</span>
-                  </div>
-                </div>
-
-                {/* Rendered HTML Canvas */}
-                <div className="space-y-3 py-2">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-zinc-900 text-white dark:bg-white dark:text-black font-bold text-sm">
-                    A
-                  </div>
-                  <h3 className="text-base font-semibold text-zinc-900 dark:text-white">
-                    Welcome to the future of email.
-                  </h3>
-                  <p className="text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed">
-                    Thank you for signing up for Acme. Your account is ready. Verify your email below to start shipping features faster.
-                  </p>
-                  <div className="pt-2">
-                    <span className="inline-block rounded-md bg-zinc-900 px-4 py-2 text-xs font-semibold text-white dark:bg-white dark:text-black shadow-sm">
-                      Confirm Email Address
-                    </span>
-                  </div>
-                </div>
-
-                <div className="pt-3 border-t border-surface-border text-[10px] text-zinc-400 dark:text-zinc-500">
-                  Acme Inc. · 100 Market St, San Francisco, CA · Unsubscribe
-                </div>
-              </div>
-
-              <div className="text-[11px] text-zinc-500 text-center font-mono">
-                Delivered straight to Primary Inbox (No spam folder)
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Metrics Banner */}
-      <section className="border-y border-surface-border bg-surface-raised/30 py-10">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
-          <div>
-            <div className="text-3xl sm:text-4xl font-bold tracking-tight text-zinc-900 dark:text-white font-mono">
-              99.99%
-            </div>
-            <div className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
-              Deliverability & Uptime SLA
-            </div>
-          </div>
-          <div>
-            <div className="text-3xl sm:text-4xl font-bold tracking-tight text-zinc-900 dark:text-white font-mono">
-              &lt; 50ms
-            </div>
-            <div className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
-              Global P99 Delivery Latency
-            </div>
-          </div>
-          <div>
-            <div className="text-3xl sm:text-4xl font-bold tracking-tight text-zinc-900 dark:text-white font-mono">
-              10M+
-            </div>
-            <div className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
-              Daily Email Engine Capacity
-            </div>
-          </div>
-          <div>
-            <div className="text-3xl sm:text-4xl font-bold tracking-tight text-zinc-900 dark:text-white font-mono">
-              100%
-            </div>
-            <div className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
-              Open-Source Delivery Engine
             </div>
           </div>
         </div>
@@ -422,7 +281,7 @@ export default function HomePage() {
               </div>
               <div className="rounded-lg border border-surface-border bg-surface-raised p-3">
                 <span className="text-[10px] text-zinc-500 block uppercase font-sans">DMARC Policy</span>
-                <span className="text-emerald-600 dark:text-emerald-400 font-semibold">100% Validated</span>
+                <span className="text-emerald-600 dark:text-emerald-400 font-semibold">Policy controls</span>
               </div>
               <div className="rounded-lg border border-surface-border bg-surface-raised p-3">
                 <span className="text-[10px] text-zinc-500 block uppercase font-sans">Hard Bounce Filter</span>
@@ -516,123 +375,6 @@ export default function HomePage() {
                 <span>View MCP Integration</span>
                 <ChevronRight className="h-3.5 w-3.5" />
               </Link>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Interactive Live Playground Section */}
-      <section id="playground" className="border-t border-surface-border bg-surface-raised/20 py-20 sm:py-24">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 space-y-8">
-          <div className="text-center space-y-2 max-w-xl mx-auto">
-            <h2 className="text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
-              Interactive Test Console
-            </h2>
-            <p className="text-2xl sm:text-3xl font-bold tracking-tight text-zinc-900 dark:text-white">
-              Test the delivery engine right now
-            </p>
-            <p className="text-xs text-zinc-600 dark:text-zinc-400">
-              Simulate an API dispatch and inspect the real-time latency and HTTP response headers.
-            </p>
-          </div>
-
-          <div className="rounded-2xl border border-surface-border bg-surface p-6 sm:p-8 shadow-xl max-w-2xl mx-auto space-y-6">
-            <form onSubmit={handleSimulateSend} className="space-y-4">
-              <div>
-                <label className="block text-[11px] font-medium text-zinc-600 dark:text-zinc-300 mb-1">
-                  Recipient Email
-                </label>
-                <input
-                  type="email"
-                  value={testEmail}
-                  onChange={(e) => setTestEmail(e.target.value)}
-                  placeholder="recipient@example.com"
-                  required
-                  className="w-full rounded-md border border-surface-border bg-surface-raised px-3 py-2 text-xs text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-600 focus:outline-none font-mono"
-                />
-              </div>
-
-              <div>
-                <label className="block text-[11px] font-medium text-zinc-600 dark:text-zinc-300 mb-1">
-                  Preset Template Scenario
-                </label>
-                <select
-                  value={testTemplate}
-                  onChange={(e) => setTestTemplate(e.target.value)}
-                  className="w-full rounded-md border border-surface-border bg-surface-raised px-3 py-2 text-xs text-zinc-900 dark:text-white focus:outline-none"
-                >
-                  <option value="welcome">User Onboarding Series (Immediate + 24h follow-up)</option>
-                  <option value="auth">Magic Link Passwordless Login</option>
-                  <option value="invoice">Stripe Invoice Receipt #1042</option>
-                </select>
-              </div>
-
-              <button
-                type="submit"
-                disabled={isSimulating}
-                className="w-full flex items-center justify-center gap-2 rounded-md bg-zinc-900 py-2.5 text-xs font-semibold text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200 active:scale-95 disabled:opacity-50 transition-all shadow-sm"
-              >
-                <Zap className="h-3.5 w-3.5 text-amber-400" />
-                <span>{isSimulating ? "Simulating Delivery..." : "Dispatch Test Delivery"}</span>
-              </button>
-            </form>
-
-            {simulateResult && (
-              <div className="rounded-xl border border-surface-border bg-surface-raised p-4 space-y-2 animate-fade-in font-mono text-xs">
-                <div className="flex items-center justify-between text-zinc-500 dark:text-zinc-400">
-                  <span>HTTP 200 OK</span>
-                  <span className="text-emerald-600 dark:text-emerald-400 font-semibold">
-                    Delivery time: {simulateResult.latency_ms}ms
-                  </span>
-                </div>
-                <pre className="text-zinc-800 dark:text-zinc-200 overflow-x-auto text-[11px]">
-                  <code>{JSON.stringify(simulateResult, null, 2)}</code>
-                </pre>
-              </div>
-            )}
-          </div>
-        </div>
-      </section>
-
-      {/* Developer Quotes / Testimonials */}
-      <section className="max-w-6xl mx-auto px-4 sm:px-6 py-20 sm:py-24 space-y-12">
-        <div className="text-center space-y-2">
-          <h2 className="text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
-            Built for modern engineering teams
-          </h2>
-          <p className="text-2xl sm:text-3xl font-bold tracking-tight text-zinc-900 dark:text-white">
-            Loved by developers worldwide
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="rounded-2xl border border-surface-border bg-surface p-6 space-y-4">
-            <p className="text-xs text-zinc-600 dark:text-zinc-300 leading-relaxed italic">
-              &ldquo;Resend makes email feel like any modern developer API. We set up transactional receipts in 10 minutes and our deliverability jumped to 99.9%.&rdquo;
-            </p>
-            <div className="text-xs font-semibold text-zinc-900 dark:text-white">
-              Sarah Jenkins
-              <span className="block text-[11px] text-zinc-500 font-normal">CTO, HyperScale</span>
-            </div>
-          </div>
-
-          <div className="rounded-2xl border border-surface-border bg-surface p-6 space-y-4">
-            <p className="text-xs text-zinc-600 dark:text-zinc-300 leading-relaxed italic">
-              &ldquo;The React Email support combined with the delivery performance is completely unmatched. We discarded our legacy SendGrid stack completely.&rdquo;
-            </p>
-            <div className="text-xs font-semibold text-zinc-900 dark:text-white">
-              David Chen
-              <span className="block text-[11px] text-zinc-500 font-normal">Staff Engineer, Vercel Eco</span>
-            </div>
-          </div>
-
-          <div className="rounded-2xl border border-surface-border bg-surface p-6 space-y-4">
-            <p className="text-xs text-zinc-600 dark:text-zinc-300 leading-relaxed italic">
-              &ldquo;The built-in MCP server lets our AI agents directly inspect bounced emails and trigger campaigns through natural language prompts. Mindblowing.&rdquo;
-            </p>
-            <div className="text-xs font-semibold text-zinc-900 dark:text-white">
-              Elena Rostova
-              <span className="block text-[11px] text-zinc-500 font-normal">Founder, Agentic AI</span>
             </div>
           </div>
         </div>

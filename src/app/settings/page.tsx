@@ -5,6 +5,7 @@ import { useAuth } from "@/lib/auth-context";
 import { useToast } from "@/lib/toast-context";
 import {
   api,
+  getConfiguredAPIBaseUrl,
   OrgMemberView,
   UserSession,
 } from "@/lib/api";
@@ -65,7 +66,7 @@ export default function SettingsPage() {
   // Team fields
   const [members, setMembers] = useState<OrgMemberView[]>([]);
   const [newMemberEmail, setNewMemberEmail] = useState("");
-  const [newMemberRole, setNewMemberRole] = useState("developer");
+  const [newMemberRole, setNewMemberRole] = useState("");
   const [newOrgName, setNewOrgName] = useState("");
 
   // Sessions
@@ -239,6 +240,8 @@ export default function SettingsPage() {
     }
   };
 
+  const configuredApiBase = getConfiguredAPIBaseUrl();
+  const mcpEndpoint = configuredApiBase ? `${configuredApiBase}/mcp` : "${NEXT_PUBLIC_API_URL}/mcp";
   const mcpConfig = `{
   "mcpServers": {
     "mailhost": {
@@ -246,7 +249,7 @@ export default function SettingsPage() {
       "args": [
         "-y",
         "@modelcontextprotocol/server-fetch",
-        "https://api.resend.com/mcp"
+        "${mcpEndpoint}"
       ],
       "env": {
         "AUTHORIZATION": "Bearer YOUR_API_KEY"
@@ -394,7 +397,7 @@ export default function SettingsPage() {
                   type="email"
                   value={newEmail}
                   onChange={(e) => setNewEmail(e.target.value)}
-                  placeholder="newemail@example.com"
+                  placeholder="New email address"
                   required
                   className="w-full rounded-lg border border-surface-border bg-surface-raised px-3 py-2 text-sm text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-600 focus:outline-none"
                 />
@@ -443,7 +446,7 @@ export default function SettingsPage() {
             <div className="flex items-center justify-between text-xs">
               <span className="text-zinc-500 dark:text-zinc-400">Current Active Organization:</span>
               <span className="font-semibold text-zinc-900 dark:text-white font-mono bg-surface-raised px-2 py-0.5 rounded border border-surface-border">
-                {account?.name || "Acme Corp"} ({account?.role || "administrator"})
+                {account?.name || "Account"} ({account?.role || "—"})
               </span>
             </div>
 
@@ -479,15 +482,17 @@ export default function SettingsPage() {
                 type="email"
                 value={newMemberEmail}
                 onChange={(e) => setNewMemberEmail(e.target.value)}
-                placeholder="colleague@example.com"
+                placeholder="Member email address"
                 required
                 className="flex-1 rounded-md border border-surface-border bg-surface-raised px-3 py-1.5 text-xs text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-600 focus:outline-none"
               />
               <select
                 value={newMemberRole}
                 onChange={(e) => setNewMemberRole(e.target.value)}
+                required
                 className="rounded-md border border-surface-border bg-surface-raised px-3 py-1.5 text-xs text-zinc-900 dark:text-white focus:outline-none"
               >
+                <option value="" disabled>Select a role</option>
                 <option value="administrator">Administrator</option>
                 <option value="developer">Developer</option>
                 <option value="user">User</option>
@@ -715,7 +720,7 @@ export default function SettingsPage() {
               <h2 className="text-base font-semibold text-zinc-900 dark:text-white">Remote Model Context Protocol (MCP)</h2>
             </div>
             <p className="text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed">
-              Mailhost provides a built-in remote MCP server at <code className="text-zinc-900 dark:text-white font-mono bg-surface-raised px-1 py-0.5 rounded border border-surface-border">https://api.resend.com/mcp</code>. AI agents (like Claude Desktop, Antigravity, and Cursor) can directly draft, dispatch, track, and inspect emails autonomously.
+              Configure the MCP endpoint using your API base URL: <code className="text-zinc-900 dark:text-white font-mono bg-surface-raised px-1 py-0.5 rounded border border-surface-border">{mcpEndpoint}</code>. Connected clients can use the actions enabled for the supplied credential.
             </p>
 
             <div className="space-y-2">

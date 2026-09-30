@@ -18,6 +18,10 @@ import {
 
 export default function SMTPPage() {
   const { toast } = useToast();
+  const smtpHost = process.env.NEXT_PUBLIC_SMTP_HOST?.trim() || "Not configured";
+  const smtpPort = process.env.NEXT_PUBLIC_SMTP_PORT?.trim() || "Not configured";
+  const smtpSecurity = process.env.NEXT_PUBLIC_SMTP_SECURITY?.trim() || "Not configured";
+  const smtpAuthMechanism = process.env.NEXT_PUBLIC_SMTP_AUTH_MECHANISM?.trim() || "Not configured";
   const [credentials, setCredentials] = useState<SMTPCredView[]>([]);
   const [domains, setDomains] = useState<DomainView[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -144,25 +148,25 @@ export default function SMTPPage() {
             <span className="text-[10px] text-zinc-500 dark:text-zinc-400 block uppercase font-sans">
               Hostname
             </span>
-            <span className="text-zinc-900 dark:text-white font-semibold">smtp.resend.com</span>
+            <span className="text-zinc-900 dark:text-white font-semibold">{smtpHost}</span>
           </div>
           <div className="rounded-lg border border-surface-border bg-surface-raised p-3">
             <span className="text-[10px] text-zinc-500 dark:text-zinc-400 block uppercase font-sans">
               Port
             </span>
-            <span className="text-zinc-900 dark:text-white font-semibold">465 / 587</span>
+            <span className="text-zinc-900 dark:text-white font-semibold">{smtpPort}</span>
           </div>
           <div className="rounded-lg border border-surface-border bg-surface-raised p-3">
             <span className="text-[10px] text-zinc-500 dark:text-zinc-400 block uppercase font-sans">
               Security
             </span>
-            <span className="text-emerald-600 dark:text-emerald-400 font-semibold">STARTTLS</span>
+            <span className="text-zinc-900 dark:text-white font-semibold">{smtpSecurity}</span>
           </div>
           <div className="rounded-lg border border-surface-border bg-surface-raised p-3">
             <span className="text-[10px] text-zinc-500 dark:text-zinc-400 block uppercase font-sans">
               Auth Mechanism
             </span>
-            <span className="text-zinc-900 dark:text-white font-semibold">PLAIN / LOGIN</span>
+            <span className="text-zinc-900 dark:text-white font-semibold">{smtpAuthMechanism}</span>
           </div>
         </div>
       </div>
@@ -230,20 +234,20 @@ export default function SMTPPage() {
           <code>{`import nodemailer from 'nodemailer';
 
 const transporter = nodemailer.createTransport({
-  host: 'smtp.resend.com',
-  port: 587,
-  secure: false, // true for 465, false for 587
+  host: process.env.SMTP_HOST,
+  port: Number(process.env.SMTP_PORT),
+  secure: process.env.SMTP_SECURE === 'true',
   auth: {
-    user: 'resend',
-    pass: 're_123456789',
+    user: process.env.SMTP_USERNAME,
+    pass: process.env.SMTP_PASSWORD,
   },
 });
 
 await transporter.sendMail({
-  from: '"Billing" <billing@yourdomain.com>',
-  to: 'customer@example.com',
-  subject: 'Invoice #1042',
-  html: '<b>Your invoice is ready.</b>',
+  from: process.env.SMTP_FROM,
+  to: process.env.RECIPIENT_EMAIL,
+  subject: process.env.EMAIL_SUBJECT,
+  html: process.env.EMAIL_HTML,
 });`}</code>
         </pre>
       </div>
@@ -315,7 +319,7 @@ await transporter.sendMail({
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    placeholder="support@yourdomain.com"
+                    placeholder="Sender email address on a verified domain"
                     required
                     className="w-full rounded-md border border-surface-border bg-surface-raised px-3 py-1.5 text-xs text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-600 focus:outline-none font-mono"
                   />

@@ -67,6 +67,7 @@ export default function AudiencesPage() {
   const [contactEmail, setContactEmail] = useState("");
   const [contactFirstName, setContactFirstName] = useState("");
   const [contactLastName, setContactLastName] = useState("");
+  const [contactTraitsJson, setContactTraitsJson] = useState("{}");
   const [unsubscribed, setUnsubscribed] = useState(false);
 
   // Segment modal
@@ -178,18 +179,24 @@ export default function AudiencesPage() {
   const handleCreateContact = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
+      const traits = JSON.parse(contactTraitsJson) as Record<string, unknown>;
+      if (!traits || Array.isArray(traits) || typeof traits !== "object") {
+        throw new Error("Contact traits must be a JSON object.");
+      }
       await api.createContact({
         email: contactEmail.trim(),
         first_name: contactFirstName.trim() || undefined,
         last_name: contactLastName.trim() || undefined,
         unsubscribed,
         audience_id: selectedAudience?.id,
+        traits,
       });
       toast.success("Contact added successfully");
       setIsContactOpen(false);
       setContactEmail("");
       setContactFirstName("");
       setContactLastName("");
+      setContactTraitsJson("{}");
       setUnsubscribed(false);
       loadContacts(selectedAudience?.id);
     } catch (err: any) {
@@ -820,7 +827,7 @@ export default function AudiencesPage() {
                   type="email"
                   value={contactEmail}
                   onChange={(e) => setContactEmail(e.target.value)}
-                  placeholder="jane@example.com"
+                  placeholder="Email address"
                   required
                   className="w-full rounded-md border border-surface-border bg-surface-raised px-3 py-1.5 text-xs text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-600 focus:outline-none"
                 />
@@ -835,7 +842,7 @@ export default function AudiencesPage() {
                     type="text"
                     value={contactFirstName}
                     onChange={(e) => setContactFirstName(e.target.value)}
-                    placeholder="Jane"
+                    placeholder="First name"
                     className="w-full rounded-md border border-surface-border bg-surface-raised px-3 py-1.5 text-xs text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-600 focus:outline-none"
                   />
                 </div>
@@ -847,7 +854,7 @@ export default function AudiencesPage() {
                     type="text"
                     value={contactLastName}
                     onChange={(e) => setContactLastName(e.target.value)}
-                    placeholder="Doe"
+                    placeholder="Last name"
                     className="w-full rounded-md border border-surface-border bg-surface-raised px-3 py-1.5 text-xs text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-600 focus:outline-none"
                   />
                 </div>
@@ -864,6 +871,17 @@ export default function AudiencesPage() {
                 <label htmlFor="unsub" className="text-xs text-zinc-600 dark:text-zinc-400">
                   Mark as unsubscribed
                 </label>
+              </div>
+
+              <div>
+                <label className="block text-[11px] text-zinc-600 dark:text-zinc-400 mb-1">Custom traits (JSON object)</label>
+                <textarea
+                  value={contactTraitsJson}
+                  onChange={(event) => setContactTraitsJson(event.target.value)}
+                  rows={3}
+                  spellCheck={false}
+                  className="w-full rounded-md border border-surface-border bg-surface-raised p-3 font-mono text-xs text-zinc-900 dark:text-white"
+                />
               </div>
 
               <div className="flex justify-end gap-2 pt-2">
@@ -1073,6 +1091,15 @@ export default function AudiencesPage() {
                 </div>
               </div>
             </div>
+
+            {selectedContact.traits && Object.keys(selectedContact.traits).length > 0 && (
+              <section className="space-y-2 border-t border-surface-border pt-3">
+                <h3 className="text-xs font-semibold uppercase tracking-wider text-content-primary">Custom traits</h3>
+                <pre className="overflow-x-auto rounded-md border border-surface-border bg-surface-raised p-3 font-mono text-[11px] text-content-secondary">
+                  {JSON.stringify(selectedContact.traits, null, 2)}
+                </pre>
+              </section>
+            )}
 
             {/* Segments Membership */}
             <div className="space-y-3 pt-2 border-t border-surface-border">

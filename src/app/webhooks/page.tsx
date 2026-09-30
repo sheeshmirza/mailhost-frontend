@@ -42,6 +42,7 @@ export default function WebhooksPage() {
     "email.bounced",
   ]);
   const [copiedSecret, setCopiedSecret] = useState<string | null>(null);
+  const [newSigningSecret, setNewSigningSecret] = useState<string | null>(null);
 
   const fetchWebhooks = async () => {
     setIsLoading(true);
@@ -75,7 +76,8 @@ export default function WebhooksPage() {
         await api.updateWebhook(editingWebhookId, payload);
         toast.success("Webhook updated");
       } else {
-        await api.createWebhook(payload);
+        const created = await api.createWebhook(payload);
+        setNewSigningSecret(created.signing_secret || null);
         toast.success("Webhook endpoint registered");
       }
       setIsOpen(false);
@@ -250,6 +252,23 @@ export default function WebhooksPage() {
       )}
       {loadError && webhooks.length > 0 && <ErrorState message={loadError} onRetry={fetchWebhooks} />}
 
+      {newSigningSecret && (
+        <section role="status" className="space-y-3 rounded-lg border border-amber-300 bg-amber-50 p-4 dark:border-amber-900/60 dark:bg-amber-950/20">
+          <div>
+            <h2 className="text-[13px] font-semibold text-amber-950 dark:text-amber-200">Save your webhook signing secret</h2>
+            <p className="mt-1 text-xs text-amber-800 dark:text-amber-300">It is only shown once. Store it securely and use it to verify webhook signatures.</p>
+          </div>
+          <div className="flex min-w-0 items-center gap-2 rounded-md border border-amber-200 bg-white px-3 py-2 dark:border-amber-900/50 dark:bg-black/20">
+            <code className="min-w-0 flex-1 break-all font-mono text-xs text-zinc-900 dark:text-zinc-100">{newSigningSecret}</code>
+            <button onClick={() => copySecret(newSigningSecret, "new-signing-secret")} className="btn-secondary shrink-0" aria-label="Copy signing secret">
+              {copiedSecret === "new-signing-secret" ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
+              <span>{copiedSecret === "new-signing-secret" ? "Copied" : "Copy"}</span>
+            </button>
+          </div>
+          <button onClick={() => setNewSigningSecret(null)} className="text-xs font-medium text-amber-900 underline dark:text-amber-300">Dismiss</button>
+        </section>
+      )}
+
       {/* Add Webhook Modal */}
       {isOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-fade-in">
@@ -269,7 +288,7 @@ export default function WebhooksPage() {
                   type="url"
                   value={url}
                   onChange={(e) => setUrl(e.target.value)}
-                  placeholder="https://api.yourdomain.com/webhooks/resend"
+                  placeholder="HTTPS endpoint URL"
                   required
                   className="w-full rounded-lg border border-surface-border bg-surface-raised px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-zinc-900/10 font-mono text-zinc-700 dark:text-zinc-300 placeholder-zinc-400 dark:placeholder-zinc-600"
                 />

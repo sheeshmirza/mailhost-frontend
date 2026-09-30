@@ -33,6 +33,7 @@ export default function InboundPage() {
   const [domains, setDomains] = useState<DomainView[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isDownloadingRaw, setIsDownloadingRaw] = useState(false);
 
   // New alias modal
   const [isAliasOpen, setIsAliasOpen] = useState(false);
@@ -91,6 +92,24 @@ export default function InboundPage() {
     } catch (err) {
       console.error("Failed to fetch inbound detail", err);
       toast.error("Could not load inbound message details: " + (err instanceof Error ? err.message : "Unknown error"));
+    }
+  };
+
+  const downloadRawMessage = async (id: string) => {
+    if (isDownloadingRaw) return;
+    setIsDownloadingRaw(true);
+    try {
+      const file = await api.getInboundRaw(id);
+      const objectURL = URL.createObjectURL(file);
+      const anchor = document.createElement("a");
+      anchor.href = objectURL;
+      anchor.download = `${id}.eml`;
+      anchor.click();
+      window.setTimeout(() => URL.revokeObjectURL(objectURL), 1000);
+    } catch (err) {
+      toast.error("Could not download raw message: " + (err instanceof Error ? err.message : "Unknown error"));
+    } finally {
+      setIsDownloadingRaw(false);
     }
   };
 
@@ -414,14 +433,15 @@ export default function InboundPage() {
 
             {/* Raw MIME download */}
             <div className="pt-4 border-t border-surface-border flex justify-between items-center">
-              <a
-                href={`/backend/v1/inbound/${selectedInbound.id}/raw`}
-                download={`${selectedInbound.id}.eml`}
-                className="flex items-center gap-1.5 rounded-md border border-surface-border bg-surface-raised px-3 py-1.5 text-xs text-zinc-700 hover:bg-surface hover:text-zinc-900 dark:text-zinc-300 dark:hover:text-white transition-colors"
+              <button
+                type="button"
+                onClick={() => downloadRawMessage(selectedInbound.id)}
+                disabled={isDownloadingRaw}
+                className="flex items-center gap-1.5 rounded-md border border-surface-border bg-surface-raised px-3 py-1.5 text-xs text-zinc-700 hover:bg-surface hover:text-zinc-900 disabled:opacity-50 dark:text-zinc-300 dark:hover:text-white transition-colors"
               >
-                <FileDown className="h-3.5 w-3.5" />
-                <span>Download Raw RFC822 (.eml)</span>
-              </a>
+                {isDownloadingRaw ? <RefreshCw className="h-3.5 w-3.5 animate-spin" /> : <FileDown className="h-3.5 w-3.5" />}
+                <span>{isDownloadingRaw ? "Downloading..." : "Download Raw RFC822 (.eml)"}</span>
+              </button>
               <button
                 onClick={() => setSelectedInbound(null)}
                 className="rounded-md bg-zinc-900 px-3.5 py-1.5 text-xs font-medium text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200 transition-colors"
@@ -486,7 +506,7 @@ export default function InboundPage() {
                   type="text"
                   value={forwardTo}
                   onChange={(e) => setForwardTo(e.target.value)}
-                  placeholder="team@mycompany.com, alerts@mycompany.com"
+                  placeholder="Forwarding email addresses, comma-separated"
                   className="w-full rounded-md border border-surface-border bg-surface-raised px-3 py-1.5 text-xs text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-600 focus:outline-none"
                 />
               </div>

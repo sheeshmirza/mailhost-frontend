@@ -45,12 +45,11 @@ export default function AutomationsPage() {
   // New automation modal
   const [isOpen, setIsOpen] = useState(false);
   const [name, setName] = useState("");
-  const [triggerType, setTriggerType] = useState<string>("contact.created");
-  const [eventName, setEventName] = useState("user.signup");
-  const [emailSubject, setEmailSubject] = useState("Welcome aboard!");
-  const [emailFrom, setEmailFrom] = useState("Acme <welcome@example.com>");
-  const [emailHtml, setEmailHtml] = useState("<h1>Welcome to Acme!</h1><p>We are excited to have you.</p>");
-  const [delayHours, setDelayHours] = useState(24);
+  const [triggerType, setTriggerType] = useState<string>("");
+  const [eventName, setEventName] = useState("");
+  const [emailSubject, setEmailSubject] = useState("");
+  const [emailFrom, setEmailFrom] = useState("");
+  const [emailHtml, setEmailHtml] = useState("");
 
   const fetchAutomations = async () => {
     setIsLoading(true);
@@ -78,7 +77,7 @@ export default function AutomationsPage() {
         setDomains(domList);
         if (domList.length > 0) {
           const verified = domList.find((d: any) => d.status === "verified") || domList[0];
-          setEmailFrom(`Acme <welcome@${verified.name}>`);
+          setEmailFrom(`welcome@${verified.name}`);
         }
       } else {
         failedResources.push("domains");
@@ -127,33 +126,15 @@ export default function AutomationsPage() {
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const steps: AutomationStep[] = [
-        {
-          id: "step_1",
-          type: "send_email",
-          config: {
-            from: emailFrom,
-            subject: emailSubject,
-            html: emailHtml,
-          },
+      const steps: AutomationStep[] = [{
+        id: crypto.randomUUID(),
+        type: "send_email",
+        config: {
+          from: emailFrom.trim(),
+          subject: emailSubject.trim(),
+          html: emailHtml,
         },
-        {
-          id: "step_2",
-          type: "delay",
-          config: {
-            delay_seconds: delayHours * 3600,
-          },
-        },
-        {
-          id: "step_3",
-          type: "send_email",
-          config: {
-            from: emailFrom,
-            subject: "Quick check-in: How are things going?",
-            html: "<p>Just wanted to see if you have any questions so far!</p>",
-          },
-        },
-      ];
+      }];
 
       const newAuto = await api.createAutomation({
         name: name.trim(),
@@ -562,7 +543,7 @@ export default function AutomationsPage() {
                   type="text"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  placeholder="e.g. User Onboarding Series"
+                  placeholder="Workflow name"
                   required
                   className="w-full rounded-md border border-surface-border bg-surface-raised px-3 py-1.5 text-xs text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-600 focus:outline-none"
                 />
@@ -576,8 +557,10 @@ export default function AutomationsPage() {
                   <select
                     value={triggerType}
                     onChange={(e) => setTriggerType(e.target.value)}
+                    required
                     className="w-full rounded-md border border-surface-border bg-surface-raised px-3 py-1.5 text-xs text-zinc-900 dark:text-white focus:outline-none"
                   >
+                    <option value="" disabled>Select a trigger...</option>
                     <option value="contact.created">Contact Created</option>
                     <option value="event">Custom Event Triggered</option>
                     <option value="email.opened">Email Opened</option>
@@ -594,7 +577,7 @@ export default function AutomationsPage() {
                       type="text"
                       value={eventName}
                       onChange={(e) => setEventName(e.target.value)}
-                      placeholder="user.signup"
+                      placeholder="Event identifier"
                       className="w-full rounded-md border border-surface-border bg-surface-raised px-3 py-1.5 text-xs text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-600 focus:outline-none font-mono"
                     />
                   </div>
@@ -619,21 +602,6 @@ export default function AutomationsPage() {
                   onChange={(e) => setEmailHtml(e.target.value)}
                   rows={4}
                   className="w-full rounded-md border border-surface-border bg-surface-raised p-3 font-mono text-xs text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-600 focus:outline-none"
-                />
-              </div>
-
-              {/* Delay Configuration */}
-              <div className="pt-2 border-t border-surface-border">
-                <label className="block text-[11px] font-medium text-zinc-600 dark:text-zinc-300 mb-1">
-                  Step 2: Wait Delay Before Follow-up (Hours)
-                </label>
-                <input
-                  type="number"
-                  value={delayHours}
-                  onChange={(e) => setDelayHours(Number(e.target.value))}
-                  min={1}
-                  max={720}
-                  className="w-full rounded-md border border-surface-border bg-surface-raised px-3 py-1.5 text-xs text-zinc-900 dark:text-white focus:outline-none"
                 />
               </div>
 

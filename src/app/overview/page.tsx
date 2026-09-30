@@ -382,8 +382,7 @@ export default function OverviewPage() {
 
           <div className="pt-2">
             <CodeSnippet
-              apiKey="re_live_..."
-              domain={domains[0]?.name || "yourdomain.com"}
+              domain={domains[0]?.name}
             />
           </div>
         </div>

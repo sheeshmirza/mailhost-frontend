@@ -220,7 +220,7 @@ export default function LoginPage() {
                     type="password"
                     value={apiKey}
                     onChange={(e) => setApiKey(e.target.value)}
-                    placeholder="re_live_••••••••••••••••"
+                    placeholder="Enter API key or session token"
                     required
                     className="w-full rounded-lg border border-surface-border bg-surface-raised pl-10 pr-3 py-2 text-sm text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-600 focus:outline-none focus:border-zinc-400 focus:ring-2 focus:ring-zinc-900/10 dark:focus:border-zinc-500 dark:focus:ring-white/10 font-mono transition-shadow"
                   />
@@ -240,7 +240,7 @@ export default function LoginPage() {
                           type="text"
                           value={name}
                           onChange={(e) => setName(e.target.value)}
-                          placeholder="Alex Developer"
+                          placeholder="Full name"
                           required
                           className="w-full rounded-lg border border-surface-border bg-surface-raised pl-10 pr-3 py-2 text-sm text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-600 focus:outline-none focus:border-zinc-400 focus:ring-2 focus:ring-zinc-900/10 dark:focus:border-zinc-500 dark:focus:ring-white/10 transition-shadow"
                         />
@@ -257,7 +257,7 @@ export default function LoginPage() {
                           type="text"
                           value={orgName}
                           onChange={(e) => setOrgName(e.target.value)}
-                          placeholder="Acme Corp"
+                          placeholder="Organization name"
                           required
                           className="w-full rounded-lg border border-surface-border bg-surface-raised pl-10 pr-3 py-2 text-sm text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-600 focus:outline-none focus:border-zinc-400 focus:ring-2 focus:ring-zinc-900/10 dark:focus:border-zinc-500 dark:focus:ring-white/10 transition-shadow"
                         />
@@ -276,7 +276,7 @@ export default function LoginPage() {
                       type="email"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      placeholder="name@example.com"
+                      placeholder="Email address"
                       required
                       className="w-full rounded-lg border border-surface-border bg-surface-raised pl-10 pr-3 py-2 text-sm text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-600 focus:outline-none focus:border-zinc-400 focus:ring-2 focus:ring-zinc-900/10 dark:focus:border-zinc-500 dark:focus:ring-white/10 transition-shadow"
                     />

@@ -4,30 +4,29 @@ import React, { useState } from "react";
 import { Check, Copy } from "lucide-react";
 
 interface CodeSnippetProps {
-  apiKey?: string;
   domain?: string;
-  toEmail?: string;
 }
 
 export default function CodeSnippet({
-  apiKey = "re_123456789",
-  domain = "example.com",
-  toEmail = "delivered@resend.dev",
+  domain = "YOUR_VERIFIED_DOMAIN",
 }: CodeSnippetProps) {
+  const apiKey = "${RESEND_API_KEY}";
+  const toEmail = "RECIPIENT_ADDRESS";
+  const apiBaseUrl = "${NEXT_PUBLIC_API_URL}";
   const [activeTab, setActiveTab] = useState<"curl" | "node" | "python" | "go">(
     "curl"
   );
   const [copied, setCopied] = useState(false);
 
   const snippets = {
-    curl: `curl -X POST 'https://api.resend.com/emails' \\
+    curl: `curl -X POST '${apiBaseUrl}/v1/emails' \\
   -H 'Authorization: Bearer ${apiKey}' \\
   -H 'Content-Type: application/json' \\
   -d '{
-    "from": "Acme <onboarding@${domain}>",
+    "from": "onboarding@${domain}",
     "to": ["${toEmail}"],
-    "subject": "Hello World",
-    "html": "<strong>It works!</strong>"
+    "subject": "SUBJECT",
+    "html": "<p>MESSAGE_CONTENT</p>"
   }'`,
 
     node: `import { Resend } from 'resend';
@@ -35,10 +34,10 @@ export default function CodeSnippet({
 const resend = new Resend('${apiKey}');
 
 await resend.emails.send({
-  from: 'Acme <onboarding@${domain}>',
+  from: 'onboarding@${domain}',
   to: ['${toEmail}'],
-  subject: 'Hello World',
-  html: '<strong>It works!</strong>',
+  subject: 'SUBJECT',
+  html: '<p>MESSAGE_CONTENT</p>',
 });`,
 
     python: `import resend
@@ -46,10 +45,10 @@ await resend.emails.send({
 resend.api_key = "${apiKey}"
 
 params = {
-    "from": "Acme <onboarding@${domain}>",
+    "from": "onboarding@${domain}",
     "to": ["${toEmail}"],
-    "subject": "Hello World",
-    "html": "<strong>It works!</strong>"
+    "subject": "SUBJECT",
+    "html": "<p>MESSAGE_CONTENT</p>"
 }
 
 email = resend.Emails.send(params)`,
@@ -65,10 +64,10 @@ func main() {
 	client := resend.NewClient("${apiKey}")
 
 	params := &resend.SendEmailRequest{
-		From:    "Acme <onboarding@${domain}>",
+    From:    "onboarding@${domain}",
 		To:      []string{"${toEmail}"},
-		Subject: "Hello World",
-		Html:    "<strong>It works!</strong>",
+    Subject: "SUBJECT",
+    Html:    "<p>MESSAGE_CONTENT</p>",
 	}
 
 	sent, err := client.Emails.Send(params)
