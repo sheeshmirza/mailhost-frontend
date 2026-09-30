@@ -20,7 +20,7 @@ export default function CodeSnippet({
   const [copied, setCopied] = useState(false);
 
   const snippets = {
-    curl: `curl -X POST 'http://localhost:8080/v1/emails' \\
+    curl: `curl -X POST 'https://api.resend.com/emails' \\
   -H 'Authorization: Bearer ${apiKey}' \\
   -H 'Content-Type: application/json' \\
   -d '{
@@ -32,9 +32,7 @@ export default function CodeSnippet({
 
     node: `import { Resend } from 'resend';
 
-const resend = new Resend('${apiKey}', {
-  baseUrl: 'http://localhost:8080/v1'
-});
+const resend = new Resend('${apiKey}');
 
 await resend.emails.send({
   from: 'Acme <onboarding@${domain}>',
@@ -46,7 +44,6 @@ await resend.emails.send({
     python: `import resend
 
 resend.api_key = "${apiKey}"
-resend.api_url = "http://localhost:8080/v1"
 
 params = {
     "from": "Acme <onboarding@${domain}>",
@@ -66,7 +63,6 @@ import (
 
 func main() {
 	client := resend.NewClient("${apiKey}")
-	// Configure baseUrl: http://localhost:8080/v1
 
 	params := &resend.SendEmailRequest{
 		From:    "Acme <onboarding@${domain}>",

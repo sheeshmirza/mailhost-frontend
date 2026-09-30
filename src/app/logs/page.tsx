@@ -14,9 +14,23 @@ import {
   Server,
   ShieldAlert,
   Flame,
-  ExternalLink,
   RefreshCw,
 } from "lucide-react";
+
+const SERVICE_NAMES: Record<string, string> = {
+  database: "Relational Datastore",
+  read_replica: "Replica Datastore",
+  mongodb: "Payload Archive",
+  redis: "Cache & Queue",
+  secretbox: "Key Encryption Engine",
+};
+
+function formatAuditIP(ip?: string) {
+  if (!ip || ip === "127.0.0.1" || ip === "::1" || ip.startsWith("172.") || ip.startsWith("10.") || ip.startsWith("192.168.")) {
+    return "Authorized Client";
+  }
+  return ip;
+}
 
 export default function LogsHealthPage() {
   const { toast } = useToast();
@@ -74,15 +88,6 @@ export default function LogsHealthPage() {
         </div>
 
         <div className="flex items-center gap-2">
-          <a
-            href="/backend/metrics"
-            target="_blank"
-            rel="noreferrer"
-            className="btn-secondary"
-          >
-            <span>Prometheus Metrics</span>
-            <ExternalLink className="h-3 w-3" />
-          </a>
           <button
             onClick={fetchHealthAndLogs}
             className="flex h-8 w-8 items-center justify-center rounded-lg border border-surface-border bg-surface text-zinc-500 hover:bg-surface-raised hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white transition-colors"
@@ -93,11 +98,11 @@ export default function LogsHealthPage() {
         </div>
       </div>
 
-      {/* Deep Dependency Health Checks */}
+      {/* Platform Service Status */}
       <div className="rounded-xl border border-surface-border bg-surface p-5 space-y-4">
         <div className="flex items-center justify-between">
           <h2 className="text-xs font-semibold text-zinc-900 dark:text-white uppercase tracking-wider">
-            Backend Dependency Readiness Checks (/readyz)
+            Platform Service Status
           </h2>
           <span className="flex items-center gap-1.5 text-xs text-emerald-600 dark:text-emerald-400 font-medium">
             <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
@@ -112,8 +117,8 @@ export default function LogsHealthPage() {
               className="rounded-lg border border-surface-border bg-surface-raised p-3 text-xs"
             >
               <div className="flex items-center justify-between">
-                <span className="font-medium text-zinc-700 dark:text-zinc-300 capitalize">
-                  {service.replace("_", " ")}
+                <span className="font-medium text-zinc-700 dark:text-zinc-300">
+                  {SERVICE_NAMES[service] || service.replace("_", " ")}
                 </span>
                 {status === "ok" ? (
                   <CheckCircle2 className="h-4 w-4 text-emerald-500" />
@@ -122,7 +127,7 @@ export default function LogsHealthPage() {
                 )}
               </div>
               <span className="mt-1 block font-mono text-[11px] text-zinc-400 dark:text-zinc-500">
-                {status}
+                {status === "ok" ? "Operational" : "Degraded"}
               </span>
             </div>
           ))}
@@ -187,7 +192,7 @@ export default function LogsHealthPage() {
                       {log.resource_id}
                     </td>
                     <td className="px-5 py-3 text-zinc-400 dark:text-zinc-500 text-[11px]">
-                      {log.ip_address || "127.0.0.1"}
+                      {formatAuditIP(log.ip_address)}
                     </td>
                     <td className="px-5 py-3 text-right text-zinc-400 dark:text-zinc-500 text-[11px]">
                       {new Date(log.created_at).toLocaleString()}

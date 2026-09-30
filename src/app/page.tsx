@@ -129,7 +129,7 @@ async fn main() {
   },
   curl: {
     lang: "bash",
-    code: `curl -X POST 'http://localhost:8080/emails' \\
+    code: `curl -X POST 'https://api.resend.com/emails' \\
   -H 'Authorization: Bearer re_123456789' \\
   -H 'Content-Type: application/json' \\
   -d $'{
@@ -716,13 +716,12 @@ export default function HomePage() {
                 <li><Link href="/api-keys" className="hover:text-zinc-900 dark:hover:text-white">API Keys</Link></li>
                 <li><Link href="/logs" className="hover:text-zinc-900 dark:hover:text-white">System Health</Link></li>
                 <li><Link href="/settings" className="hover:text-zinc-900 dark:hover:text-white">MCP Server</Link></li>
-                <li><a href="/backend/metrics" target="_blank" rel="noreferrer" className="hover:text-zinc-900 dark:hover:text-white">Prometheus Metrics</a></li>
               </ul>
             </div>
           </div>
 
           <div className="border-t border-surface-border pt-6 flex flex-col sm:flex-row items-center justify-between text-zinc-500 text-[11px] gap-4">
-            <p>© 2026 Resend Inc. All rights reserved. Built with Next.js & Go.</p>
+            <p>© 2026 Resend Inc. All rights reserved.</p>
             <div className="flex items-center gap-4">
               <Link href="/overview" className="hover:text-zinc-900 dark:hover:text-white">Dashboard</Link>
               <Link href="/login" className="hover:text-zinc-900 dark:hover:text-white">Login</Link>

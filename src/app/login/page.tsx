@@ -199,7 +199,7 @@ export default function LoginPage() {
                       type="email"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      placeholder="admin@resend.local"
+                      placeholder="name@example.com"
                       required
                       className="w-full rounded-lg border border-surface-border bg-surface-raised pl-10 pr-3 py-2 text-sm text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-600 focus:outline-none focus:border-zinc-400 focus:ring-2 focus:ring-zinc-900/10 dark:focus:border-zinc-500 dark:focus:ring-white/10 transition-shadow"
                     />
@@ -234,26 +234,7 @@ export default function LoginPage() {
               <span>{loading ? "Authenticating..." : mode === "login" ? "Sign In" : mode === "register" ? "Create Account" : "Connect"}</span>
               {!loading && <ArrowRight className="h-4 w-4" />}
             </button>
-
-            {mode === "login" && (
-              <div className="pt-2 text-center">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setEmail("admin@resend.local");
-                    setPassword("Password1234!");
-                  }}
-                  className="text-xs text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white transition-colors hover:underline decoration-zinc-300 dark:decoration-zinc-700 underline-offset-4"
-                >
-                  Quick Fill Local Test Credentials
-                </button>
-              </div>
-            )}
           </form>
-        </div>
-
-        <div className="mt-8 text-center text-xs text-zinc-400 dark:text-zinc-500">
-          Mailhost Engine running on <code className="text-zinc-700 dark:text-zinc-300 font-mono">localhost:8080</code>
         </div>
       </div>
     </div>

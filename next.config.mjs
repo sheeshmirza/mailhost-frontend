@@ -8,6 +8,8 @@ const nextConfig = {
   },
   // Output as a static HTML export (required for fully static deployments)
   output: "export",
+  // Disable X-Powered-By header to prevent server technology leakage
+  poweredByHeader: false,
   // Enable React strict mode for improved debugging and performance checks
   reactStrictMode: true,
   // Use the Rust-based SWC compiler for faster builds

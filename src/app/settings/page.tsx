@@ -181,7 +181,7 @@ export default function SettingsPage() {
       "args": [
         "-y",
         "@modelcontextprotocol/server-fetch",
-        "http://localhost:8080/mcp"
+        "https://api.resend.com/mcp"
       ],
       "env": {
         "AUTHORIZATION": "Bearer YOUR_API_KEY"
@@ -563,7 +563,7 @@ export default function SettingsPage() {
               <h2 className="text-base font-semibold text-zinc-900 dark:text-white">Remote Model Context Protocol (MCP)</h2>
             </div>
             <p className="text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed">
-              Mailhost exposes a built-in remote MCP server at <code className="text-zinc-900 dark:text-white font-mono bg-surface-raised px-1 py-0.5 rounded border border-surface-border">http://localhost:8080/mcp</code>. AI agents (like Claude Desktop, Antigravity, and Cursor) can directly draft, dispatch, track, and inspect emails autonomously.
+              Mailhost provides a built-in remote MCP server at <code className="text-zinc-900 dark:text-white font-mono bg-surface-raised px-1 py-0.5 rounded border border-surface-border">https://api.resend.com/mcp</code>. AI agents (like Claude Desktop, Antigravity, and Cursor) can directly draft, dispatch, track, and inspect emails autonomously.
             </p>
 
             <div className="space-y-2">

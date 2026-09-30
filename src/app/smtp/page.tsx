@@ -128,13 +128,13 @@ export default function SMTPPage() {
             <span className="text-[10px] text-zinc-500 dark:text-zinc-400 block uppercase font-sans">
               Hostname
             </span>
-            <span className="text-zinc-900 dark:text-white font-semibold">localhost</span>
+            <span className="text-zinc-900 dark:text-white font-semibold">smtp.resend.com</span>
           </div>
           <div className="rounded-lg border border-surface-border bg-surface-raised p-3">
             <span className="text-[10px] text-zinc-500 dark:text-zinc-400 block uppercase font-sans">
               Port
             </span>
-            <span className="text-zinc-900 dark:text-white font-semibold">587 / 2525</span>
+            <span className="text-zinc-900 dark:text-white font-semibold">465 / 587</span>
           </div>
           <div className="rounded-lg border border-surface-border bg-surface-raised p-3">
             <span className="text-[10px] text-zinc-500 dark:text-zinc-400 block uppercase font-sans">
@@ -210,12 +210,12 @@ export default function SMTPPage() {
           <code>{`import nodemailer from 'nodemailer';
 
 const transporter = nodemailer.createTransport({
-  host: 'localhost',
-  port: 2525,
-  secure: false, // true for 465, false for 587/2525
+  host: 'smtp.resend.com',
+  port: 587,
+  secure: false, // true for 465, false for 587
   auth: {
-    user: 'billing@yourdomain.com',
-    pass: 'smtp_live_••••••••••••••••••••••••••••',
+    user: 'resend',
+    pass: 're_123456789',
   },
 });
 
