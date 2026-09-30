@@ -7,6 +7,8 @@ import {
   EmailSummary,
   EmailDetail,
   SendEmailPayload,
+  BulkEmailPayload,
+  BatchStatusView,
 } from "@/lib/api";
 import {
   Send,
@@ -20,6 +22,7 @@ import {
   RefreshCw,
   Ban,
   ArrowUpRight,
+  Users,
 } from "lucide-react";
 import SendEmailModal from "@/components/emails/SendEmailModal";
 import { useToast } from "@/lib/toast-context";
@@ -39,6 +42,7 @@ function EmailsPageContent() {
   const [loadError, setLoadError] = useState<string | null>(null);
   const [isSendOpen, setIsSendOpen] = useState(false);
   const [isBatchOpen, setIsBatchOpen] = useState(false);
+  const [isBulkOpen, setIsBulkOpen] = useState(false);
   const [batchJson, setBatchJson] = useState(`[
   {
     "from": "Acme <newsletter@example.com>",
@@ -54,6 +58,21 @@ function EmailsPageContent() {
   }
 ]`);
   const [batchSending, setBatchSending] = useState(false);
+  const [bulkSending, setBulkSending] = useState(false);
+  const [bulkFrom, setBulkFrom] = useState("");
+  const [bulkSubject, setBulkSubject] = useState("");
+  const [bulkHtml, setBulkHtml] = useState("<p>Hello {{first_name}},</p>");
+  const [bulkText, setBulkText] = useState("");
+  const [bulkReplyToJson, setBulkReplyToJson] = useState("[]");
+  const [bulkHeadersJson, setBulkHeadersJson] = useState("{}");
+  const [bulkAttachmentsJson, setBulkAttachmentsJson] = useState("[]");
+  const [bulkRecipientsJson, setBulkRecipientsJson] = useState(`[
+  { "to": "jane@example.com", "variables": { "first_name": "Jane" } },
+  { "to": "sam@example.com", "variables": { "first_name": "Sam" } }
+]`);
+  const [lastBatchId, setLastBatchId] = useState<string | null>(null);
+  const [batchStatus, setBatchStatus] = useState<BatchStatusView | null>(null);
+  const [isCheckingBatch, setIsCheckingBatch] = useState(false);
 
   const fetchEmails = async () => {
     setIsLoading(true);
@@ -104,7 +123,9 @@ function EmailsPageContent() {
     setBatchSending(true);
     try {
       const parsed: SendEmailPayload[] = JSON.parse(batchJson);
-      await api.sendBatch(parsed);
+      const result = await api.sendBatch(parsed);
+      setLastBatchId(result.batch_id);
+      setBatchStatus(null);
       toast.success("Batch enqueued successfully");
       setIsBatchOpen(false);
       fetchEmails();
@@ -112,6 +133,54 @@ function EmailsPageContent() {
       toast.error("Invalid Batch JSON or send failed: " + err.message);
     } finally {
       setBatchSending(false);
+    }
+  };
+
+  const handleSendBulk = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setBulkSending(true);
+    try {
+      const recipients = JSON.parse(bulkRecipientsJson) as BulkEmailPayload["recipients"];
+      const replyTo = JSON.parse(bulkReplyToJson) as string[];
+      const headers = JSON.parse(bulkHeadersJson) as Record<string, string>;
+      const attachments = JSON.parse(bulkAttachmentsJson) as NonNullable<BulkEmailPayload["attachments"]>;
+      if (!Array.isArray(recipients) || recipients.length === 0) {
+        throw new Error("Add at least one recipient with a valid email address.");
+      }
+      if (!Array.isArray(replyTo) || !Array.isArray(attachments) || !headers || Array.isArray(headers) || typeof headers !== "object") {
+        throw new Error("Reply-to, headers, or attachment data has an invalid JSON shape.");
+      }
+      const result = await api.sendBulk({
+        from: bulkFrom.trim(),
+        reply_to: replyTo,
+        subject: bulkSubject.trim(),
+        html: bulkHtml,
+        text: bulkText || undefined,
+        headers,
+        attachments,
+        recipients,
+      });
+      setLastBatchId(result.batch_id);
+      setBatchStatus(null);
+      setIsBulkOpen(false);
+      toast.success("Personalized bulk send queued", `${result.count} messages queued.`);
+      await fetchEmails();
+    } catch (err) {
+      toast.error("Bulk send failed: " + (err instanceof Error ? err.message : "Invalid recipient data"));
+    } finally {
+      setBulkSending(false);
+    }
+  };
+
+  const checkBatchStatus = async () => {
+    if (!lastBatchId || isCheckingBatch) return;
+    setIsCheckingBatch(true);
+    try {
+      setBatchStatus(await api.getBatch(lastBatchId));
+    } catch (err) {
+      toast.error("Could not load batch status: " + (err instanceof Error ? err.message : "Unknown error"));
+    } finally {
+      setIsCheckingBatch(false);
     }
   };
 
@@ -191,6 +260,10 @@ function EmailsPageContent() {
         </div>
 
         <div className="flex items-center gap-2">
+          <button onClick={() => setIsBulkOpen(true)} className="btn-secondary">
+            <Users className="h-3.5 w-3.5" />
+            <span>Personalized Bulk</span>
+          </button>
           <button
             onClick={() => setIsBatchOpen(true)}
             className="btn-secondary"
@@ -208,6 +281,27 @@ function EmailsPageContent() {
           </button>
         </div>
       </div>
+
+      {lastBatchId && (
+        <section aria-label="Latest email batch" className="flex flex-col gap-3 rounded-lg border border-surface-border bg-surface p-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="min-w-0">
+            <p className="text-[13px] font-semibold text-content-primary">Latest batch</p>
+            <p className="mt-0.5 truncate font-mono text-[11px] text-content-muted">{lastBatchId}</p>
+            {batchStatus && (
+              <div className="mt-2 flex flex-wrap gap-2 text-[11px]">
+                <span className="badge badge-neutral">{batchStatus.total} total</span>
+                {Object.entries(batchStatus.statuses).map(([status, count]) => (
+                  <span key={status} className="badge badge-info">{status}: {count}</span>
+                ))}
+              </div>
+            )}
+          </div>
+          <button onClick={checkBatchStatus} disabled={isCheckingBatch} className="btn-secondary shrink-0">
+            <RefreshCw className={`h-3.5 w-3.5 ${isCheckingBatch ? "animate-spin" : ""}`} />
+            <span>{isCheckingBatch ? "Checking..." : "Check status"}</span>
+          </button>
+        </section>
+      )}
 
       {/* Search and Status Filters Bar */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -523,6 +617,59 @@ function EmailsPageContent() {
                   className="rounded-md bg-zinc-900 px-4 py-1.5 text-xs font-medium text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200 disabled:opacity-50 transition-colors"
                 >
                   {batchSending ? "Sending..." : "Enqueue Batch"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {isBulkOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm animate-fade-in">
+          <div className="relative flex max-h-[90vh] w-full max-w-2xl flex-col space-y-4 overflow-y-auto rounded-lg border border-surface-border bg-surface p-5 shadow-2xl sm:p-6">
+            <div>
+              <h2 className="text-sm font-semibold text-content-primary">Personalized bulk send</h2>
+              <p className="mt-1 text-xs text-content-muted">One shared message template, with variables rendered individually for each recipient.</p>
+            </div>
+            <form onSubmit={handleSendBulk} className="space-y-3">
+              <label className="block text-xs font-medium text-content-secondary">
+                From address
+                <input value={bulkFrom} onChange={(event) => setBulkFrom(event.target.value)} required className="input-base mt-1" placeholder="Team <hello@yourdomain.com>" />
+              </label>
+              <label className="block text-xs font-medium text-content-secondary">
+                Subject
+                <input value={bulkSubject} onChange={(event) => setBulkSubject(event.target.value)} required className="input-base mt-1" placeholder="Welcome, {{first_name}}" />
+              </label>
+              <label className="block text-xs font-medium text-content-secondary">
+                HTML body
+                <textarea value={bulkHtml} onChange={(event) => setBulkHtml(event.target.value)} rows={5} className="input-base mt-1 font-mono" />
+              </label>
+              <label className="block text-xs font-medium text-content-secondary">
+                Plain-text body (optional)
+                <textarea value={bulkText} onChange={(event) => setBulkText(event.target.value)} rows={3} className="input-base mt-1 font-mono" />
+              </label>
+              <label className="block text-xs font-medium text-content-secondary">
+                Recipients and variables (JSON)
+                <textarea value={bulkRecipientsJson} onChange={(event) => setBulkRecipientsJson(event.target.value)} required rows={7} className="input-base mt-1 font-mono" />
+              </label>
+              <details className="rounded-md border border-surface-border bg-surface-raised px-3 py-2">
+                <summary className="cursor-pointer text-xs font-medium text-content-secondary">Advanced headers, reply-to, attachments</summary>
+                <div className="mt-3 space-y-3">
+                  <label className="block text-xs font-medium text-content-secondary">Reply-to addresses (JSON array)
+                    <textarea value={bulkReplyToJson} onChange={(event) => setBulkReplyToJson(event.target.value)} rows={2} className="input-base mt-1 font-mono" />
+                  </label>
+                  <label className="block text-xs font-medium text-content-secondary">Headers (JSON object)
+                    <textarea value={bulkHeadersJson} onChange={(event) => setBulkHeadersJson(event.target.value)} rows={2} className="input-base mt-1 font-mono" />
+                  </label>
+                  <label className="block text-xs font-medium text-content-secondary">Attachments (base64 JSON array)
+                    <textarea value={bulkAttachmentsJson} onChange={(event) => setBulkAttachmentsJson(event.target.value)} rows={3} className="input-base mt-1 font-mono" />
+                  </label>
+                </div>
+              </details>
+              <div className="flex justify-end gap-2 border-t border-surface-border pt-3">
+                <button type="button" onClick={() => setIsBulkOpen(false)} className="btn-secondary">Cancel</button>
+                <button type="submit" disabled={bulkSending} className="btn-primary">
+                  {bulkSending ? "Queueing..." : "Queue personalized send"}
                 </button>
               </div>
             </form>

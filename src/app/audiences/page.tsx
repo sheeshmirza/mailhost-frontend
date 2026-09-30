@@ -23,6 +23,7 @@ import {
   ChevronRight,
   Sliders,
   CheckCircle2,
+  Pencil,
 } from "lucide-react";
 import { useToast } from "@/lib/toast-context";
 import { ErrorState } from "@/components/ui/ErrorState";
@@ -71,11 +72,15 @@ export default function AudiencesPage() {
   // Segment modal
   const [isSegmentOpen, setIsSegmentOpen] = useState(false);
   const [segmentName, setSegmentName] = useState("");
+  const [segmentFilterJson, setSegmentFilterJson] = useState("{}");
+  const [editingSegmentId, setEditingSegmentId] = useState<string | null>(null);
 
   // Topic modal
   const [isTopicOpen, setIsTopicOpen] = useState(false);
   const [topicName, setTopicName] = useState("");
   const [topicDescription, setTopicDescription] = useState("");
+  const [topicVisibility, setTopicVisibility] = useState<"public" | "private">("public");
+  const [editingTopicId, setEditingTopicId] = useState<string | null>(null);
 
   const fetchData = async () => {
     setIsLoading(true);
@@ -206,13 +211,24 @@ export default function AudiencesPage() {
   const handleCreateSegment = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await api.createSegment({ name: segmentName.trim() });
-      toast.success("Segment created successfully");
+      const filter = JSON.parse(segmentFilterJson) as Record<string, unknown>;
+      if (!filter || Array.isArray(filter) || typeof filter !== "object") {
+        throw new Error("Segment filter must be a JSON object.");
+      }
+      if (editingSegmentId) {
+        await api.updateSegment(editingSegmentId, { name: segmentName.trim(), filter });
+        toast.success("Segment updated");
+      } else {
+        await api.createSegment({ name: segmentName.trim(), filter });
+        toast.success("Segment created successfully");
+      }
       setIsSegmentOpen(false);
       setSegmentName("");
-      fetchData();
+      setSegmentFilterJson("{}");
+      setEditingSegmentId(null);
+      await fetchData();
     } catch (err: any) {
-      toast.error("Failed to create segment: " + err.message);
+      toast.error(`${editingSegmentId ? "Failed to update segment" : "Failed to create segment"}: ${err.message}`);
     }
   };
 
@@ -230,16 +246,24 @@ export default function AudiencesPage() {
   const handleCreateTopic = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await api.createTopic({
+      const payload = {
         name: topicName.trim(),
         description: topicDescription.trim() || undefined,
-        default_subscription: true,
-      });
-      toast.success("Topic created successfully");
+        visibility: topicVisibility,
+      };
+      if (editingTopicId) {
+        await api.updateTopic(editingTopicId, payload);
+        toast.success("Topic updated");
+      } else {
+        await api.createTopic(payload);
+        toast.success("Topic created successfully");
+      }
       setIsTopicOpen(false);
       setTopicName("");
       setTopicDescription("");
-      fetchData();
+      setTopicVisibility("public");
+      setEditingTopicId(null);
+      await fetchData();
     } catch (err: any) {
       toast.error("Failed to create topic: " + err.message);
     }
@@ -641,6 +665,19 @@ export default function AudiencesPage() {
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
+                          setEditingSegmentId(seg.id);
+                          setSegmentName(seg.name);
+                          setSegmentFilterJson(JSON.stringify(seg.filter || {}, null, 2));
+                          setIsSegmentOpen(true);
+                        }}
+                        title="Edit segment"
+                        className="rounded p-1 text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white"
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </button>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
                           handleDeleteSegment(seg.id);
                         }}
                         className="rounded p-1 text-zinc-400 hover:text-red-500 dark:hover:text-red-400 transition-colors"
@@ -690,11 +727,24 @@ export default function AudiencesPage() {
                       {top.description || "—"}
                     </td>
                     <td className="px-5 py-3 font-sans">
-                      <span className="rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-950/60 dark:border-emerald-800/40 px-2 py-0.5 text-[10px] dark:text-emerald-400">
-                        Subscribed
+                      <span className="badge badge-neutral capitalize">
+                        {top.visibility}
                       </span>
                     </td>
                     <td className="px-5 py-3 text-right">
+                      <button
+                        onClick={() => {
+                          setEditingTopicId(top.id);
+                          setTopicName(top.name);
+                          setTopicDescription(top.description || "");
+                          setTopicVisibility(top.visibility === "private" ? "private" : "public");
+                          setIsTopicOpen(true);
+                        }}
+                        title="Edit topic"
+                        className="rounded p-1 text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white"
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </button>
                       <button
                         onClick={() => handleDeleteTopic(top.id)}
                         className="rounded p-1 text-zinc-400 hover:text-red-500 dark:hover:text-red-400 transition-colors"
@@ -840,7 +890,7 @@ export default function AudiencesPage() {
       {isSegmentOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
           <div className="relative flex flex-col w-full max-w-sm rounded-xl border border-surface-border bg-surface p-6 shadow-2xl space-y-4">
-            <h2 className="text-sm font-semibold text-zinc-900 dark:text-white">Create Contact Segment</h2>
+            <h2 className="text-sm font-semibold text-zinc-900 dark:text-white">{editingSegmentId ? "Edit Contact Segment" : "Create Contact Segment"}</h2>
             <form onSubmit={handleCreateSegment} className="space-y-4">
               <div>
                 <label className="block text-[11px] text-zinc-600 dark:text-zinc-400 mb-1">
@@ -855,10 +905,24 @@ export default function AudiencesPage() {
                   className="w-full rounded-md border border-surface-border bg-surface-raised px-3 py-1.5 text-xs text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-600 focus:outline-none"
                 />
               </div>
+              <div>
+                <label className="block text-[11px] text-zinc-600 dark:text-zinc-400 mb-1">Filter definition (JSON)</label>
+                <textarea
+                  value={segmentFilterJson}
+                  onChange={(event) => setSegmentFilterJson(event.target.value)}
+                  rows={5}
+                  spellCheck={false}
+                  className="w-full rounded-md border border-surface-border bg-surface-raised p-3 font-mono text-xs text-zinc-900 dark:text-white"
+                />
+              </div>
               <div className="flex justify-end gap-2 pt-2">
                 <button
                   type="button"
-                  onClick={() => setIsSegmentOpen(false)}
+                  onClick={() => {
+                    setIsSegmentOpen(false);
+                    setEditingSegmentId(null);
+                    setSegmentFilterJson("{}");
+                  }}
                   className="rounded-md border border-surface-border px-3 py-1.5 text-xs text-zinc-700 hover:bg-surface-raised hover:text-zinc-900 dark:text-zinc-300 dark:hover:text-white transition-colors"
                 >
                   Cancel
@@ -867,7 +931,7 @@ export default function AudiencesPage() {
                   type="submit"
                   className="rounded-md bg-zinc-900 px-4 py-1.5 text-xs font-medium text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200 transition-colors"
                 >
-                  Save Segment
+                  {editingSegmentId ? "Save Changes" : "Save Segment"}
                 </button>
               </div>
             </form>
@@ -879,7 +943,7 @@ export default function AudiencesPage() {
       {isTopicOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
           <div className="relative flex flex-col w-full max-w-sm rounded-xl border border-surface-border bg-surface p-6 shadow-2xl space-y-4">
-            <h2 className="text-sm font-semibold text-zinc-900 dark:text-white">Create Subscription Topic</h2>
+            <h2 className="text-sm font-semibold text-zinc-900 dark:text-white">{editingTopicId ? "Edit Subscription Topic" : "Create Subscription Topic"}</h2>
             <form onSubmit={handleCreateTopic} className="space-y-3">
               <div>
                 <label className="block text-[11px] text-zinc-600 dark:text-zinc-400 mb-1">
@@ -893,6 +957,17 @@ export default function AudiencesPage() {
                   required
                   className="w-full rounded-md border border-surface-border bg-surface-raised px-3 py-1.5 text-xs text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-600 focus:outline-none"
                 />
+              </div>
+              <div>
+                <label className="block text-[11px] text-zinc-600 dark:text-zinc-400 mb-1">Visibility</label>
+                <select
+                  value={topicVisibility}
+                  onChange={(event) => setTopicVisibility(event.target.value as "public" | "private")}
+                  className="w-full rounded-md border border-surface-border bg-surface-raised px-3 py-1.5 text-xs text-zinc-900 dark:text-white"
+                >
+                  <option value="public">Public</option>
+                  <option value="private">Private</option>
+                </select>
               </div>
               <div>
                 <label className="block text-[11px] text-zinc-600 dark:text-zinc-400 mb-1">
@@ -909,7 +984,10 @@ export default function AudiencesPage() {
               <div className="flex justify-end gap-2 pt-2">
                 <button
                   type="button"
-                  onClick={() => setIsTopicOpen(false)}
+                  onClick={() => {
+                    setIsTopicOpen(false);
+                    setEditingTopicId(null);
+                  }}
                   className="rounded-md border border-surface-border px-3 py-1.5 text-xs text-zinc-700 hover:bg-surface-raised hover:text-zinc-900 dark:text-zinc-300 dark:hover:text-white transition-colors"
                 >
                   Cancel
@@ -918,7 +996,7 @@ export default function AudiencesPage() {
                   type="submit"
                   className="rounded-md bg-zinc-900 px-4 py-1.5 text-xs font-medium text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200 transition-colors"
                 >
-                  Save Topic
+                  {editingTopicId ? "Save Changes" : "Save Topic"}
                 </button>
               </div>
             </form>

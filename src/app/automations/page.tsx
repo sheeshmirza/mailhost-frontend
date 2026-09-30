@@ -5,6 +5,7 @@ import {
   api,
   AutomationView,
   AutomationRun,
+  AutomationRunDetail,
   AutomationStep,
   DomainView,
 } from "@/lib/api";
@@ -32,6 +33,8 @@ export default function AutomationsPage() {
   const [automations, setAutomations] = useState<AutomationView[]>([]);
   const [selectedAuto, setSelectedAuto] = useState<AutomationView | null>(null);
   const [runs, setRuns] = useState<AutomationRun[]>([]);
+  const [selectedRun, setSelectedRun] = useState<AutomationRunDetail | null>(null);
+  const [runDetailLoading, setRunDetailLoading] = useState(false);
   const [domains, setDomains] = useState<DomainView[]>([]);
   const [activeTab, setActiveTab] = useState<"workflows" | "runs">("workflows");
   const [isLoading, setIsLoading] = useState(true);
@@ -102,6 +105,18 @@ export default function AutomationsPage() {
       setRunsError(err instanceof Error ? err.message : "Could not load workflow runs.");
     } finally {
       setRunsLoading(false);
+    }
+  };
+
+  const loadRunDetail = async (runId: string) => {
+    if (!selectedAuto) return;
+    setRunDetailLoading(true);
+    try {
+      setSelectedRun(await api.getAutomationRun(selectedAuto.id, runId));
+    } catch (err) {
+      toast.error("Could not load run details: " + (err instanceof Error ? err.message : "Unknown error"));
+    } finally {
+      setRunDetailLoading(false);
     }
   };
 
@@ -459,7 +474,11 @@ export default function AutomationsPage() {
               {runs.length > 0 ? (
                 runs.map((r) => (
                   <tr key={r.id} className="hover:bg-surface-raised/40 transition-colors">
-                    <td className="px-5 py-3 text-zinc-900 dark:text-white truncate max-w-xs">{r.id}</td>
+                    <td className="px-5 py-3 text-zinc-900 dark:text-white truncate max-w-xs">
+                      <button onClick={() => loadRunDetail(r.id)} className="font-mono text-left text-teal-800 hover:underline dark:text-teal-200">
+                        {r.id.slice(0, 12)}…
+                      </button>
+                    </td>
                     <td className="px-5 py-3 font-sans">
                       <span
                         className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium border ${
@@ -493,6 +512,40 @@ export default function AutomationsPage() {
           </table>
         </div>
         )
+      )}
+
+      {(runDetailLoading || selectedRun) && (
+        <div className="fixed inset-0 z-50 flex items-center justify-end bg-black/50 backdrop-blur-sm">
+          <section role="dialog" aria-modal="true" aria-labelledby="run-detail-title" className="flex h-full w-full max-w-xl flex-col gap-5 overflow-y-auto border-l border-surface-border bg-surface p-5 shadow-2xl sm:p-6">
+            <div className="flex items-start justify-between border-b border-surface-border pb-4">
+              <div>
+                <h2 id="run-detail-title" className="text-sm font-semibold text-content-primary">Automation run details</h2>
+                {selectedRun && <p className="mt-1 font-mono text-xs text-content-muted">{selectedRun.id}</p>}
+              </div>
+              <button onClick={() => setSelectedRun(null)} className="btn-ghost" aria-label="Close run details">Close</button>
+            </div>
+            {runDetailLoading ? (
+              <div role="status" className="flex items-center gap-2 text-xs text-content-muted"><RefreshCw className="h-4 w-4 animate-spin" />Loading run details...</div>
+            ) : selectedRun && (
+              <>
+                <dl className="grid grid-cols-2 gap-3 text-xs">
+                  <div className="rounded-md bg-surface-raised p-3"><dt className="text-content-subtle">Status</dt><dd className="mt-1 font-medium capitalize text-content-primary">{selectedRun.status}</dd></div>
+                  <div className="rounded-md bg-surface-raised p-3"><dt className="text-content-subtle">Current step</dt><dd className="mt-1 font-medium text-content-primary">{selectedRun.current_step_index + 1}</dd></div>
+                  <div className="rounded-md bg-surface-raised p-3"><dt className="text-content-subtle">Contact</dt><dd className="mt-1 break-all font-medium text-content-primary">{selectedRun.contact_email}</dd></div>
+                  <div className="rounded-md bg-surface-raised p-3"><dt className="text-content-subtle">Trigger</dt><dd className="mt-1 font-medium text-content-primary">{selectedRun.event_name}</dd></div>
+                </dl>
+                <div className="space-y-2">
+                  <h3 className="text-xs font-semibold text-content-primary">Trigger data</h3>
+                  <pre className="overflow-x-auto rounded-md border border-surface-border bg-surface-raised p-3 font-mono text-xs text-content-secondary">{JSON.stringify(selectedRun.event_data, null, 2)}</pre>
+                </div>
+                <div className="space-y-2">
+                  <h3 className="text-xs font-semibold text-content-primary">Step results</h3>
+                  <pre className="overflow-x-auto rounded-md border border-surface-border bg-surface-raised p-3 font-mono text-xs text-content-secondary">{JSON.stringify(selectedRun.step_results, null, 2)}</pre>
+                </div>
+              </>
+            )}
+          </section>
+        </div>
       )}
 
       {/* New Automation Modal */}

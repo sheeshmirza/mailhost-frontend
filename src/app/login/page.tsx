@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
+import { api } from "@/lib/api";
 import { Key, Mail, Lock, Building, User, AlertCircle, ArrowRight, Loader2 } from "lucide-react";
 
 export default function LoginPage() {
@@ -17,6 +18,10 @@ export default function LoginPage() {
   const [apiKey, setApiKey] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [recoveryMode, setRecoveryMode] = useState<"forgot" | "reset" | "verify" | "resend" | null>(null);
+  const [recoveryToken, setRecoveryToken] = useState("");
+  const [recoveryPassword, setRecoveryPassword] = useState("");
+  const [recoveryMessage, setRecoveryMessage] = useState<string | null>(null);
 
   useEffect(() => {
     if (!isLoading && token && user) {
@@ -48,6 +53,36 @@ export default function LoginPage() {
       router.push("/overview");
     } catch (err: any) {
       setError(err.message || "Authentication failed. Please verify credentials.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleRecovery = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!recoveryMode) return;
+    setError(null);
+    setRecoveryMessage(null);
+    setLoading(true);
+    try {
+      if (recoveryMode === "forgot") {
+        const result = await api.forgotPassword(email.trim());
+        setRecoveryMessage(result.message);
+      } else if (recoveryMode === "reset") {
+        const result = await api.resetPassword(recoveryToken.trim(), recoveryPassword);
+        setRecoveryMessage(result.message);
+        setRecoveryPassword("");
+        setRecoveryToken("");
+      } else if (recoveryMode === "verify") {
+        const result = await api.verifyEmail(recoveryToken.trim());
+        setRecoveryMessage(result.message);
+        setRecoveryToken("");
+      } else {
+        const result = await api.resendVerification(email.trim());
+        setRecoveryMessage(result.message);
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "The requested account action could not be completed.");
     } finally {
       setLoading(false);
     }
@@ -131,6 +166,48 @@ export default function LoginPage() {
             </div>
           )}
 
+          {recoveryMode ? (
+            <form onSubmit={handleRecovery} className="space-y-4">
+              <div>
+                <h2 className="text-sm font-semibold text-content-primary">
+                  {recoveryMode === "forgot" ? "Reset your password" : recoveryMode === "reset" ? "Choose a new password" : recoveryMode === "verify" ? "Verify your email" : "Resend verification email"}
+                </h2>
+                <p className="mt-1 text-xs text-content-muted">
+                  {recoveryMode === "forgot"
+                    ? "We’ll send a reset link if an account exists for that address."
+                    : recoveryMode === "reset"
+                      ? "Enter the reset token from your email and a new password."
+                      : recoveryMode === "verify"
+                        ? "Paste the verification token from your email."
+                        : "We’ll send a new verification link if your account needs one."}
+                </p>
+              </div>
+              {(recoveryMode === "forgot" || recoveryMode === "resend") && (
+                <label className="block text-xs font-medium text-content-secondary">
+                  Email address
+                  <input type="email" value={email} onChange={(event) => setEmail(event.target.value)} required className="input-base mt-1" autoComplete="email" />
+                </label>
+              )}
+              {(recoveryMode === "verify" || recoveryMode === "reset") && (
+                <label className="block text-xs font-medium text-content-secondary">
+                  {recoveryMode === "verify" ? "Verification token" : "Password reset token"}
+                  <input value={recoveryToken} onChange={(event) => setRecoveryToken(event.target.value)} required className="input-base mt-1 font-mono" autoComplete="one-time-code" />
+                </label>
+              )}
+              {recoveryMode === "reset" && (
+                <label className="block text-xs font-medium text-content-secondary">
+                  New password
+                  <input type="password" value={recoveryPassword} onChange={(event) => setRecoveryPassword(event.target.value)} required minLength={8} maxLength={72} className="input-base mt-1" autoComplete="new-password" />
+                </label>
+              )}
+              {recoveryMessage && <p role="status" className="rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs text-emerald-800 dark:border-emerald-900/50 dark:bg-emerald-950/30 dark:text-emerald-300">{recoveryMessage}</p>}
+              <div className="flex gap-2">
+                <button type="button" onClick={() => { setRecoveryMode(null); setRecoveryMessage(null); setError(null); }} className="btn-secondary flex-1">Back to sign in</button>
+                <button type="submit" disabled={loading} className="btn-primary flex-1">{loading ? "Please wait..." : "Continue"}</button>
+              </div>
+            </form>
+          ) : (
+          <>
           <form onSubmit={handleSubmit} className="space-y-4">
             {mode === "apikey" ? (
               <div>
@@ -235,6 +312,16 @@ export default function LoginPage() {
               {!loading && <ArrowRight className="h-4 w-4" />}
             </button>
           </form>
+          {mode === "login" && (
+            <div className="flex flex-wrap justify-center gap-x-4 gap-y-2 border-t border-surface-border pt-4 text-xs">
+              <button type="button" onClick={() => { setRecoveryMode("forgot"); setRecoveryMessage(null); }} className="text-content-muted hover:text-content-primary">Forgot password?</button>
+              <button type="button" onClick={() => { setRecoveryMode("resend"); setRecoveryMessage(null); }} className="text-content-muted hover:text-content-primary">Resend verification</button>
+              <button type="button" onClick={() => { setRecoveryMode("verify"); setRecoveryMessage(null); }} className="text-content-muted hover:text-content-primary">Verify email</button>
+              <button type="button" onClick={() => { setRecoveryMode("reset"); setRecoveryMessage(null); }} className="text-content-muted hover:text-content-primary">Reset with token</button>
+            </div>
+          )}
+          </>
+          )}
         </div>
       </div>
     </div>

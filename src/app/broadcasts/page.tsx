@@ -12,6 +12,7 @@ import {
   Send,
   Copy,
   Trash2,
+  Pencil,
   Clock,
   CheckCircle2,
   RefreshCw,
@@ -32,6 +33,8 @@ export default function BroadcastsPage() {
 
   // New broadcast modal
   const [isOpen, setIsOpen] = useState(false);
+  const [editingBroadcastId, setEditingBroadcastId] = useState<string | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
   const [name, setName] = useState("");
   const [from, setFrom] = useState("");
   const [subject, setSubject] = useState("");
@@ -91,21 +94,51 @@ export default function BroadcastsPage() {
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isSaving) return;
+    setIsSaving(true);
     try {
-      await api.createBroadcast({
+      const payload = {
         name: name.trim(),
         from: from.trim(),
         subject: subject.trim(),
         html,
         audience_id: selectedAudienceId || undefined,
-      });
-      toast.success("Broadcast campaign created!");
+      };
+      if (editingBroadcastId) {
+        await api.updateBroadcast(editingBroadcastId, payload);
+        toast.success("Draft broadcast updated");
+      } else {
+        await api.createBroadcast(payload);
+        toast.success("Broadcast campaign created!");
+      }
       setIsOpen(false);
+      setEditingBroadcastId(null);
       setName("");
       setSubject("");
-      fetchData();
+      await fetchData();
     } catch (err: any) {
-      toast.error("Failed to create broadcast: " + err.message);
+      toast.error(`${editingBroadcastId ? "Failed to update draft" : "Failed to create broadcast"}: ${err.message}`);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleEdit = async (broadcastId: string) => {
+    try {
+      const broadcast = await api.getBroadcast(broadcastId);
+      if (broadcast.status !== "draft") {
+        toast.error("Only draft broadcasts can be edited");
+        return;
+      }
+      setEditingBroadcastId(broadcast.id);
+      setName(broadcast.name);
+      setFrom(broadcast.from);
+      setSubject(broadcast.subject);
+      setHtml(broadcast.html || "");
+      setSelectedAudienceId(broadcast.audience_id || "");
+      setIsOpen(true);
+    } catch (err) {
+      toast.error("Could not load draft: " + (err instanceof Error ? err.message : "Unknown error"));
     }
   };
 
@@ -226,6 +259,15 @@ export default function BroadcastsPage() {
                           <Send className="h-4 w-4" />
                         </button>
                       )}
+                      {b.status === "draft" && (
+                        <button
+                          onClick={() => handleEdit(b.id)}
+                          title="Edit draft"
+                          className="rounded p-1 text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white hover:bg-surface-raised"
+                        >
+                          <Pencil className="h-4 w-4" />
+                        </button>
+                      )}
                       <button
                         onClick={() => handleDuplicate(b.id)}
                         title="Duplicate broadcast"
@@ -260,7 +302,9 @@ export default function BroadcastsPage() {
       {isOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-fade-in p-4">
           <div className="relative flex flex-col w-full max-w-lg rounded-xl border border-surface-border bg-surface p-6 shadow-2xl">
-            <h2 className="text-lg font-semibold text-zinc-900 dark:text-white">Create Broadcast Campaign</h2>
+            <h2 className="text-lg font-semibold text-zinc-900 dark:text-white">
+              {editingBroadcastId ? "Edit Draft Broadcast" : "Create Broadcast Campaign"}
+            </h2>
             <form onSubmit={handleCreate} className="space-y-4 mt-4">
               <div>
                 <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">
@@ -337,16 +381,16 @@ export default function BroadcastsPage() {
               <div className="flex justify-end gap-2.5 pt-4 border-t border-surface-border mt-6">
                 <button
                   type="button"
-                  onClick={() => setIsOpen(false)}
+                  onClick={() => {
+                    setIsOpen(false);
+                    setEditingBroadcastId(null);
+                  }}
                   className="btn-secondary"
                 >
                   Cancel
                 </button>
-                <button
-                  type="submit"
-                  className="btn-primary"
-                >
-                  Save Campaign
+                <button type="submit" disabled={isSaving} className="btn-primary">
+                  {isSaving ? "Saving..." : editingBroadcastId ? "Save Draft" : "Save Campaign"}
                 </button>
               </div>
             </form>

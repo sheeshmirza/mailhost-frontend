@@ -13,6 +13,7 @@ import {
   Forward,
   Plus,
   Trash2,
+  Pencil,
   FileDown,
   X,
   RefreshCw,
@@ -35,9 +36,11 @@ export default function InboundPage() {
 
   // New alias modal
   const [isAliasOpen, setIsAliasOpen] = useState(false);
+  const [editingAliasId, setEditingAliasId] = useState<string | null>(null);
   const [aliasPrefix, setAliasPrefix] = useState("");
   const [selectedDomain, setSelectedDomain] = useState("");
   const [forwardTo, setForwardTo] = useState("");
+  const [storeAliasCopy, setStoreAliasCopy] = useState(true);
 
   const fetchData = async () => {
     setIsLoading(true);
@@ -94,22 +97,29 @@ export default function InboundPage() {
   const handleCreateAlias = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const domObj = domains.find((d) => d.name === selectedDomain || d.id === selectedDomain) || domains[0];
-      if (!domObj) {
-        toast.error("Please add and verify a domain first");
-        return;
-      }
       const destinations = forwardTo.split(",").map((s) => s.trim()).filter(Boolean);
-      await api.createAlias({
-        domain_id: domObj.id,
-        name: aliasPrefix.trim(),
-        destinations: destinations,
-        store_copy: true,
-      });
-      toast.success("Alias created successfully");
+      if (editingAliasId) {
+        await api.updateAlias(editingAliasId, { destinations, store_copy: storeAliasCopy });
+        toast.success("Alias routing updated");
+      } else {
+        const domObj = domains.find((d) => d.name === selectedDomain || d.id === selectedDomain) || domains[0];
+        if (!domObj) {
+          toast.error("Please add and verify a domain first");
+          return;
+        }
+        await api.createAlias({
+          domain_id: domObj.id,
+          name: aliasPrefix.trim(),
+          destinations,
+          store_copy: storeAliasCopy,
+        });
+        toast.success("Alias created successfully");
+      }
       setIsAliasOpen(false);
+      setEditingAliasId(null);
       setAliasPrefix("");
       setForwardTo("");
+      setStoreAliasCopy(true);
       fetchData();
     } catch (err: any) {
       toast.error("Failed to create alias: " + err.message);
@@ -169,7 +179,13 @@ export default function InboundPage() {
 
           {activeTab === "aliases" && (
             <button
-              onClick={() => setIsAliasOpen(true)}
+              onClick={() => {
+                setEditingAliasId(null);
+                setAliasPrefix("");
+                setForwardTo("");
+                setStoreAliasCopy(true);
+                setIsAliasOpen(true);
+              }}
               className="btn-primary"
             >
               <Plus className="h-3.5 w-3.5" />
@@ -277,6 +293,20 @@ export default function InboundPage() {
                       </td>
                       <td className="px-5 py-3 text-right">
                         <button
+                          onClick={() => {
+                            setEditingAliasId(al.id);
+                            setAliasPrefix(al.address || al.alias || al.name);
+                            setSelectedDomain(al.domain_id);
+                            setForwardTo((al.destinations?.length ? al.destinations : al.forward_to || []).join(", "));
+                            setStoreAliasCopy(al.store_copy ?? true);
+                            setIsAliasOpen(true);
+                          }}
+                          title="Edit alias routing"
+                          className="rounded p-1 text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white"
+                        >
+                          <Pencil className="h-4 w-4" />
+                        </button>
+                        <button
                           onClick={() => handleDeleteAlias(al.id)}
                           className="rounded p-1 text-zinc-400 hover:text-red-500 dark:hover:text-red-400 transition-colors"
                         >
@@ -364,6 +394,24 @@ export default function InboundPage() {
               )}
             </div>
 
+            {selectedInbound.attachments && selectedInbound.attachments.length > 0 && (
+              <section className="space-y-2 border-t border-surface-border pt-4">
+                <h3 className="text-xs font-semibold uppercase tracking-wider text-zinc-900 dark:text-white">
+                  Attachments ({selectedInbound.attachments.length})
+                </h3>
+                <ul className="divide-y divide-surface-border rounded-md border border-surface-border">
+                  {selectedInbound.attachments.map((attachment, index) => (
+                    <li key={`${attachment.filename}-${index}`} className="flex flex-col gap-1 px-3 py-2 sm:flex-row sm:items-center sm:justify-between">
+                      <span className="break-all text-xs font-medium text-zinc-800 dark:text-zinc-200">{attachment.filename}</span>
+                      <span className="text-[11px] text-zinc-500 dark:text-zinc-400">
+                        {attachment.content_type} · {(attachment.size / 1024).toFixed(1)} KB
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            )}
+
             {/* Raw MIME download */}
             <div className="pt-4 border-t border-surface-border flex justify-between items-center">
               <a
@@ -389,13 +437,13 @@ export default function InboundPage() {
       {isAliasOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
           <div className="relative flex flex-col w-full max-w-md rounded-xl border border-surface-border bg-surface p-6 shadow-2xl space-y-4">
-            <h2 className="text-sm font-semibold text-zinc-900 dark:text-white">Create Inbound Alias</h2>
+            <h2 className="text-sm font-semibold text-zinc-900 dark:text-white">{editingAliasId ? "Edit Alias Routing" : "Create Inbound Alias"}</h2>
             <p className="text-xs text-zinc-500 dark:text-zinc-400">
               Forward all emails received at this alias to one or more destination mailboxes.
             </p>
 
             <form onSubmit={handleCreateAlias} className="space-y-4">
-              <div>
+              {!editingAliasId && <div>
                 <label className="block text-[11px] text-zinc-600 dark:text-zinc-400 mb-1">
                   Alias Address
                 </label>
@@ -421,7 +469,14 @@ export default function InboundPage() {
                     ))}
                   </select>
                 </div>
-              </div>
+              </div>}
+
+              {editingAliasId && (
+                <div className="rounded-md border border-surface-border bg-surface-raised px-3 py-2 text-xs">
+                  <span className="block text-[10px] font-semibold uppercase text-zinc-500 dark:text-zinc-400">Alias address</span>
+                  <span className="mt-1 block font-mono text-zinc-900 dark:text-zinc-100">{aliasPrefix}</span>
+                </div>
+              )}
 
               <div>
                 <label className="block text-[11px] text-zinc-600 dark:text-zinc-400 mb-1">
@@ -432,15 +487,22 @@ export default function InboundPage() {
                   value={forwardTo}
                   onChange={(e) => setForwardTo(e.target.value)}
                   placeholder="team@mycompany.com, alerts@mycompany.com"
-                  required
                   className="w-full rounded-md border border-surface-border bg-surface-raised px-3 py-1.5 text-xs text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-600 focus:outline-none"
                 />
               </div>
 
+              <label className="flex items-center gap-2 text-xs text-zinc-700 dark:text-zinc-300">
+                <input type="checkbox" checked={storeAliasCopy} onChange={(event) => setStoreAliasCopy(event.target.checked)} />
+                Keep a copy in the inbound mailbox
+              </label>
+
               <div className="flex justify-end gap-2.5 pt-4 border-t border-surface-border mt-4">
                 <button
                   type="button"
-                  onClick={() => setIsAliasOpen(false)}
+                  onClick={() => {
+                    setIsAliasOpen(false);
+                    setEditingAliasId(null);
+                  }}
                   className="btn-secondary"
                 >
                   Cancel
@@ -449,7 +511,7 @@ export default function InboundPage() {
                   type="submit"
                   className="btn-primary"
                 >
-                  Save Alias
+                  {editingAliasId ? "Save Routing" : "Save Alias"}
                 </button>
               </div>
             </form>

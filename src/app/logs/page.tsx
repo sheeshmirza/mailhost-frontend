@@ -17,6 +17,8 @@ import {
 } from "lucide-react";
 import { ErrorState } from "@/components/ui/ErrorState";
 import { TableSkeleton } from "@/components/ui/LoadingState";
+import { useToast } from "@/lib/toast-context";
+import { useAuth } from "@/lib/auth-context";
 
 function formatAuditIP(ip?: string) {
   if (!ip || ip === "127.0.0.1" || ip === "::1" || ip.startsWith("172.") || ip.startsWith("10.") || ip.startsWith("192.168.")) {
@@ -26,6 +28,9 @@ function formatAuditIP(ip?: string) {
 }
 
 export default function LogsHealthPage() {
+  const toast = useToast();
+  const { account } = useAuth();
+  const canManageDedicatedIPs = ["administrator", "admin", "owner"].includes((account?.role || "").toLowerCase());
   const [readiness, setReadiness] = useState<string | null>(null);
   const [auditLogs, setAuditLogs] = useState<AuditLogView[]>([]);
   const [dedicatedIPs, setDedicatedIPs] = useState<DedicatedIPView[]>([]);
@@ -33,6 +38,38 @@ export default function LogsHealthPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [auditLogsError, setAuditLogsError] = useState<string | null>(null);
+  const [editingIP, setEditingIP] = useState<DedicatedIPView | null>(null);
+  const [ipStatus, setIPStatus] = useState<"warming" | "active" | "paused">("warming");
+  const [ipWarmupDay, setIPWarmupDay] = useState(1);
+  const [ipDailyQuota, setIPDailyQuota] = useState(0);
+  const [isSavingIP, setIsSavingIP] = useState(false);
+
+  const openIPEdit = (ip: DedicatedIPView) => {
+    setEditingIP(ip);
+    setIPStatus(ip.status === "active" || ip.status === "paused" ? ip.status : "warming");
+    setIPWarmupDay(ip.warmup_day);
+    setIPDailyQuota(ip.daily_quota);
+  };
+
+  const saveIPWarmup = async (event: React.FormEvent) => {
+    event.preventDefault();
+    if (!editingIP || isSavingIP) return;
+    setIsSavingIP(true);
+    try {
+      await api.updateIPWarmup(editingIP.id, {
+        status: ipStatus,
+        warmup_day: ipWarmupDay,
+        daily_quota: ipDailyQuota,
+      });
+      toast.success("Dedicated IP settings updated");
+      setEditingIP(null);
+      await fetchHealthAndLogs();
+    } catch (err) {
+      toast.error("Could not update dedicated IP: " + (err instanceof Error ? err.message : "Unknown error"));
+    } finally {
+      setIsSavingIP(false);
+    }
+  };
 
   const fetchHealthAndLogs = async () => {
     setIsLoading(true);
@@ -144,16 +181,19 @@ export default function LogsHealthPage() {
 
           <div className="divide-y divide-surface-border">
             {dedicatedIPs.map((ip) => (
-              <div key={ip.id} className="py-3 flex items-center justify-between text-xs">
+              <div key={ip.id} className="py-3 flex items-center justify-between gap-3 text-xs">
                 <div className="space-y-0.5">
                   <span className="font-mono text-zinc-900 dark:text-white font-semibold">{ip.ip_address}</span>
                   <span className="text-[11px] text-zinc-400 dark:text-zinc-500 block">
                     Day {ip.warmup_day} · Quota: {ip.daily_quota} emails/day · Sent Today: {ip.sent_today}
                   </span>
                 </div>
-                <span className="rounded-full bg-amber-50 text-amber-800 border border-amber-200 dark:bg-amber-950/60 dark:border-amber-800/40 px-2 py-0.5 text-[10px] dark:text-amber-400">
-                  {ip.status}
-                </span>
+                <div className="flex shrink-0 items-center gap-2">
+                  <span className="badge badge-warning capitalize">{ip.status}</span>
+                  {canManageDedicatedIPs && (
+                    <button onClick={() => openIPEdit(ip)} className="btn-secondary min-h-8 px-2 py-1">Manage</button>
+                  )}
+                </div>
               </div>
             ))}
           </div>
@@ -212,6 +252,39 @@ export default function LogsHealthPage() {
         </div>
         )}
       </div>
+
+      {editingIP && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
+          <section role="dialog" aria-modal="true" aria-labelledby="ip-warmup-title" className="w-full max-w-md space-y-4 rounded-lg border border-surface-border bg-surface p-5 shadow-2xl sm:p-6">
+            <div>
+              <h2 id="ip-warmup-title" className="text-sm font-semibold text-content-primary">Manage dedicated IP</h2>
+              <p className="mt-1 font-mono text-xs text-content-muted">{editingIP.ip_address}</p>
+            </div>
+            <form onSubmit={saveIPWarmup} className="space-y-4">
+              <label className="block text-xs font-medium text-content-secondary">
+                Warmup status
+                <select value={ipStatus} onChange={(event) => setIPStatus(event.target.value as typeof ipStatus)} className="input-base mt-1">
+                  <option value="warming">Warming</option>
+                  <option value="active">Active</option>
+                  <option value="paused">Paused</option>
+                </select>
+              </label>
+              <label className="block text-xs font-medium text-content-secondary">
+                Warmup day
+                <input type="number" min={1} value={ipWarmupDay} onChange={(event) => setIPWarmupDay(Number(event.target.value))} required className="input-base mt-1" />
+              </label>
+              <label className="block text-xs font-medium text-content-secondary">
+                Daily quota
+                <input type="number" min={0} value={ipDailyQuota} onChange={(event) => setIPDailyQuota(Number(event.target.value))} required className="input-base mt-1" />
+              </label>
+              <div className="flex justify-end gap-2 border-t border-surface-border pt-3">
+                <button type="button" onClick={() => setEditingIP(null)} className="btn-secondary">Cancel</button>
+                <button type="submit" disabled={isSavingIP} className="btn-primary">{isSavingIP ? "Saving..." : "Save settings"}</button>
+              </div>
+            </form>
+          </section>
+        </div>
+      )}
     </div>
   );
 }

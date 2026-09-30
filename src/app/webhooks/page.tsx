@@ -9,6 +9,7 @@ import {
   Webhook,
   Plus,
   Trash2,
+  Pencil,
   CheckCircle2,
   Copy,
   Check,
@@ -31,6 +32,9 @@ export default function WebhooksPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [isOpen, setIsOpen] = useState(false);
+  const [editingWebhookId, setEditingWebhookId] = useState<string | null>(null);
+  const [webhookStatus, setWebhookStatus] = useState<"active" | "disabled">("active");
+  const [isSaving, setIsSaving] = useState(false);
   const [url, setUrl] = useState("");
   const [selectedEvents, setSelectedEvents] = useState<string[]>([
     "email.sent",
@@ -59,23 +63,39 @@ export default function WebhooksPage() {
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isSaving) return;
     if (selectedEvents.length === 0) {
       toast.error("Please select at least one event");
       return;
     }
+    setIsSaving(true);
     try {
-      await api.createWebhook({
-        url: url.trim(),
-        events: selectedEvents,
-        status: "active",
-      });
-      toast.success("Webhook endpoint registered");
+      const payload = { url: url.trim(), events: selectedEvents, status: webhookStatus };
+      if (editingWebhookId) {
+        await api.updateWebhook(editingWebhookId, payload);
+        toast.success("Webhook updated");
+      } else {
+        await api.createWebhook(payload);
+        toast.success("Webhook endpoint registered");
+      }
       setIsOpen(false);
+      setEditingWebhookId(null);
       setUrl("");
-      fetchWebhooks();
+      setWebhookStatus("active");
+      await fetchWebhooks();
     } catch (err: any) {
-      toast.error("Failed to create webhook: " + (err.response?.data?.message || err.message));
+      toast.error(`${editingWebhookId ? "Failed to update webhook" : "Failed to create webhook"}: ${err.message}`);
+    } finally {
+      setIsSaving(false);
     }
+  };
+
+  const handleEdit = (webhook: WebhookView) => {
+    setEditingWebhookId(webhook.id);
+    setUrl(webhook.url);
+    setSelectedEvents(webhook.events || []);
+    setWebhookStatus(webhook.status === "disabled" ? "disabled" : "active");
+    setIsOpen(true);
   };
 
   const handleDelete = async (id: string) => {
@@ -201,6 +221,13 @@ export default function WebhooksPage() {
                   </td>
                   <td className="px-4 py-3 text-right">
                     <button
+                      onClick={() => handleEdit(wh)}
+                      className="rounded-lg p-1.5 text-zinc-500 hover:bg-surface-raised hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white"
+                      title="Edit webhook"
+                    >
+                      <Pencil className="h-4 w-4" />
+                    </button>
+                    <button
                       onClick={() => handleDelete(wh.id)}
                       className="rounded-lg p-1.5 text-zinc-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 transition-colors"
                       title="Delete webhook"
@@ -228,8 +255,10 @@ export default function WebhooksPage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-fade-in">
           <div className="relative flex flex-col w-full max-w-lg rounded-xl border border-surface-border bg-surface p-6 shadow-2xl space-y-4">
             <div>
-              <h2 className="text-lg font-semibold text-zinc-900 dark:text-white">Add Webhook Endpoint</h2>
-              <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-1">Configure a new webhook URL to receive events.</p>
+              <h2 className="text-lg font-semibold text-zinc-900 dark:text-white">
+                {editingWebhookId ? "Edit Webhook Endpoint" : "Add Webhook Endpoint"}
+              </h2>
+              <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-1">Configure the URL and events this endpoint receives.</p>
             </div>
             <form onSubmit={handleCreate} className="space-y-4">
               <div>
@@ -244,6 +273,18 @@ export default function WebhooksPage() {
                   required
                   className="w-full rounded-lg border border-surface-border bg-surface-raised px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-zinc-900/10 font-mono text-zinc-700 dark:text-zinc-300 placeholder-zinc-400 dark:placeholder-zinc-600"
                 />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">Endpoint status</label>
+                <select
+                  value={webhookStatus}
+                  onChange={(event) => setWebhookStatus(event.target.value as "active" | "disabled")}
+                  className="w-full rounded-lg border border-surface-border bg-surface-raised px-3 py-2 text-sm"
+                >
+                  <option value="active">Active</option>
+                  <option value="disabled">Disabled</option>
+                </select>
               </div>
 
               <div>
@@ -271,16 +312,16 @@ export default function WebhooksPage() {
               <div className="flex justify-end gap-2.5 pt-4 border-t border-surface-border mt-4">
                 <button
                   type="button"
-                  onClick={() => setIsOpen(false)}
+                  onClick={() => {
+                    setIsOpen(false);
+                    setEditingWebhookId(null);
+                  }}
                   className="btn-secondary"
                 >
                   Cancel
                 </button>
-                <button
-                  type="submit"
-                  className="btn-primary"
-                >
-                  Create Webhook
+                <button type="submit" disabled={isSaving} className="btn-primary">
+                  {isSaving ? "Saving..." : editingWebhookId ? "Save Changes" : "Create Webhook"}
                 </button>
               </div>
             </form>

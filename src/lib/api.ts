@@ -128,6 +128,23 @@ export interface SendEmailPayload {
   template_id?: string;
 }
 
+export interface BulkEmailPayload {
+  from: string;
+  reply_to?: string[];
+  subject: string;
+  html?: string;
+  text?: string;
+  headers?: Record<string, string>;
+  attachments?: { filename: string; content: string; content_type?: string }[];
+  recipients: { to: string; variables: Record<string, string> }[];
+}
+
+export interface BatchStatusView {
+  batch_id: string;
+  total: number;
+  statuses: Record<string, number>;
+}
+
 export interface InboundEmailSummary {
   id: string;
   domain_id: string;
@@ -139,11 +156,17 @@ export interface InboundEmailSummary {
   created_at: string;
 }
 
+export interface InboundAttachment {
+  filename: string;
+  content_type: string;
+  size: number;
+}
+
 export interface InboundEmailDetail extends InboundEmailSummary {
   message_id: string;
   text: string;
   html: string;
-  attachments?: any;
+  attachments?: InboundAttachment[];
 }
 
 export interface AliasView {
@@ -181,6 +204,12 @@ export interface BroadcastView {
   status: "draft" | "queued" | "sending" | "sent" | string;
   audience_id?: string;
   segment_id?: string;
+  topic_id?: string;
+  reply_to?: string[];
+  preview_text?: string;
+  html?: string;
+  text?: string;
+  scheduled_at?: string;
   sent_at?: string;
   created_at: string;
 }
@@ -259,7 +288,7 @@ export interface TopicView {
   id: string;
   name: string;
   description?: string;
-  default_subscription: boolean;
+  visibility: "public" | "private" | string;
   created_at: string;
 }
 
@@ -316,6 +345,15 @@ export interface AutomationRun {
   current_step?: string;
   started_at: string;
   completed_at?: string;
+}
+
+export interface AutomationRunDetail extends AutomationRun {
+  contact_email: string;
+  event_name: string;
+  event_data: Record<string, unknown>;
+  current_step_index: number;
+  step_results: unknown[];
+  updated_at: string;
 }
 
 export interface CustomEvent {
@@ -516,6 +554,33 @@ export class APIClient {
     });
   }
 
+  async verifyEmail(token: string) {
+    return this.request<{ message: string }>("/v1/users/verify-email", {
+      method: "POST",
+      body: JSON.stringify({ token }),
+    });
+  }
+
+  async resendVerification(email: string) {
+    return this.request<{ message: string }>("/v1/users/resend-verification", {
+      method: "POST",
+      body: JSON.stringify({ email }),
+    });
+  }
+
+  async forgotPassword(email: string) {
+    return this.request<{ message: string }>("/v1/users/forgot-password", {
+      method: "POST",
+      body: JSON.stringify({ email }),
+    });
+  }
+
+  async resetPassword(token: string, newPassword: string) {
+    return this.request<{ message: string }>("/v1/users/reset-password", {
+      method: "POST",
+      body: JSON.stringify({ token, new_password: newPassword }),
+    });
+  }
   async getMe() {
     return this.request<CurrentUserResponse>("/v1/users/me");
   }
@@ -572,10 +637,21 @@ export class APIClient {
   }
 
   async sendBatch(emails: SendEmailPayload[]) {
-    return this.request<{ data: { id: string }[] }>("/v1/emails/batch", {
+    return this.request<{ batch_id: string; data: { id: string }[] }>("/v1/emails/batch", {
       method: "POST",
       body: JSON.stringify(emails),
     });
+  }
+
+  async sendBulk(payload: BulkEmailPayload) {
+    return this.request<{ batch_id: string; count: number; status: string }>("/v1/emails/bulk", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    });
+  }
+
+  async getBatch(id: string) {
+    return this.request<BatchStatusView>(`/v1/batches/${id}`);
   }
 
   async cancelEmail(id: string) {
@@ -659,6 +735,20 @@ export class APIClient {
     return this.request<InboundEmailDetail>(`/v1/inbound/${id}`);
   }
 
+  async getReceivedEmail(id: string) {
+    return this.request<InboundEmailDetail>(`/v1/emails/receiving/${id}`);
+  }
+
+  async listReceivedEmails(limit = 50) {
+    return this.request<{ data: InboundEmailSummary[] }>(`/v1/emails/receiving?limit=${limit}`);
+  }
+
+  async listReceivedAttachments(id: string) {
+    return this.request<{ data: { id: string; filename: string; content_type: string; size: number }[] }>(
+      `/v1/emails/receiving/${id}/attachments`
+    );
+  }
+
   async listAliases() {
     return this.request<{ data: AliasView[] }>("/v1/aliases");
   }
@@ -683,6 +773,17 @@ export class APIClient {
     });
   }
 
+  async getAlias(id: string) {
+    return this.request<AliasView>(`/v1/aliases/${id}`);
+  }
+
+  async updateAlias(id: string, data: { destinations: string[]; store_copy: boolean }) {
+    return this.request<AliasView>(`/v1/aliases/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify(data),
+    });
+  }
+
   async deleteAlias(id: string) {
     return this.request<{ id: string; deleted: boolean }>(`/v1/aliases/${id}`, {
       method: "DELETE",
@@ -692,6 +793,10 @@ export class APIClient {
   // Audiences & Contacts
   async listAudiences() {
     return this.request<{ data: AudienceView[] }>("/v1/audiences");
+  }
+
+  async getAudience(id: string) {
+    return this.request<AudienceView>(`/v1/audiences/${id}`);
   }
 
   async createAudience(name: string) {
@@ -757,6 +862,29 @@ export class APIClient {
     return this.request<{ data: BroadcastView[] }>("/v1/broadcasts");
   }
 
+  async getBroadcast(id: string) {
+    return this.request<BroadcastView>(`/v1/broadcasts/${id}`);
+  }
+
+  async updateBroadcast(id: string, data: {
+    name?: string;
+    from?: string;
+    subject?: string;
+    reply_to?: string[];
+    preview_text?: string;
+    html?: string;
+    text?: string;
+    audience_id?: string;
+    segment_id?: string;
+    topic_id?: string;
+    scheduled_at?: string;
+  }) {
+    return this.request<{ id: string; updated: boolean }>(`/v1/broadcasts/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify(data),
+    });
+  }
+
   async createBroadcast(data: {
     name: string;
     from: string;
@@ -801,6 +929,20 @@ export class APIClient {
     return this.request<TemplateView>(`/v1/templates/${id}`);
   }
 
+  async updateTemplate(id: string, data: {
+    name?: string;
+    alias?: string;
+    subject?: string;
+    html?: string;
+    text?: string;
+    variables?: { key: string; type: string; fallback_value?: string }[];
+  }) {
+    return this.request<TemplateView>(`/v1/templates/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify(data),
+    });
+  }
+
   async createTemplate(data: {
     name: string;
     alias?: string;
@@ -834,9 +976,20 @@ export class APIClient {
     return this.request<{ data: WebhookView[] }>("/v1/webhooks");
   }
 
+  async getWebhook(id: string) {
+    return this.request<WebhookView>(`/v1/webhooks/${id}`);
+  }
+
   async createWebhook(data: { url: string; events: string[]; status?: string }) {
     return this.request<WebhookView>("/v1/webhooks", {
       method: "POST",
+      body: JSON.stringify(data),
+    });
+  }
+
+  async updateWebhook(id: string, data: { url?: string; events?: string[]; status?: "active" | "disabled" }) {
+    return this.request<{ id: string; updated: boolean }>(`/v1/webhooks/${id}`, {
+      method: "PATCH",
       body: JSON.stringify(data),
     });
   }
@@ -880,6 +1033,13 @@ export class APIClient {
 
   async getWarmingSchedule() {
     return this.request<{ schedule: any[] }>("/v1/ips/warming-schedule");
+  }
+
+  async updateIPWarmup(id: string, data: { status?: "warming" | "active" | "paused"; warmup_day?: number; daily_quota?: number }) {
+    return this.request<{ id: string; object: string; updated: boolean }>(`/v1/ips/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify(data),
+    });
   }
 
   // Organization Members
@@ -947,6 +1107,17 @@ export class APIClient {
     });
   }
 
+  async getSegment(id: string) {
+    return this.request<SegmentView>(`/v1/segments/${id}`);
+  }
+
+  async updateSegment(id: string, data: { name?: string; filter?: Record<string, unknown> }) {
+    return this.request<SegmentView>(`/v1/segments/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify(data),
+    });
+  }
+
   async deleteSegment(id: string) {
     return this.request<{ id: string; deleted: boolean }>(`/v1/segments/${id}`, {
       method: "DELETE",
@@ -957,9 +1128,20 @@ export class APIClient {
     return this.request<{ data: TopicView[] }>("/v1/topics");
   }
 
-  async createTopic(data: { name: string; description?: string; default_subscription?: boolean }) {
+  async createTopic(data: { name: string; description?: string; visibility?: "public" | "private" }) {
     return this.request<TopicView>("/v1/topics", {
       method: "POST",
+      body: JSON.stringify(data),
+    });
+  }
+
+  async getTopic(id: string) {
+    return this.request<TopicView>(`/v1/topics/${id}`);
+  }
+
+  async updateTopic(id: string, data: { name?: string; description?: string; visibility?: "public" | "private" }) {
+    return this.request<TopicView>(`/v1/topics/${id}`, {
+      method: "PATCH",
       body: JSON.stringify(data),
     });
   }
@@ -1075,6 +1257,12 @@ export class APIClient {
     return this.request<{ data: AutomationRun[] }>(`/v1/automations/${automationId}/runs`);
   }
 
+  async getAutomationRun(automationId: string, runId: string) {
+    return this.request<AutomationRunDetail>(
+      `/v1/automations/${automationId}/runs/${runId}`
+    );
+  }
+
   // Custom Events
   async triggerEvent(data: { name: string; email: string; data?: Record<string, any> }) {
     return this.request<CustomEvent>("/v1/events", {
@@ -1085,6 +1273,10 @@ export class APIClient {
 
   async listEvents(limit = 50) {
     return this.request<{ data: CustomEvent[] }>(`/v1/events?limit=${limit}`);
+  }
+
+  async getEvent(id: string) {
+    return this.request<CustomEvent>(`/v1/events/${id}`);
   }
 
   // User Profile & Sessions & Accounts

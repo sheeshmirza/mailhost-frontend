@@ -13,6 +13,7 @@ import {
   RefreshCw,
   History,
   RotateCcw,
+  Pencil,
 } from "lucide-react";
 import { api, TemplateView, TemplateVersion } from "@/lib/api";
 import { useToast } from "@/lib/toast-context";
@@ -26,6 +27,8 @@ export default function TemplatesPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [isOpen, setIsOpen] = useState(false);
+  const [editingTemplateId, setEditingTemplateId] = useState<string | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
 
   // Form fields
   const [name, setName] = useState("");
@@ -97,23 +100,40 @@ export default function TemplatesPage() {
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isSaving) return;
+    setIsSaving(true);
     try {
-      const newTpl = await api.createTemplate({
+      const payload = {
         name: name.trim(),
         alias: alias.trim() || undefined,
         subject: subject.trim(),
         html,
-      });
-      toast.success(`Template "${name}" created`);
+      };
+      const savedTemplate = editingTemplateId
+        ? await api.updateTemplate(editingTemplateId, payload)
+        : await api.createTemplate(payload);
+      toast.success(editingTemplateId ? `Template "${name}" updated` : `Template "${name}" created`);
       setIsOpen(false);
+      setEditingTemplateId(null);
       setName("");
       setAlias("");
       setSubject("");
       await fetchTemplates();
-      setSelectedTemplate(newTpl);
+      setSelectedTemplate(savedTemplate);
     } catch (err: any) {
-      toast.error("Failed to create template: " + (err.response?.data?.message || err.message));
+      toast.error(`${editingTemplateId ? "Failed to update template" : "Failed to create template"}: ${err.message}`);
+    } finally {
+      setIsSaving(false);
     }
+  };
+
+  const handleEdit = (template: TemplateView) => {
+    setEditingTemplateId(template.id);
+    setName(template.name);
+    setAlias(template.alias || "");
+    setSubject(template.subject);
+    setHtml(template.html || "");
+    setIsOpen(true);
   };
 
   const handlePublish = async (id: string) => {
@@ -151,7 +171,14 @@ export default function TemplatesPage() {
         </div>
 
         <button
-          onClick={() => setIsOpen(true)}
+          onClick={() => {
+            setEditingTemplateId(null);
+            setName("");
+            setAlias("");
+            setSubject("");
+            setHtml(`<h2>Welcome {{name}}!</h2>\n<p>Thank you for signing up for our service.</p>\n<p>Your account ID is: <code>{{account_id}}</code></p>`);
+            setIsOpen(true);
+          }}
           className="btn-primary"
         >
           <Plus className="h-3.5 w-3.5" />
@@ -239,6 +266,14 @@ export default function TemplatesPage() {
                 </div>
 
                 <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => handleEdit(selectedTemplate)}
+                    className="btn-secondary"
+                    title="Edit template"
+                  >
+                    <Pencil className="h-3.5 w-3.5" />
+                    <span>Edit</span>
+                  </button>
                   {selectedTemplate.status !== "published" && (
                     <button
                       onClick={() => handlePublish(selectedTemplate.id)}
@@ -357,7 +392,9 @@ await resend.emails.send({
       {isOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
           <div className="relative flex flex-col w-full max-w-lg rounded-xl border border-surface-border bg-surface p-6 shadow-2xl space-y-4">
-            <h2 className="text-sm font-semibold text-zinc-900 dark:text-white">New Email Template</h2>
+            <h2 className="text-sm font-semibold text-zinc-900 dark:text-white">
+              {editingTemplateId ? "Edit Email Template" : "New Email Template"}
+            </h2>
             <form onSubmit={handleCreate} className="space-y-3">
               <div>
                 <label className="block text-[11px] font-medium text-zinc-600 dark:text-zinc-300 mb-1">
@@ -415,16 +452,20 @@ await resend.emails.send({
               <div className="flex justify-end gap-2.5 pt-4 border-t border-surface-border mt-4">
                 <button
                   type="button"
-                  onClick={() => setIsOpen(false)}
+                  onClick={() => {
+                    setIsOpen(false);
+                    setEditingTemplateId(null);
+                  }}
                   className="btn-secondary"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
+                  disabled={isSaving}
                   className="btn-primary"
                 >
-                  Create Template
+                  {isSaving ? "Saving..." : editingTemplateId ? "Save Changes" : "Create Template"}
                 </button>
               </div>
             </form>
