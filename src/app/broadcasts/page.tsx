@@ -79,9 +79,6 @@ export default function BroadcastsPage() {
         const domList = domRes.value.data || [];
         setDomains(domList);
         if (domList.length > 0 && !from) {
-          const verified = domList.find((d: any) => d.status === "verified") || domList[0];
-          setFrom(`newsletter@${verified.name}`);
-        } else if (!from) {
           setFrom("");
         }
       } else {

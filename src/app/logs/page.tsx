@@ -21,10 +21,7 @@ import { useToast } from "@/lib/toast-context";
 import { useAuth } from "@/lib/auth-context";
 
 function formatAuditIP(ip?: string) {
-  if (!ip || ip === "127.0.0.1" || ip === "::1" || ip.startsWith("172.") || ip.startsWith("10.") || ip.startsWith("192.168.")) {
-    return "Authorized Client";
-  }
-  return ip;
+  return ip?.trim() || "—";
 }
 
 export default function LogsHealthPage() {

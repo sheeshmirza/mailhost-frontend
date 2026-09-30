@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   api,
   AudienceView,
@@ -46,6 +46,8 @@ export default function AudiencesPage() {
   const [loadError, setLoadError] = useState<string | null>(null);
   const [contactsError, setContactsError] = useState<string | null>(null);
   const [isContactsLoading, setIsContactsLoading] = useState(false);
+  const dataLoadRevision = useRef(0);
+  const contactsLoadRevision = useRef(0);
 
   // Contact Detail Drawer State
   const [selectedContact, setSelectedContact] = useState<ContactView | null>(null);
@@ -84,6 +86,7 @@ export default function AudiencesPage() {
   const [editingTopicId, setEditingTopicId] = useState<string | null>(null);
 
   const fetchData = async () => {
+    const revision = ++dataLoadRevision.current;
     setIsLoading(true);
     setLoadError(null);
     try {
@@ -92,19 +95,16 @@ export default function AudiencesPage() {
         api.listSegments(),
         api.listTopics(),
       ]);
+      if (revision !== dataLoadRevision.current) return;
       const failedResources: string[] = [];
 
       if (audRes.status === "fulfilled") {
         const list = audRes.value.data || [];
         setAudiences(list);
-        if (list.length > 0 && !selectedAudience) {
-          setSelectedAudience(list[0]);
-          loadContacts(list[0].id);
-        } else if (selectedAudience) {
-          loadContacts(selectedAudience.id);
-        } else {
-          loadContacts();
-        }
+        const nextAudience =
+          list.find((audience) => audience.id === selectedAudience?.id) || list[0] || null;
+        setSelectedAudience(nextAudience);
+        void loadContacts(nextAudience?.id);
       } else {
         failedResources.push("audiences");
       }
@@ -124,29 +124,36 @@ export default function AudiencesPage() {
         setLoadError(`Could not load ${failedResources.join(" and ")}.`);
       }
     } catch (err) {
+      if (revision !== dataLoadRevision.current) return;
       console.error("Failed to load audience data", err);
       setLoadError(err instanceof Error ? err.message : "Could not load audience data.");
     } finally {
-      setIsLoading(false);
+      if (revision === dataLoadRevision.current) setIsLoading(false);
     }
   };
 
   const loadContacts = async (audienceId?: string) => {
+    const revision = ++contactsLoadRevision.current;
     setIsContactsLoading(true);
     setContactsError(null);
     try {
       const res = await api.listContacts(audienceId);
-      setContacts(res.data || []);
+      if (revision === contactsLoadRevision.current) setContacts(res.data || []);
     } catch (err) {
+      if (revision !== contactsLoadRevision.current) return;
       console.error("Failed to load contacts", err);
       setContactsError(err instanceof Error ? err.message : "Could not load contacts.");
     } finally {
-      setIsContactsLoading(false);
+      if (revision === contactsLoadRevision.current) setIsContactsLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchData();
+    void fetchData();
+    return () => {
+      dataLoadRevision.current += 1;
+      contactsLoadRevision.current += 1;
+    };
   }, []);
 
   const handleCreateAudience = async (e: React.FormEvent) => {
@@ -158,7 +165,7 @@ export default function AudiencesPage() {
       setAudienceName("");
       await fetchData();
       setSelectedAudience(aud);
-      loadContacts(aud.id);
+      void loadContacts(aud.id);
     } catch (err: any) {
       toast.error("Failed to create audience: " + err.message);
     }
@@ -170,7 +177,7 @@ export default function AudiencesPage() {
       await api.deleteAudience(id);
       toast.success("Audience deleted");
       setSelectedAudience(null);
-      fetchData();
+      await fetchData();
     } catch (err: any) {
       toast.error("Failed to delete audience: " + err.message);
     }

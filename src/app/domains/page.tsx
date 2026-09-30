@@ -509,17 +509,14 @@ export default function DomainsPage() {
                 <label className="block text-[11px] text-zinc-600 dark:text-zinc-400 mb-1">
                   Region
                 </label>
-                <select
+                <input
+                  type="text"
                   value={region}
                   onChange={(e) => setRegion(e.target.value)}
+                  placeholder="Region identifier"
                   required
-                  className="w-full rounded-md border border-surface-border bg-surface-raised px-3 py-1.5 text-xs text-zinc-900 dark:text-white focus:outline-none"
-                >
-                  <option value="" disabled>Select a region...</option>
-                  <option value="us-east-1">US East (N. Virginia)</option>
-                  <option value="eu-west-1">EU West (Ireland)</option>
-                  <option value="ap-southeast-1">Asia Pacific (Singapore)</option>
-                </select>
+                  className="w-full rounded-md border border-surface-border bg-surface-raised px-3 py-1.5 text-xs text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-600 focus:outline-none"
+                />
               </div>
 
               <div className="flex justify-end gap-2 pt-2">

@@ -436,16 +436,36 @@ export class APIError extends Error {
   }
 }
 
+const API_CACHE_TTL_MS = 8_000;
+const API_CACHE_MAX_ENTRIES = 128;
+const API_READ_TIMEOUT_MS = 15_000;
+const API_WRITE_TIMEOUT_MS = 60_000;
+
+interface CachedAPIResponse {
+  expiresAt: number;
+  value: unknown;
+}
+
 export class APIClient {
   private token: string | null = null;
   private onUnauthorizedCallback?: (token: string) => void;
+  private cacheRevision = 0;
+  private readonly responseCache = new Map<string, CachedAPIResponse>();
+  private readonly pendingGETs = new Map<string, Promise<unknown>>();
 
   constructor(token?: string | null) {
     if (token) this.token = token;
   }
 
   setToken(token: string | null) {
+    if (this.token !== token) this.clearCache();
     this.token = token;
+  }
+
+  clearCache() {
+    this.cacheRevision += 1;
+    this.responseCache.clear();
+    this.pendingGETs.clear();
   }
 
   setOnUnauthorized(cb?: (token: string) => void) {
@@ -454,77 +474,164 @@ export class APIClient {
 
   private async request<T>(
     endpoint: string,
-    options: RequestInit = {}
+    options: RequestInit = {},
+    cacheTTL = API_CACHE_TTL_MS,
+    responseType: "json" | "blob" = "json"
   ): Promise<T> {
     const base = getBaseUrl();
     const url = `${base}${endpoint}`;
+    const method = (options.method || "GET").toUpperCase();
+    const requestToken = this.token;
+    const canCache = method === "GET" && cacheTTL > 0 && responseType === "json";
+    const cacheKey = `${method}:${responseType}:${url}`;
 
+    if (canCache) {
+      const cached = this.responseCache.get(cacheKey);
+      if (cached && cached.expiresAt > Date.now()) {
+        this.responseCache.delete(cacheKey);
+        this.responseCache.set(cacheKey, cached);
+        return cached.value as T;
+      }
+      if (cached) this.responseCache.delete(cacheKey);
+
+      if (!options.signal) {
+        const pending = this.pendingGETs.get(cacheKey);
+        if (pending) return pending as Promise<T>;
+      }
+    }
+
+    const revision = this.cacheRevision;
+    const requestPromise = this.performRequest<T>(url, options, requestToken, responseType);
+    if (canCache && !options.signal) this.pendingGETs.set(cacheKey, requestPromise);
+
+    try {
+      const result = await requestPromise;
+      if (canCache && revision === this.cacheRevision) {
+        this.responseCache.set(cacheKey, {
+          value: result,
+          expiresAt: Date.now() + cacheTTL,
+        });
+        while (this.responseCache.size > API_CACHE_MAX_ENTRIES) {
+          const oldestKey = this.responseCache.keys().next().value;
+          if (oldestKey === undefined) break;
+          this.responseCache.delete(oldestKey);
+        }
+      } else if (method !== "GET") {
+        this.clearCache();
+      }
+      return result;
+    } finally {
+      if (this.pendingGETs.get(cacheKey) === requestPromise) {
+        this.pendingGETs.delete(cacheKey);
+      }
+    }
+  }
+
+  private async performRequest<T>(
+    url: string,
+    options: RequestInit,
+    requestToken: string | null,
+    responseType: "json" | "blob"
+  ): Promise<T> {
     const headers = new Headers(options.headers);
-    headers.set("Accept", "application/json");
-    if (options.body && !(options.body instanceof FormData) && !headers.has("Content-Type")) {
+    if (!headers.has("Accept")) headers.set("Accept", "application/json");
+    if (
+      options.body &&
+      !(typeof FormData !== "undefined" && options.body instanceof FormData) &&
+      !headers.has("Content-Type")
+    ) {
       headers.set("Content-Type", "application/json");
     }
 
-    const requestToken = this.token;
     if (requestToken) {
       headers.set("Authorization", `Bearer ${requestToken}`);
     }
 
-    const res = await fetch(url, {
-      ...options,
-      headers,
-    });
+    const controller = new AbortController();
+    const callerSignal = options.signal;
+    let didTimeout = false;
+    const timeoutId = setTimeout(() => {
+      didTimeout = true;
+      controller.abort();
+    }, (options.method || "GET").toUpperCase() === "GET"
+      ? API_READ_TIMEOUT_MS
+      : API_WRITE_TIMEOUT_MS);
+    const abortFromCaller = () => controller.abort();
+    if (callerSignal?.aborted) controller.abort();
+    else callerSignal?.addEventListener("abort", abortFromCaller, { once: true });
 
-    const responseText = await res.text();
-    let data: unknown;
-    if (responseText.trim()) {
-      try {
-        data = JSON.parse(responseText);
-      } catch {
-        data = undefined;
+    try {
+      const res = await fetch(url, {
+        ...options,
+        headers,
+        signal: controller.signal,
+      });
+      const responseText = responseType === "blob" && res.ok ? "" : await res.text();
+      let data: unknown;
+      if (responseText.trim()) {
+        try {
+          data = JSON.parse(responseText);
+        } catch {
+          data = undefined;
+        }
       }
-    }
 
-    const responseData = data as
-      | { message?: unknown; error?: unknown }
-      | undefined;
-    const serverMessage =
-      (typeof responseData?.message === "string" && responseData.message) ||
-      (typeof responseData?.error === "string" && responseData.error) ||
-      (typeof data === "string" && data) ||
-      (responseText.trim() && data === undefined ? responseText.trim() : undefined);
+      const responseData = data as
+        | { message?: unknown; error?: unknown }
+        | undefined;
+      const serverMessage =
+        (typeof responseData?.message === "string" && responseData.message) ||
+        (typeof responseData?.error === "string" && responseData.error) ||
+        (typeof data === "string" && data) ||
+        (responseText.trim() && data === undefined ? responseText.trim() : undefined);
 
-    if (
-      res.status === 401 &&
-      ["invalid api key", "missing api key"].includes(serverMessage?.toLowerCase() || "")
-    ) {
-      if (requestToken && this.onUnauthorizedCallback) {
-        this.onUnauthorizedCallback(requestToken);
+      if (res.status === 401) {
+        this.clearCache();
+        if (requestToken && this.onUnauthorizedCallback) {
+          this.onUnauthorizedCallback(requestToken);
+        }
       }
-      throw new APIError(
-        serverMessage || "Session expired or unauthorized. Please sign in again.",
-        res.status,
-        data
-      );
-    }
 
-    if (!res.ok) {
-      throw new APIError(serverMessage || `HTTP error ${res.status}`, res.status, data);
-    }
+      if (!res.ok) {
+        throw new APIError(
+          serverMessage || (res.status === 401
+            ? "Session expired or unauthorized. Please sign in again."
+            : `HTTP error ${res.status}`),
+          res.status,
+          data
+        );
+      }
 
-    if (res.status === 204 || res.status === 205) {
-      return {} as T;
-    }
-    if (data === undefined) {
-      throw new APIError(
-        responseText.trim()
-          ? `Invalid JSON response (HTTP ${res.status})`
-          : `Empty response (HTTP ${res.status})`,
-        res.status
-      );
-    }
+      if (res.status === 204 || res.status === 205) {
+        return {} as T;
+      }
+      if (responseType === "blob") return await res.blob() as T;
+      if (data === undefined) {
+        throw new APIError(
+          responseText.trim()
+            ? `Invalid JSON response (HTTP ${res.status})`
+            : `Empty response (HTTP ${res.status})`,
+          res.status
+        );
+      }
 
-    return data as T;
+      return data as T;
+    } catch (error) {
+      if (error instanceof APIError) throw error;
+      if (didTimeout) {
+        throw new APIError("The request timed out. Please try again.", 0, error);
+      }
+      if (callerSignal?.aborted) {
+        throw new APIError("The request was cancelled.", 0, error);
+      }
+      if (error instanceof TypeError) {
+        throw new APIError("Could not connect to the API. Check your connection and try again.", 0, error);
+      }
+      throw error;
+    } finally {
+      clearTimeout(timeoutId);
+      callerSignal?.removeEventListener("abort", abortFromCaller);
+    }
   }
 
   // System
@@ -677,6 +784,12 @@ export class APIClient {
     );
   }
 
+  async cancelEmailWithPatch(id: string) {
+    return this.request<{ id: string; cancelled: boolean }>(`/v1/emails/${id}`, {
+      method: "PATCH",
+    });
+  }
+
   // Render Preview
   async renderEmail(data: { html?: string; text?: string; variables?: Record<string, any> }) {
     return this.request<{ html: string; text: string }>("/v1/render", {
@@ -752,19 +865,12 @@ export class APIClient {
   }
 
   async getInboundRaw(id: string) {
-    const headers = new Headers({ Accept: "message/rfc822" });
-    if (this.token) headers.set("Authorization", `Bearer ${this.token}`);
-    const response = await fetch(`${getBaseUrl()}/v1/inbound/${id}/raw`, { headers });
-    if (!response.ok) {
-      const body = await response.json().catch(() => ({})) as { error?: unknown; message?: unknown };
-      const message = typeof body.error === "string"
-        ? body.error
-        : typeof body.message === "string"
-          ? body.message
-          : `HTTP error ${response.status}`;
-      throw new APIError(message, response.status, body);
-    }
-    return response.blob();
+    return this.request<Blob>(
+      `/v1/inbound/${id}/raw`,
+      { headers: { Accept: "message/rfc822" } },
+      0,
+      "blob"
+    );
   }
 
   async getReceivedEmail(id: string) {

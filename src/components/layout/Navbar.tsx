@@ -274,7 +274,7 @@ export default function Navbar({
                   onClick={() => setShowUserDropdown(!showUserDropdown)}
                   className="flex h-7 w-7 items-center justify-center rounded-full border border-surface-border bg-surface-raised text-xs font-semibold text-zinc-700 dark:text-zinc-200 hover:border-zinc-400 dark:hover:border-zinc-500 transition-colors"
                 >
-                  {user?.name ? user.name.charAt(0).toUpperCase() : "A"}
+                  {user?.name ? user.name.charAt(0).toUpperCase() : "?"}
                 </button>
 
                 {showUserDropdown && (
@@ -286,11 +286,13 @@ export default function Navbar({
                     <div className="absolute right-0 mt-1.5 w-56 z-20 rounded-xl border border-surface-border bg-surface p-1 shadow-lg animate-fade-in">
                       <div className="border-b border-surface-border px-3 py-2 mb-1">
                         <p className="text-xs font-medium text-zinc-900 dark:text-white truncate">
-                          {user?.name || "Admin"}
+                          {user?.name || "Account"}
                         </p>
-                        <p className="text-[11px] text-zinc-500 truncate font-mono mt-0.5">
-                          {user?.email || "admin@resend.local"}
-                        </p>
+                        {user?.email && (
+                          <p className="text-[11px] text-zinc-500 truncate font-mono mt-0.5">
+                            {user.email}
+                          </p>
+                        )}
                       </div>
 
                       <div className="flex flex-col gap-0.5 py-1">

@@ -69,10 +69,7 @@ export default function SendEmailModal({
       // Fetch verified domains to populate sender
       api.listDomains().then((res) => {
         setDomains(res.data || []);
-        if (res.data && res.data.length > 0) {
-          const verified = res.data.find((d) => d.status === "verified") || res.data[0];
-          setFrom(`onboarding@${verified.name}`);
-        } else {
+        if (res.data && res.data.length > 0 && !from) {
           setFrom("");
         }
       }).catch(() => {

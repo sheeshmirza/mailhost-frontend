@@ -55,8 +55,7 @@ export default function SMTPPage() {
         const domList = domainsRes.value.data || [];
         setDomains(domList);
         if (domList.length > 0 && !email) {
-          const verified = domList.find((d) => d.status === "verified") || domList[0];
-          setEmail(`smtp@${verified.name}`);
+          setEmail("");
         }
       } else {
         failedResources.push("domains");

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import {
   api,
@@ -30,8 +30,10 @@ export default function OverviewPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [interval, setInterval] = useState<"hour" | "day" | "week" | "month">("day");
+  const loadRevision = useRef(0);
 
   const loadData = async () => {
+    const revision = ++loadRevision.current;
     setIsLoading(true);
     setLoadError(null);
     try {
@@ -40,6 +42,7 @@ export default function OverviewPage() {
         api.listEmails(8),
         api.listDomains(),
       ]);
+      if (revision !== loadRevision.current) return;
 
       const failedResources: string[] = [];
       if (analyticsData.status === "fulfilled") {
@@ -61,20 +64,27 @@ export default function OverviewPage() {
         setLoadError(`Could not load ${failedResources.join(" and ")}.`);
       }
     } catch (err) {
+      if (revision !== loadRevision.current) return;
       console.error("Failed to load overview data", err);
       setLoadError(err instanceof Error ? err.message : "Could not load overview data.");
     } finally {
-      setIsLoading(false);
+      if (revision === loadRevision.current) setIsLoading(false);
     }
   };
 
   useEffect(() => {
-    loadData();
+    void loadData();
 
     // Listen to sent email event to auto-refresh
-    const handleSent = () => loadData();
+    const handleSent = () => {
+      api.clearCache();
+      void loadData();
+    };
     window.addEventListener("mailhost_email_sent", handleSent);
-    return () => window.removeEventListener("mailhost_email_sent", handleSent);
+    return () => {
+      window.removeEventListener("mailhost_email_sent", handleSent);
+      loadRevision.current += 1;
+    };
   }, [interval]);
 
   const totals = analytics?.totals || {
@@ -132,7 +142,10 @@ export default function OverviewPage() {
           </div>
 
           <button
-            onClick={loadData}
+            onClick={() => {
+              api.clearCache();
+              void loadData();
+            }}
             title="Refresh analytics"
             className="flex h-8 w-8 items-center justify-center rounded-lg border border-surface-border bg-surface text-zinc-500 hover:bg-surface-raised hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white transition-colors"
           >

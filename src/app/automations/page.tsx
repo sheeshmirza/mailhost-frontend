@@ -75,9 +75,8 @@ export default function AutomationsPage() {
       if (domRes.status === "fulfilled") {
         const domList = domRes.value.data || [];
         setDomains(domList);
-        if (domList.length > 0) {
-          const verified = domList.find((d: any) => d.status === "verified") || domList[0];
-          setEmailFrom(`welcome@${verified.name}`);
+        if (domList.length > 0 && !emailFrom) {
+          setEmailFrom("");
         }
       } else {
         failedResources.push("domains");
@@ -589,6 +588,14 @@ export default function AutomationsPage() {
                 <span className="text-[11px] font-semibold text-zinc-600 dark:text-zinc-300 uppercase tracking-wider block">
                   Step 1: Immediate Email
                 </span>
+                <input
+                  type="email"
+                  value={emailFrom}
+                  onChange={(e) => setEmailFrom(e.target.value)}
+                  placeholder="Sender email (e.g. sender@yourdomain.com)"
+                  required
+                  className="w-full rounded-md border border-surface-border bg-surface-raised px-3 py-1.5 text-xs text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-600 focus:outline-none"
+                />
                 <input
                   type="text"
                   value={emailSubject}
