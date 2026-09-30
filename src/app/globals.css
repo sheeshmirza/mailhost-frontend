@@ -3,45 +3,45 @@
 @tailwind utilities;
 
 :root {
-  /* Light theme (DEFAULT) - Warmer grays */
+  /* Light theme (DEFAULT) - Resend clean crisp aesthetic */
   --background: #ffffff;
   --foreground: #09090b;
   --surface: #ffffff;
-  --surface-raised: #fcfcfc;
-  --surface-subtle: #f9fafb;
-  --surface-border: #e5e7eb;
-  --surface-border-hover: #d1d5db;
+  --surface-raised: #f9fafb;
+  --surface-subtle: #f3f4f6;
+  --surface-border: #e4e4e7;
+  --surface-border-hover: #d4d4d8;
   --text-primary: #09090b;
-  --text-secondary: #374151;
-  --text-muted: #6b7280;
-  --text-subtle: #9ca3af;
+  --text-secondary: #27272a;
+  --text-muted: #71717a;
+  --text-subtle: #a1a1aa;
   --scrollbar-track: #f9fafb;
-  --scrollbar-thumb: #d1d5db;
-  --scrollbar-thumb-hover: #9ca3af;
-  --selection-bg: rgba(0, 0, 0, 0.1);
-  --selection-color: #000;
+  --scrollbar-thumb: #d4d4d8;
+  --scrollbar-thumb-hover: #a1a1aa;
+  --selection-bg: rgba(0, 0, 0, 0.08);
+  --selection-color: #000000;
   --ring: #09090b;
 }
 
 .dark {
-  /* Dark theme - True blacks, blue-tinged grays */
+  /* Dark theme - Resend/Linear true dark aesthetic */
   --background: #000000;
-  --foreground: #f8fafc;
-  --surface: #0a0a0a;
-  --surface-raised: #111111;
-  --surface-subtle: #171717;
-  --surface-border: #262626;
-  --surface-border-hover: #404040;
-  --text-primary: #f8fafc;
-  --text-secondary: #e2e8f0;
-  --text-muted: #94a3b8;
-  --text-subtle: #64748b;
-  --scrollbar-track: #000000;
-  --scrollbar-thumb: #262626;
-  --scrollbar-thumb-hover: #404040;
-  --selection-bg: rgba(255, 255, 255, 0.2);
-  --selection-color: #fff;
-  --ring: #f8fafc;
+  --foreground: #f4f4f5;
+  --surface: #09090b;
+  --surface-raised: #121215;
+  --surface-subtle: #18181b;
+  --surface-border: #27272a;
+  --surface-border-hover: #3f3f46;
+  --text-primary: #fafafa;
+  --text-secondary: #d4d4d8;
+  --text-muted: #a1a1aa;
+  --text-subtle: #71717a;
+  --scrollbar-track: #09090b;
+  --scrollbar-thumb: #27272a;
+  --scrollbar-thumb-hover: #3f3f46;
+  --selection-bg: rgba(255, 255, 255, 0.15);
+  --selection-color: #ffffff;
+  --ring: #f4f4f5;
 }
 
 ::selection {
@@ -74,22 +74,48 @@ body {
   background: var(--scrollbar-thumb-hover);
 }
 
-/* Utilities */
+/* Unified component utilities */
+@layer components {
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-1.5 rounded-lg bg-zinc-900 px-3.5 py-1.5 text-xs font-medium text-white shadow-sm hover:bg-zinc-800 active:scale-[0.98] transition-all dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-100 disabled:opacity-50 disabled:pointer-events-none;
+  }
+
+  .btn-secondary {
+    @apply inline-flex items-center justify-center gap-1.5 rounded-lg border border-surface-border bg-surface px-3 py-1.5 text-xs font-medium text-zinc-700 hover:bg-surface-raised hover:text-zinc-900 transition-colors dark:text-zinc-300 dark:hover:text-white dark:hover:bg-surface-raised disabled:opacity-50 disabled:pointer-events-none;
+  }
+
+  .btn-ghost {
+    @apply inline-flex items-center justify-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium text-zinc-600 hover:bg-surface-raised hover:text-zinc-900 transition-colors dark:text-zinc-400 dark:hover:text-white dark:hover:bg-surface-raised disabled:opacity-50;
+  }
+
+  .btn-danger {
+    @apply inline-flex items-center justify-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium text-red-600 hover:bg-red-50 hover:text-red-700 transition-colors dark:text-red-400 dark:hover:bg-red-950/30;
+  }
+
+  .input-base {
+    @apply w-full rounded-lg border border-surface-border bg-surface-raised px-3 py-1.5 text-xs text-zinc-900 placeholder-zinc-400 transition-colors dark:text-white dark:placeholder-zinc-600 focus:outline-none focus:ring-1 focus:ring-zinc-900 dark:focus:ring-white focus:border-transparent;
+  }
+
+  .page-container {
+    @apply max-w-6xl mx-auto px-6 sm:px-8 py-8 space-y-6 animate-fade-in;
+  }
+
+  .card-panel {
+    @apply rounded-xl border border-surface-border bg-surface p-5 shadow-sm space-y-3 transition-colors;
+  }
+}
+
 @layer utilities {
   .focus-ring {
     @apply focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--background)];
   }
 
-  input:focus, textarea:focus, select:focus {
-    @apply outline-none ring-1 ring-[var(--ring)] border-transparent;
-  }
-
   .card {
-    @apply bg-surface border border-surface-border rounded-lg shadow-card;
+    @apply bg-surface border border-surface-border rounded-xl shadow-card;
   }
 
   .badge {
-    @apply inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium;
+    @apply inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-medium tracking-tight;
   }
   .badge-success {
     @apply bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20;
@@ -104,7 +130,7 @@ body {
     @apply bg-sky-500/10 text-sky-600 dark:text-sky-400 border border-sky-500/20;
   }
   .badge-neutral {
-    @apply bg-surface-subtle text-text-secondary border border-surface-border;
+    @apply bg-surface-subtle text-zinc-600 dark:text-zinc-400 border border-surface-border;
   }
 
   .shimmer {

@@ -127,7 +127,7 @@ export default function TemplatesPage() {
   };
 
   return (
-    <div className="max-w-6xl mx-auto px-4 sm:px-8 py-8 space-y-6 animate-fade-in">
+    <div className="page-container">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-surface-border pb-6">
         <div>
@@ -141,7 +141,7 @@ export default function TemplatesPage() {
 
         <button
           onClick={() => setIsOpen(true)}
-          className="flex items-center gap-1.5 rounded-md bg-zinc-900 px-3.5 py-1.5 text-xs font-medium text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200 transition-colors"
+          className="btn-primary"
         >
           <Plus className="h-3.5 w-3.5" />
           <span>New Template</span>
@@ -224,7 +224,7 @@ export default function TemplatesPage() {
                   {selectedTemplate.status !== "published" && (
                     <button
                       onClick={() => handlePublish(selectedTemplate.id)}
-                      className="flex items-center gap-1 rounded-md bg-zinc-900 px-3 py-1.5 text-xs font-medium text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200 transition-colors"
+                      className="btn-primary"
                     >
                       <UploadCloud className="h-3.5 w-3.5" />
                       <span>Publish</span>
@@ -232,7 +232,7 @@ export default function TemplatesPage() {
                   )}
                   <button
                     onClick={() => handleDelete(selectedTemplate.id)}
-                    className="rounded-md border border-surface-border p-1.5 text-zinc-400 hover:text-red-500 transition-colors"
+                    className="flex h-8 w-8 items-center justify-center rounded-lg border border-surface-border text-zinc-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 transition-colors"
                     title="Delete template"
                   >
                     <Trash2 className="h-4 w-4" />
@@ -387,17 +387,17 @@ await resend.emails.send({
                 />
               </div>
 
-              <div className="flex justify-end gap-2 pt-2">
+              <div className="flex justify-end gap-2.5 pt-4 border-t border-surface-border mt-4">
                 <button
                   type="button"
                   onClick={() => setIsOpen(false)}
-                  className="rounded-md border border-surface-border px-3 py-1.5 text-xs font-medium text-zinc-600 hover:bg-surface-raised dark:text-zinc-400 dark:hover:text-white transition-colors"
+                  className="btn-secondary"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="rounded-md bg-zinc-900 px-4 py-1.5 text-xs font-medium text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200 transition-colors"
+                  className="btn-primary"
                 >
                   Create Template
                 </button>

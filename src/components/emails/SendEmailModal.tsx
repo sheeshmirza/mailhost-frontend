@@ -139,20 +139,20 @@ export default function SendEmailModal({
             <div className="rounded-lg border border-surface-border bg-surface-raised px-4 py-2 text-xs font-mono text-zinc-800 dark:text-zinc-200">
               ID: {successId}
             </div>
-            <div className="flex gap-2 pt-2">
+            <div className="flex gap-2.5 pt-2">
               <button
                 onClick={() => {
                   setSuccessId(null);
                   setToInput("");
                   setSubject("");
                 }}
-                className="rounded-md border border-surface-border px-4 py-1.5 text-xs text-zinc-700 hover:bg-surface-raised hover:text-zinc-900 dark:text-zinc-300 dark:hover:text-white transition-colors"
+                className="btn-secondary"
               >
                 Send Another
               </button>
               <button
                 onClick={onClose}
-                className="rounded-md bg-zinc-900 px-4 py-1.5 text-xs font-medium text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200 transition-colors"
+                className="btn-primary"
               >
                 Close
               </button>
@@ -328,18 +328,18 @@ export default function SendEmailModal({
             </div>
 
             {/* Footer Actions */}
-            <div className="flex items-center justify-end gap-2 pt-2 border-t border-surface-border">
+            <div className="flex items-center justify-end gap-2.5 pt-4 border-t border-surface-border">
               <button
                 type="button"
                 onClick={onClose}
-                className="rounded-md border border-surface-border px-3 py-1.5 text-xs text-zinc-700 hover:bg-surface-raised hover:text-zinc-900 dark:text-zinc-300 dark:hover:text-white transition-colors"
+                className="btn-secondary"
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 disabled={isSending}
-                className="flex items-center gap-1.5 rounded-md bg-zinc-900 px-4 py-1.5 text-xs font-medium text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200 disabled:opacity-50 transition-colors"
+                className="btn-primary"
               >
                 <Send className="h-3.5 w-3.5" />
                 <span>{isSending ? "Sending..." : "Send Email"}</span>

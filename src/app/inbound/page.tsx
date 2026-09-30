@@ -114,7 +114,7 @@ export default function InboundPage() {
   };
 
   return (
-    <div className="max-w-6xl mx-auto px-8 py-8 space-y-6 animate-fade-in">
+    <div className="page-container">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-surface-border pb-6">
         <div>
@@ -128,13 +128,13 @@ export default function InboundPage() {
 
         {/* Tab switch */}
         <div className="flex items-center gap-2">
-          <div className="flex rounded-md border border-surface-border bg-surface p-0.5">
+          <div className="flex items-center rounded-lg border border-surface-border bg-surface p-0.5">
             <button
               onClick={() => setActiveTab("emails")}
-              className={`flex items-center gap-1.5 rounded px-3 py-1.5 text-xs font-medium transition-colors ${
+              className={`flex items-center gap-1.5 rounded-md px-3 py-1 text-xs font-medium transition-colors ${
                 activeTab === "emails"
-                  ? "bg-surface-raised text-zinc-900 dark:text-white shadow-sm"
-                  : "text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-200"
+                  ? "bg-surface-raised text-zinc-900 dark:text-white font-medium shadow-sm border border-surface-border/50"
+                  : "text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white"
               }`}
             >
               <Inbox className="h-3.5 w-3.5" />
@@ -142,10 +142,10 @@ export default function InboundPage() {
             </button>
             <button
               onClick={() => setActiveTab("aliases")}
-              className={`flex items-center gap-1.5 rounded px-3 py-1.5 text-xs font-medium transition-colors ${
+              className={`flex items-center gap-1.5 rounded-md px-3 py-1 text-xs font-medium transition-colors ${
                 activeTab === "aliases"
-                  ? "bg-surface-raised text-zinc-900 dark:text-white shadow-sm"
-                  : "text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-200"
+                  ? "bg-surface-raised text-zinc-900 dark:text-white font-medium shadow-sm border border-surface-border/50"
+                  : "text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white"
               }`}
             >
               <Forward className="h-3.5 w-3.5" />
@@ -156,7 +156,7 @@ export default function InboundPage() {
           {activeTab === "aliases" && (
             <button
               onClick={() => setIsAliasOpen(true)}
-              className="flex items-center gap-1.5 rounded-md bg-zinc-900 px-3.5 py-1.5 text-xs font-medium text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200 transition-colors"
+              className="btn-primary"
             >
               <Plus className="h-3.5 w-3.5" />
               <span>Create Alias</span>
@@ -165,7 +165,7 @@ export default function InboundPage() {
 
           <button
             onClick={fetchData}
-            className="flex h-8 w-8 items-center justify-center rounded-md border border-surface-border bg-surface text-zinc-500 hover:bg-surface-raised hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white transition-colors"
+            className="flex h-8 w-8 items-center justify-center rounded-lg border border-surface-border bg-surface text-zinc-500 hover:bg-surface-raised hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white transition-colors"
           >
             <RefreshCw className={`h-3.5 w-3.5 ${isLoading ? "animate-spin" : ""}`} />
           </button>
@@ -421,17 +421,17 @@ export default function InboundPage() {
                 />
               </div>
 
-              <div className="flex justify-end gap-2 pt-2">
+              <div className="flex justify-end gap-2.5 pt-4 border-t border-surface-border mt-4">
                 <button
                   type="button"
                   onClick={() => setIsAliasOpen(false)}
-                  className="rounded-md border border-surface-border px-3 py-1.5 text-xs text-zinc-700 hover:bg-surface-raised hover:text-zinc-900 dark:text-zinc-300 dark:hover:text-white transition-colors"
+                  className="btn-secondary"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="rounded-md bg-zinc-900 px-4 py-1.5 text-xs font-medium text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200 transition-colors"
+                  className="btn-primary"
                 >
                   Save Alias
                 </button>

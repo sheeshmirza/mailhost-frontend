@@ -61,7 +61,7 @@ export default function LogsHealthPage() {
   }, []);
 
   return (
-    <div className="max-w-6xl mx-auto px-4 sm:px-8 py-8 space-y-8 animate-fade-in">
+    <div className="page-container">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-surface-border pb-6">
         <div>
@@ -78,14 +78,14 @@ export default function LogsHealthPage() {
             href="/backend/metrics"
             target="_blank"
             rel="noreferrer"
-            className="flex items-center gap-1.5 rounded-md border border-surface-border bg-surface px-3 py-1.5 text-xs font-medium text-zinc-700 hover:bg-surface-raised hover:text-zinc-900 dark:text-zinc-300 dark:hover:text-white transition-colors"
+            className="btn-secondary"
           >
             <span>Prometheus Metrics</span>
             <ExternalLink className="h-3 w-3" />
           </a>
           <button
             onClick={fetchHealthAndLogs}
-            className="flex h-8 w-8 items-center justify-center rounded-md border border-surface-border bg-surface text-zinc-500 hover:bg-surface-raised hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white transition-colors"
+            className="flex h-8 w-8 items-center justify-center rounded-lg border border-surface-border bg-surface text-zinc-500 hover:bg-surface-raised hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white transition-colors"
             title="Refresh system logs"
           >
             <RefreshCw className={`h-3.5 w-3.5 ${isLoading ? "animate-spin" : ""}`} />

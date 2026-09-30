@@ -125,23 +125,23 @@ export default function DomainsPage() {
   };
 
   return (
-    <div className="max-w-6xl mx-auto px-6 py-8 space-y-8 animate-fade-in">
+    <div className="page-container">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-surface-border pb-6">
         <div>
-          <h1 className="text-lg font-semibold tracking-tight text-zinc-900 dark:text-white">
+          <h1 className="text-xl font-semibold tracking-tight text-zinc-900 dark:text-white">
             Domains
           </h1>
-          <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-1">
+          <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
             Configure DKIM, SPF, MX, and verify your sending identities.
           </p>
         </div>
 
         <button
           onClick={() => setIsAddOpen(true)}
-          className="flex items-center gap-1.5 rounded-md bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200 transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-zinc-900 focus:ring-offset-2 dark:focus:ring-white dark:focus:ring-offset-black"
+          className="btn-primary"
         >
-          <Plus className="h-4 w-4" />
+          <Plus className="h-3.5 w-3.5" />
           <span>Add Domain</span>
         </button>
       </div>

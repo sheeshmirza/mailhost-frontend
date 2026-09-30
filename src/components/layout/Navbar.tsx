@@ -35,22 +35,42 @@ import {
 import SendEmailModal from "../emails/SendEmailModal";
 import clsx from "clsx";
 
-const navItems = [
-  { label: "Overview", href: "/overview", icon: LayoutDashboard },
-  { label: "Emails", href: "/emails", icon: Mail },
-  { label: "Domains", href: "/domains", icon: Globe },
-  { label: "API Keys", href: "/api-keys", icon: Key },
-  { label: "Inbound", href: "/inbound", icon: Inbox },
-  { label: "Audiences", href: "/audiences", icon: Users },
-  { label: "Broadcasts", href: "/broadcasts", icon: Radio },
-  { label: "Automations", href: "/automations", icon: GitBranch },
-  { label: "Events", href: "/events", icon: Zap },
-  { label: "Templates", href: "/templates", icon: FileText },
-  { label: "Webhooks", href: "/webhooks", icon: Webhook },
-  { label: "Suppressions", href: "/suppressions", icon: ShieldAlert },
-  { label: "SMTP", href: "/smtp", icon: Server },
-  { label: "Settings & Team", href: "/settings", icon: Settings },
-  { label: "Logs & Health", href: "/logs", icon: Activity },
+const navGroups = [
+  {
+    title: "Email",
+    items: [
+      { label: "Overview", href: "/overview", icon: LayoutDashboard },
+      { label: "Emails", href: "/emails", icon: Mail },
+      { label: "Domains", href: "/domains", icon: Globe },
+    ],
+  },
+  {
+    title: "Engagement",
+    items: [
+      { label: "Audiences", href: "/audiences", icon: Users },
+      { label: "Broadcasts", href: "/broadcasts", icon: Radio },
+      { label: "Automations", href: "/automations", icon: GitBranch },
+      { label: "Events", href: "/events", icon: Zap },
+    ],
+  },
+  {
+    title: "Developer",
+    items: [
+      { label: "API Keys", href: "/api-keys", icon: Key },
+      { label: "Templates", href: "/templates", icon: FileText },
+      { label: "Webhooks", href: "/webhooks", icon: Webhook },
+      { label: "SMTP", href: "/smtp", icon: Server },
+      { label: "Inbound", href: "/inbound", icon: Inbox },
+    ],
+  },
+  {
+    title: "Account",
+    items: [
+      { label: "Suppressions", href: "/suppressions", icon: ShieldAlert },
+      { label: "Settings & Team", href: "/settings", icon: Settings },
+      { label: "Logs & Health", href: "/logs", icon: Activity },
+    ],
+  },
 ];
 
 export default function Navbar({ isLanding }: { isLanding?: boolean }) {
@@ -209,18 +229,18 @@ export default function Navbar({ isLanding }: { isLanding?: boolean }) {
             /* Dashboard Action Buttons */
             <>
               {/* Live Status indicator */}
-              <div className="hidden md:flex items-center gap-1.5 rounded-full border border-surface-border bg-surface-raised/70 px-2.5 py-1 text-[11px] text-zinc-600 dark:text-zinc-300">
+              <div className="hidden md:flex items-center gap-1.5 rounded-full border border-surface-border bg-surface-raised px-2.5 py-1 text-[11px] text-zinc-600 dark:text-zinc-300">
                 <span className="relative flex h-2 w-2">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
                   <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
                 </span>
-                <span className="font-mono text-[10px] text-zinc-500 dark:text-zinc-400">API: 8080</span>
+                <span className="font-medium text-[11px] text-zinc-600 dark:text-zinc-400">Operational</span>
               </div>
 
               {/* Quick Send Email Action */}
               <button
                 onClick={() => setIsSendOpen(true)}
-                className="flex items-center gap-1.5 rounded-md bg-zinc-900 text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200 active:scale-95 px-3 py-1.5 text-xs font-medium transition-all shadow-sm"
+                className="btn-primary"
               >
                 <Send className="h-3.5 w-3.5" />
                 <span className="hidden sm:inline">Send Email</span>
@@ -323,31 +343,40 @@ export default function Navbar({ isLanding }: { isLanding?: boolean }) {
                 </button>
               </div>
 
-              <div className="space-y-1">
-                {navItems.map((item) => {
-                  const isActive =
-                    item.href === "/overview"
-                      ? pathname === "/overview"
-                      : pathname.startsWith(item.href);
-                  const Icon = item.icon;
+              <div className="space-y-4">
+                {navGroups.map((group) => (
+                  <div key={group.title}>
+                    <div className="px-3 mb-1 text-[10px] font-semibold uppercase tracking-widest text-zinc-400">
+                      {group.title}
+                    </div>
+                    <div className="flex flex-col gap-0.5">
+                      {group.items.map((item) => {
+                        const isActive =
+                          item.href === "/overview"
+                            ? pathname === "/overview"
+                            : pathname.startsWith(item.href);
+                        const Icon = item.icon;
 
-                  return (
-                    <Link
-                      key={item.href}
-                      href={item.href}
-                      onClick={() => setMobileMenuOpen(false)}
-                      className={clsx(
-                        "flex items-center gap-2.5 rounded-md px-3 py-2 text-xs font-medium transition-colors",
-                        isActive
-                          ? "bg-surface-raised text-zinc-900 dark:text-white font-semibold"
-                          : "text-zinc-600 dark:text-zinc-400 hover:bg-surface-raised hover:text-zinc-900 dark:hover:text-white"
-                      )}
-                    >
-                      <Icon className="h-4 w-4" />
-                      <span>{item.label}</span>
-                    </Link>
-                  );
-                })}
+                        return (
+                          <Link
+                            key={item.href}
+                            href={item.href}
+                            onClick={() => setMobileMenuOpen(false)}
+                            className={clsx(
+                              "flex items-center gap-2.5 rounded-md px-3 py-1.5 text-xs font-medium transition-colors border-l-2",
+                              isActive
+                                ? "border-zinc-900 dark:border-white bg-zinc-50 dark:bg-zinc-900/50 text-zinc-900 dark:text-white font-medium"
+                                : "border-transparent text-zinc-600 dark:text-zinc-400 hover:bg-surface-raised hover:text-zinc-900 dark:hover:text-white"
+                            )}
+                          >
+                            <Icon className="h-4 w-4" />
+                            <span>{item.label}</span>
+                          </Link>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
 

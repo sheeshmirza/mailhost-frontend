@@ -317,27 +317,27 @@ export default function AudiencesPage() {
   };
 
   return (
-    <div className="max-w-6xl mx-auto px-8 py-8 space-y-6 animate-fade-in">
+    <div className="page-container">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-surface-border pb-6">
         <div>
-          <h1 className="text-lg font-semibold tracking-tight text-zinc-900 dark:text-white">
+          <h1 className="text-xl font-semibold tracking-tight text-zinc-900 dark:text-white">
             Audiences & Contacts
           </h1>
-          <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-1">
+          <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
             Segment your subscribers, manage topics, and maintain your customer lists.
           </p>
         </div>
 
         {/* Tab Switcher & Quick Actions */}
         <div className="flex items-center gap-2">
-          <div className="flex rounded-md border border-surface-border bg-surface p-0.5">
+          <div className="flex items-center rounded-lg border border-surface-border bg-surface p-0.5">
             <button
               onClick={() => setMainTab("contacts")}
-              className={`flex items-center gap-1.5 rounded px-3 py-1.5 text-xs font-medium transition-colors ${
+              className={`flex items-center gap-1.5 rounded-md px-3 py-1 text-xs font-medium transition-colors ${
                 mainTab === "contacts"
-                  ? "bg-surface-raised text-zinc-900 dark:text-white shadow-sm"
-                  : "text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-200"
+                  ? "bg-surface-raised text-zinc-900 dark:text-white font-medium shadow-sm border border-surface-border/50"
+                  : "text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white"
               }`}
             >
               <Users className="h-3.5 w-3.5" />
@@ -345,10 +345,10 @@ export default function AudiencesPage() {
             </button>
             <button
               onClick={() => setMainTab("segments")}
-              className={`flex items-center gap-1.5 rounded px-3 py-1.5 text-xs font-medium transition-colors ${
+              className={`flex items-center gap-1.5 rounded-md px-3 py-1 text-xs font-medium transition-colors ${
                 mainTab === "segments"
-                  ? "bg-surface-raised text-zinc-900 dark:text-white shadow-sm"
-                  : "text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-200"
+                  ? "bg-surface-raised text-zinc-900 dark:text-white font-medium shadow-sm border border-surface-border/50"
+                  : "text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white"
               }`}
             >
               <Filter className="h-3.5 w-3.5" />
@@ -356,10 +356,10 @@ export default function AudiencesPage() {
             </button>
             <button
               onClick={() => setMainTab("topics")}
-              className={`flex items-center gap-1.5 rounded px-3 py-1.5 text-xs font-medium transition-colors ${
+              className={`flex items-center gap-1.5 rounded-md px-3 py-1 text-xs font-medium transition-colors ${
                 mainTab === "topics"
-                  ? "bg-surface-raised text-zinc-900 dark:text-white shadow-sm"
-                  : "text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-200"
+                  ? "bg-surface-raised text-zinc-900 dark:text-white font-medium shadow-sm border border-surface-border/50"
+                  : "text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white"
               }`}
             >
               <Tag className="h-3.5 w-3.5" />
@@ -371,14 +371,14 @@ export default function AudiencesPage() {
             <>
               <button
                 onClick={() => setIsAudienceOpen(true)}
-                className="flex items-center gap-1.5 rounded-md border border-surface-border bg-surface px-3 py-1.5 text-xs font-medium text-zinc-700 hover:bg-surface-raised hover:text-zinc-900 dark:text-zinc-300 dark:hover:text-white transition-colors"
+                className="btn-secondary"
               >
                 <FolderPlus className="h-3.5 w-3.5 text-zinc-500 dark:text-zinc-400" />
                 <span>New Audience</span>
               </button>
               <button
                 onClick={() => setIsContactOpen(true)}
-                className="flex items-center gap-1.5 rounded-md bg-zinc-900 px-3.5 py-1.5 text-xs font-medium text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200 transition-colors"
+                className="btn-primary"
               >
                 <Plus className="h-3.5 w-3.5" />
                 <span>Add Contact</span>
@@ -389,7 +389,7 @@ export default function AudiencesPage() {
           {mainTab === "segments" && (
             <button
               onClick={() => setIsSegmentOpen(true)}
-              className="flex items-center gap-1.5 rounded-md bg-zinc-900 px-3.5 py-1.5 text-xs font-medium text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200 transition-colors"
+              className="btn-primary"
             >
               <Plus className="h-3.5 w-3.5" />
               <span>New Segment</span>
@@ -399,7 +399,7 @@ export default function AudiencesPage() {
           {mainTab === "topics" && (
             <button
               onClick={() => setIsTopicOpen(true)}
-              className="flex items-center gap-1.5 rounded-md bg-zinc-900 px-3.5 py-1.5 text-xs font-medium text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200 transition-colors"
+              className="btn-primary"
             >
               <Plus className="h-3.5 w-3.5" />
               <span>New Topic</span>
@@ -408,7 +408,7 @@ export default function AudiencesPage() {
 
           <button
             onClick={fetchData}
-            className="flex h-8 w-8 items-center justify-center rounded-md border border-surface-border bg-surface text-zinc-500 hover:bg-surface-raised hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white transition-colors"
+            className="flex h-8 w-8 items-center justify-center rounded-lg border border-surface-border bg-surface text-zinc-500 hover:bg-surface-raised hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white transition-colors"
           >
             <RefreshCw className={`h-3.5 w-3.5 ${isLoading ? "animate-spin" : ""}`} />
           </button>

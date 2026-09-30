@@ -89,29 +89,29 @@ export default function OverviewPage() {
   );
 
   return (
-    <div className="max-w-6xl mx-auto px-8 py-8 space-y-8 animate-fade-in">
+    <div className="page-container">
       {/* Top Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-surface-border pb-6">
         <div>
-          <h1 className="text-lg font-semibold text-zinc-900 dark:text-white">
+          <h1 className="text-xl font-semibold tracking-tight text-zinc-900 dark:text-white">
             Overview
           </h1>
-          <p className="text-sm text-zinc-500 mt-1">
+          <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
             Real-time delivery performance and account activity.
           </p>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2.5">
           {/* Interval selector */}
-          <div className="flex items-center rounded-full border border-surface-border bg-surface p-1">
+          <div className="flex items-center rounded-lg border border-surface-border bg-surface p-0.5">
             {(["hour", "day", "week", "month"] as const).map((int) => (
               <button
                 key={int}
                 onClick={() => setInterval(int)}
-                className={`rounded-full px-3 py-1 text-[11px] font-medium capitalize transition-colors ${
+                className={`rounded-md px-3 py-1 text-xs font-medium capitalize transition-colors ${
                   interval === int
-                    ? "bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900 shadow-sm"
-                    : "text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
+                    ? "bg-surface-raised text-zinc-900 dark:text-white font-medium shadow-sm border border-surface-border/50"
+                    : "text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white"
                 }`}
               >
                 {int}
@@ -122,14 +122,14 @@ export default function OverviewPage() {
           <button
             onClick={loadData}
             title="Refresh analytics"
-            className="flex h-8 w-8 items-center justify-center rounded-full border border-surface-border bg-surface text-zinc-500 hover:bg-surface-raised hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white transition-colors"
+            className="flex h-8 w-8 items-center justify-center rounded-lg border border-surface-border bg-surface text-zinc-500 hover:bg-surface-raised hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white transition-colors"
           >
             <RefreshCw className={`h-3.5 w-3.5 ${isLoading ? "animate-spin" : ""}`} />
           </button>
 
           <button
             onClick={() => setIsSendModalOpen(true)}
-            className="flex items-center gap-1.5 rounded-full bg-zinc-900 px-4 py-1.5 text-xs font-medium text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200 transition-colors"
+            className="btn-primary"
           >
             <Send className="h-3.5 w-3.5" />
             <span>Send Email</span>
@@ -138,7 +138,7 @@ export default function OverviewPage() {
       </div>
 
       {/* KPI Cards Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
         {/* Sent */}
         <div className="rounded-xl border border-surface-border bg-surface p-5 space-y-3 shadow-sm">
           <div className="flex items-center justify-between">
@@ -212,7 +212,7 @@ export default function OverviewPage() {
         </div>
 
         {/* Bounced / Failed */}
-        <div className="rounded-xl border border-surface-border bg-surface p-5 space-y-3 shadow-sm sm:col-span-2 lg:col-span-1">
+        <div className="rounded-xl border border-surface-border bg-surface p-5 space-y-3 shadow-sm col-span-2 sm:col-span-1">
           <div className="flex items-center justify-between">
             <span className="text-xs text-zinc-500 uppercase tracking-wider font-medium">Bounced</span>
             <div className="flex h-8 w-8 items-center justify-center rounded-full bg-red-50 dark:bg-red-500/10">
@@ -326,18 +326,16 @@ export default function OverviewPage() {
                     </p>
                   </div>
                   <div className="text-right">
-                    <span className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-medium capitalize ${
+                    <span className={`badge capitalize ${
                       email.status === "delivered"
-                        ? "bg-emerald-50 border-emerald-200 text-emerald-700 dark:bg-emerald-950/60 dark:border-emerald-800/40 dark:text-emerald-400"
-                        : email.status === "bounced"
-                        ? "bg-red-50 border-red-200 text-red-700 dark:bg-red-950/60 dark:border-red-800/40 dark:text-red-400"
-                        : email.status === "failed"
-                        ? "bg-rose-50 border-rose-200 text-rose-700 dark:bg-rose-950/60 dark:border-rose-800/40 dark:text-rose-400"
+                        ? "badge-success"
+                        : email.status === "bounced" || email.status === "failed"
+                        ? "badge-error"
                         : email.status === "sent"
-                        ? "bg-sky-50 border-sky-200 text-sky-700 dark:bg-sky-950/60 dark:border-sky-800/40 dark:text-sky-400"
+                        ? "badge-info"
                         : email.status === "canceled"
-                        ? "bg-zinc-100 border-zinc-200 text-zinc-600 dark:bg-zinc-900 dark:border-zinc-700 dark:text-zinc-400"
-                        : "bg-amber-50 border-amber-200 text-amber-700 dark:bg-amber-950/60 dark:border-amber-800/40 dark:text-amber-400"
+                        ? "badge-neutral"
+                        : "badge-warning"
                     }`}>
                       {email.status || "queued"}
                     </span>

@@ -100,14 +100,14 @@ export default function WebhooksPage() {
   };
 
   return (
-    <div className="max-w-6xl mx-auto px-4 sm:px-8 py-8 space-y-6 animate-fade-in">
+    <div className="page-container">
       {/* Header */}
-      <div className="flex justify-between items-center border-b border-surface-border pb-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-surface-border pb-6">
         <div>
-          <h1 className="text-lg font-semibold tracking-tight text-zinc-900 dark:text-white">
+          <h1 className="text-xl font-semibold tracking-tight text-zinc-900 dark:text-white">
             Webhooks
           </h1>
-          <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-1">
+          <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
             Receive real-time HTTP callbacks for email delivery, bounce, and engagement events.
           </p>
         </div>
@@ -115,17 +115,17 @@ export default function WebhooksPage() {
         <div className="flex items-center gap-2">
           <button
             onClick={() => setIsOpen(true)}
-            className="flex items-center gap-1.5 rounded-lg bg-zinc-900 text-white px-4 py-2 text-sm font-medium hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200 transition-colors"
+            className="btn-primary"
           >
-            <Plus className="h-4 w-4" />
+            <Plus className="h-3.5 w-3.5" />
             <span>Add Webhook</span>
           </button>
           <button
             onClick={fetchWebhooks}
-            className="flex h-9 w-9 items-center justify-center rounded-lg border border-surface-border bg-surface text-zinc-500 hover:bg-surface-raised hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white transition-colors"
+            className="flex h-8 w-8 items-center justify-center rounded-lg border border-surface-border bg-surface text-zinc-500 hover:bg-surface-raised hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white transition-colors"
             title="Refresh webhooks"
           >
-            <RefreshCw className={`h-4 w-4 ${isLoading ? "animate-spin" : ""}`} />
+            <RefreshCw className={`h-3.5 w-3.5 ${isLoading ? "animate-spin" : ""}`} />
           </button>
         </div>
       </div>
@@ -259,17 +259,17 @@ export default function WebhooksPage() {
                 </div>
               </div>
 
-              <div className="flex justify-end gap-3 pt-4">
+              <div className="flex justify-end gap-2.5 pt-4 border-t border-surface-border mt-4">
                 <button
                   type="button"
                   onClick={() => setIsOpen(false)}
-                  className="rounded-lg border border-surface-border px-4 py-2 text-sm font-medium text-zinc-700 hover:bg-surface-raised dark:text-zinc-300 transition-colors"
+                  className="btn-secondary"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="rounded-lg bg-zinc-900 text-white px-4 py-2 text-sm font-medium hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200 transition-colors"
+                  className="btn-primary"
                 >
                   Create Webhook
                 </button>

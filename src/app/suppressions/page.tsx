@@ -46,35 +46,35 @@ export default function SuppressionsPage() {
   };
 
   return (
-    <div className="max-w-6xl mx-auto px-4 sm:px-8 py-8 space-y-6 animate-fade-in">
+    <div className="page-container">
       {/* Header */}
-      <div className="flex justify-between items-center border-b border-surface-border pb-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-surface-border pb-6">
         <div>
-          <h1 className="text-lg font-semibold tracking-tight text-zinc-900 dark:text-white">
+          <h1 className="text-xl font-semibold tracking-tight text-zinc-900 dark:text-white">
             Suppressions
           </h1>
-          <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-1">
+          <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
             Recipients automatically blocked from receiving further mail due to hard bounces or spam complaints.
           </p>
         </div>
 
         <button
           onClick={fetchSuppressions}
-          className="flex h-9 w-9 items-center justify-center rounded-lg border border-surface-border bg-surface text-zinc-500 hover:bg-surface-raised hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white transition-colors"
+          className="flex h-8 w-8 items-center justify-center rounded-lg border border-surface-border bg-surface text-zinc-500 hover:bg-surface-raised hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white transition-colors"
           title="Refresh suppressions"
         >
-          <RefreshCw className={`h-4 w-4 ${isLoading ? "animate-spin" : ""}`} />
+          <RefreshCw className={`h-3.5 w-3.5 ${isLoading ? "animate-spin" : ""}`} />
         </button>
       </div>
 
       {/* Info Banner */}
-      <div className="rounded-xl border border-surface-border bg-surface-raised/50 p-5 space-y-1">
+      <div className="rounded-xl border border-surface-border bg-surface p-5 space-y-1.5 shadow-sm">
         <div className="flex items-center gap-2 text-sm font-semibold text-zinc-900 dark:text-white">
           <ShieldAlert className="h-4 w-4 text-amber-500" />
           <span>Automatic Deliverability Protection</span>
         </div>
-        <p className="text-sm text-zinc-500">
-          Sending to known invalid or complaining addresses destroys your domain&apos;s reputation with Google and Microsoft. Mailhost automatically intercepts deliveries to suppressed addresses.
+        <p className="text-xs text-zinc-500 dark:text-zinc-400">
+          Sending to known invalid or complaining addresses impairs your domain&apos;s reputation with major mailbox providers. The system automatically intercepts deliveries to suppressed addresses.
         </p>
       </div>
 

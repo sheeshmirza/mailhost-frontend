@@ -172,14 +172,14 @@ function EmailsPageContent() {
   });
 
   return (
-    <div className="max-w-6xl mx-auto px-8 py-8 space-y-6 animate-fade-in">
+    <div className="page-container">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-surface-border pb-6">
         <div>
-          <h1 className="text-lg font-semibold tracking-tight text-zinc-900 dark:text-white">
+          <h1 className="text-xl font-semibold tracking-tight text-zinc-900 dark:text-white">
             Emails
           </h1>
-          <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-1">
+          <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
             Browse, inspect delivery events, and manage sent transactional messages.
           </p>
         </div>
@@ -187,17 +187,17 @@ function EmailsPageContent() {
         <div className="flex items-center gap-2">
           <button
             onClick={() => setIsBatchOpen(true)}
-            className="flex items-center gap-1.5 rounded-md border border-surface-border bg-surface px-3 py-1.5 text-sm font-medium text-zinc-700 hover:bg-surface-raised hover:text-zinc-900 dark:text-zinc-300 dark:hover:text-white transition-colors"
+            className="btn-secondary"
           >
-            <Layers className="h-4 w-4 text-zinc-500 dark:text-zinc-400" />
+            <Layers className="h-3.5 w-3.5" />
             <span>Batch Send</span>
           </button>
 
           <button
             onClick={() => setIsSendOpen(true)}
-            className="flex items-center gap-1.5 rounded-md bg-zinc-900 px-3.5 py-1.5 text-sm font-medium text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200 transition-colors"
+            className="btn-primary"
           >
-            <Send className="h-4 w-4" />
+            <Send className="h-3.5 w-3.5" />
             <span>Send Email</span>
           </button>
         </div>

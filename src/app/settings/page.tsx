@@ -198,14 +198,14 @@ export default function SettingsPage() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-8 py-8 space-y-6 animate-fade-in">
+    <div className="max-w-5xl mx-auto px-6 sm:px-8 py-8 space-y-6 animate-fade-in">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-surface-border pb-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-surface-border pb-6">
         <div>
-          <h1 className="text-lg font-semibold tracking-tight text-zinc-900 dark:text-white">
+          <h1 className="text-xl font-semibold tracking-tight text-zinc-900 dark:text-white">
             Settings & Team
           </h1>
-          <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-1">
+          <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
             Manage your user account, organizations, teammates, and remote AI MCP server.
           </p>
         </div>
@@ -295,7 +295,7 @@ export default function SettingsPage() {
               <div className="pt-2">
                 <button
                   type="submit"
-                  className="flex items-center gap-1.5 rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200 transition-colors"
+                  className="btn-primary"
                 >
                   {profileSaved ? (
                     <>
@@ -345,7 +345,7 @@ export default function SettingsPage() {
               <div className="pt-2">
                 <button
                   type="submit"
-                  className="flex items-center gap-1.5 rounded-lg bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200 transition-colors"
+                  className="btn-primary"
                 >
                   {emailSaved ? (
                     <>
@@ -385,7 +385,7 @@ export default function SettingsPage() {
               />
               <button
                 type="submit"
-                className="rounded-md bg-zinc-900 px-3.5 py-1.5 text-xs font-medium text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200 transition-colors"
+                className="btn-primary"
               >
                 Create Team
               </button>
@@ -422,7 +422,7 @@ export default function SettingsPage() {
               </select>
               <button
                 type="submit"
-                className="rounded-md bg-zinc-900 px-3.5 py-1.5 text-xs font-medium text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200 transition-colors"
+                className="btn-primary"
               >
                 Invite Member
               </button>
@@ -500,7 +500,7 @@ export default function SettingsPage() {
 
               <button
                 type="submit"
-                className="flex items-center gap-1.5 rounded-md bg-zinc-900 px-4 py-1.5 text-xs font-medium text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200 transition-colors"
+                className="btn-primary"
               >
                 {passSaved ? (
                   <>

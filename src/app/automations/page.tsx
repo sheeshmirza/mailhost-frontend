@@ -164,7 +164,7 @@ export default function AutomationsPage() {
   };
 
   return (
-    <div className="max-w-6xl mx-auto px-8 py-8 space-y-6 animate-fade-in">
+    <div className="page-container">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-surface-border pb-6">
         <div>
@@ -178,13 +178,13 @@ export default function AutomationsPage() {
 
         <div className="flex items-center gap-2">
           {/* Tabs */}
-          <div className="flex rounded-md border border-surface-border bg-surface p-0.5">
+          <div className="flex items-center rounded-lg border border-surface-border bg-surface p-0.5">
             <button
               onClick={() => setActiveTab("workflows")}
-              className={`flex items-center gap-1.5 rounded px-3 py-1.5 text-xs font-medium transition-colors ${
+              className={`flex items-center gap-1.5 rounded-md px-3 py-1 text-xs font-medium transition-colors ${
                 activeTab === "workflows"
-                  ? "bg-surface-raised text-zinc-900 dark:text-white shadow-sm"
-                  : "text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-200"
+                  ? "bg-surface-raised text-zinc-900 dark:text-white font-medium shadow-sm border border-surface-border/50"
+                  : "text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white"
               }`}
             >
               <GitBranch className="h-3.5 w-3.5" />
@@ -192,10 +192,10 @@ export default function AutomationsPage() {
             </button>
             <button
               onClick={() => setActiveTab("runs")}
-              className={`flex items-center gap-1.5 rounded px-3 py-1.5 text-xs font-medium transition-colors ${
+              className={`flex items-center gap-1.5 rounded-md px-3 py-1 text-xs font-medium transition-colors ${
                 activeTab === "runs"
-                  ? "bg-surface-raised text-zinc-900 dark:text-white shadow-sm"
-                  : "text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-200"
+                  ? "bg-surface-raised text-zinc-900 dark:text-white font-medium shadow-sm border border-surface-border/50"
+                  : "text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white"
               }`}
             >
               <Clock className="h-3.5 w-3.5" />
@@ -205,7 +205,7 @@ export default function AutomationsPage() {
 
           <button
             onClick={() => setIsOpen(true)}
-            className="flex items-center gap-1.5 rounded-md bg-zinc-900 px-3.5 py-1.5 text-xs font-medium text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200 transition-colors"
+            className="btn-primary"
           >
             <Plus className="h-3.5 w-3.5" />
             <span>New Automation</span>
@@ -213,7 +213,7 @@ export default function AutomationsPage() {
 
           <button
             onClick={fetchAutomations}
-            className="flex h-8 w-8 items-center justify-center rounded-md border border-surface-border bg-surface text-zinc-500 hover:bg-surface-raised hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white transition-colors"
+            className="flex h-8 w-8 items-center justify-center rounded-lg border border-surface-border bg-surface text-zinc-500 hover:bg-surface-raised hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white transition-colors"
           >
             <RefreshCw className={`h-3.5 w-3.5 ${isLoading ? "animate-spin" : ""}`} />
           </button>
