@@ -3,45 +3,43 @@
 @tailwind utilities;
 
 :root {
-  /* Light theme (DEFAULT) - Resend clean crisp aesthetic */
-  --background: #ffffff;
-  --foreground: #09090b;
+  --background: #f4f7f6;
+  --foreground: #17211f;
   --surface: #ffffff;
-  --surface-raised: #f9fafb;
-  --surface-subtle: #f3f4f6;
-  --surface-border: #e4e4e7;
-  --surface-border-hover: #d4d4d8;
-  --text-primary: #09090b;
-  --text-secondary: #27272a;
-  --text-muted: #71717a;
-  --text-subtle: #a1a1aa;
-  --scrollbar-track: #f9fafb;
-  --scrollbar-thumb: #d4d4d8;
-  --scrollbar-thumb-hover: #a1a1aa;
-  --selection-bg: rgba(0, 0, 0, 0.08);
-  --selection-color: #000000;
-  --ring: #09090b;
+  --surface-raised: #f7faf9;
+  --surface-subtle: #edf2f0;
+  --surface-border: #dfe7e4;
+  --surface-border-hover: #c8d4d0;
+  --text-primary: #17211f;
+  --text-secondary: #34423e;
+  --text-muted: #64736e;
+  --text-subtle: #899792;
+  --scrollbar-track: #f7faf9;
+  --scrollbar-thumb: #c8d4d0;
+  --scrollbar-thumb-hover: #9aa9a3;
+  --selection-bg: rgba(15, 118, 110, 0.16);
+  --selection-color: #123b37;
+  --ring: #0f766e;
 }
 
 .dark {
-  /* Dark theme - Resend/Linear true dark aesthetic */
-  --background: #000000;
-  --foreground: #f4f4f5;
-  --surface: #09090b;
-  --surface-raised: #121215;
-  --surface-subtle: #18181b;
-  --surface-border: #27272a;
-  --surface-border-hover: #3f3f46;
-  --text-primary: #fafafa;
-  --text-secondary: #d4d4d8;
-  --text-muted: #a1a1aa;
-  --text-subtle: #71717a;
-  --scrollbar-track: #09090b;
-  --scrollbar-thumb: #27272a;
-  --scrollbar-thumb-hover: #3f3f46;
-  --selection-bg: rgba(255, 255, 255, 0.15);
-  --selection-color: #ffffff;
-  --ring: #f4f4f5;
+  --background: #101715;
+  --foreground: #e8f0ed;
+  --surface: #151e1b;
+  --surface-raised: #1b2622;
+  --surface-subtle: #222e2a;
+  --surface-border: #2b3934;
+  --surface-border-hover: #40534c;
+  --text-primary: #edf4f1;
+  --text-secondary: #d0dcd7;
+  --text-muted: #a0b0aa;
+  --text-subtle: #71817b;
+  --scrollbar-track: #151e1b;
+  --scrollbar-thumb: #35453f;
+  --scrollbar-thumb-hover: #52655d;
+  --selection-bg: rgba(94, 234, 212, 0.2);
+  --selection-color: #d5fffa;
+  --ring: #5eead4;
 }
 
 ::selection {
@@ -52,6 +50,7 @@
 body {
   color: var(--foreground);
   background: var(--background);
+  font-family: "Avenir Next", "Segoe UI", sans-serif;
   font-feature-settings: "cv02", "cv03", "cv04", "cv11";
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -77,31 +76,31 @@ body {
 /* Unified component utilities */
 @layer components {
   .btn-primary {
-    @apply inline-flex items-center justify-center gap-1.5 rounded-lg bg-zinc-900 px-3.5 py-1.5 text-xs font-medium text-white shadow-sm hover:bg-zinc-800 active:scale-[0.98] transition-all dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-100 disabled:opacity-50 disabled:pointer-events-none;
+    @apply inline-flex min-h-9 items-center justify-center gap-2 rounded-md bg-teal-800 px-4 py-2 text-[13px] font-semibold text-white shadow-sm transition-colors hover:bg-teal-900 active:translate-y-px focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-700 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 dark:bg-teal-300 dark:text-teal-950 dark:hover:bg-teal-200;
   }
 
   .btn-secondary {
-    @apply inline-flex items-center justify-center gap-1.5 rounded-lg border border-surface-border bg-surface px-3 py-1.5 text-xs font-medium text-zinc-700 hover:bg-surface-raised hover:text-zinc-900 transition-colors dark:text-zinc-300 dark:hover:text-white dark:hover:bg-surface-raised disabled:opacity-50 disabled:pointer-events-none;
+    @apply inline-flex min-h-9 items-center justify-center gap-2 rounded-md border border-surface-border bg-surface px-3.5 py-2 text-[13px] font-medium text-content-secondary shadow-sm transition-colors hover:border-surface-borderHover hover:bg-surface-raised hover:text-content-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)] focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50;
   }
 
   .btn-ghost {
-    @apply inline-flex items-center justify-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium text-zinc-600 hover:bg-surface-raised hover:text-zinc-900 transition-colors dark:text-zinc-400 dark:hover:text-white dark:hover:bg-surface-raised disabled:opacity-50;
+    @apply inline-flex min-h-9 items-center justify-center gap-2 rounded-md px-3 py-2 text-[13px] font-medium text-content-muted transition-colors hover:bg-surface-raised hover:text-content-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)] focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50;
   }
 
   .btn-danger {
-    @apply inline-flex items-center justify-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium text-red-600 hover:bg-red-50 hover:text-red-700 transition-colors dark:text-red-400 dark:hover:bg-red-950/30;
+    @apply inline-flex min-h-9 items-center justify-center gap-2 rounded-md px-3 py-2 text-[13px] font-medium text-red-700 transition-colors hover:bg-red-50 hover:text-red-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-600 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 dark:text-red-300 dark:hover:bg-red-950/40;
   }
 
   .input-base {
-    @apply w-full rounded-lg border border-surface-border bg-surface-raised px-3 py-1.5 text-xs text-zinc-900 placeholder-zinc-400 transition-colors dark:text-white dark:placeholder-zinc-600 focus:outline-none focus:ring-1 focus:ring-zinc-900 dark:focus:ring-white focus:border-transparent;
+    @apply min-h-10 w-full rounded-md border border-surface-border bg-surface px-3 py-2 text-[13px] text-content-primary placeholder:text-content-subtle transition-colors focus:border-teal-700 focus:outline-none focus:ring-2 focus:ring-teal-700/15 disabled:cursor-not-allowed disabled:opacity-60 dark:focus:border-teal-300 dark:focus:ring-teal-300/15;
   }
 
   .page-container {
-    @apply max-w-6xl mx-auto px-6 sm:px-8 py-8 space-y-6 animate-fade-in;
+    @apply mx-auto w-full max-w-[1480px] space-y-6 px-4 py-6 animate-fade-in sm:px-6 sm:py-7 xl:px-8;
   }
 
   .card-panel {
-    @apply rounded-xl border border-surface-border bg-surface p-5 shadow-sm space-y-3 transition-colors;
+    @apply space-y-3 rounded-lg border border-surface-border bg-surface p-5 shadow-sm transition-colors;
   }
 }
 
@@ -111,7 +110,7 @@ body {
   }
 
   .card {
-    @apply bg-surface border border-surface-border rounded-xl shadow-card;
+    @apply bg-surface border border-surface-border rounded-lg shadow-card;
   }
 
   .badge {
@@ -135,6 +134,33 @@ body {
 
   .shimmer {
     @apply relative overflow-hidden bg-surface-subtle before:absolute before:inset-0 before:-translate-x-full before:animate-[shimmer_1.5s_infinite] before:bg-gradient-to-r before:from-transparent before:via-white/10 before:to-transparent;
+  }
+}
+
+:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+@media (max-width: 640px) {
+  .page-container {
+    @apply space-y-5 px-4 py-5;
+  }
+}
+
+@media (min-width: 641px) and (max-width: 1023px) {
+  .page-container > div:first-child {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .page-container > div:first-child > div:last-child {
+    flex-wrap: wrap;
+    justify-content: flex-start;
+  }
+
+  .page-container > div:first-child button {
+    white-space: nowrap;
   }
 }
 

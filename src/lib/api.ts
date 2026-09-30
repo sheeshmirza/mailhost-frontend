@@ -29,6 +29,19 @@ export interface AuthSession {
   accounts?: UserAccountView[];
 }
 
+export interface CurrentUserResponse {
+  object: "user" | "account_info";
+  id?: string;
+  email?: string;
+  name?: string;
+  avatar_url?: string;
+  email_verified?: boolean;
+  created_at?: string;
+  current_account?: UserAccountView;
+  accounts?: UserAccountView[];
+  account?: Pick<UserAccountView, "id" | "name" | "created_at">;
+}
+
 export interface DNSRecord {
   type: string;
   name: string;
@@ -358,9 +371,20 @@ export interface AnalyticsResponse {
   series: AnalyticsBucket[];
 }
 
+export class APIError extends Error {
+  constructor(
+    message: string,
+    public readonly status: number,
+    public readonly payload?: unknown
+  ) {
+    super(message);
+    this.name = "APIError";
+  }
+}
+
 export class APIClient {
   private token: string | null = null;
-  private onUnauthorizedCallback?: () => void;
+  private onUnauthorizedCallback?: (token: string) => void;
 
   constructor(token?: string | null) {
     if (token) this.token = token;
@@ -370,7 +394,7 @@ export class APIClient {
     this.token = token;
   }
 
-  setOnUnauthorized(cb: () => void) {
+  setOnUnauthorized(cb?: (token: string) => void) {
     this.onUnauthorizedCallback = cb;
   }
 
@@ -381,13 +405,15 @@ export class APIClient {
     const base = getBaseUrl();
     const url = `${base}${endpoint}`;
 
-    const headers: Record<string, string> = {
-      "Content-Type": "application/json",
-      ...(options.headers as Record<string, string>),
-    };
+    const headers = new Headers(options.headers);
+    headers.set("Accept", "application/json");
+    if (options.body && !(options.body instanceof FormData) && !headers.has("Content-Type")) {
+      headers.set("Content-Type", "application/json");
+    }
 
-    if (this.token) {
-      headers["Authorization"] = `Bearer ${this.token}`;
+    const requestToken = this.token;
+    if (requestToken) {
+      headers.set("Authorization", `Bearer ${requestToken}`);
     }
 
     const res = await fetch(url, {
@@ -395,24 +421,53 @@ export class APIClient {
       headers,
     });
 
-    if (res.status === 204) {
-      return {} as T;
+    const responseText = await res.text();
+    let data: unknown;
+    if (responseText.trim()) {
+      try {
+        data = JSON.parse(responseText);
+      } catch {
+        data = undefined;
+      }
     }
 
-    const data = await res.json().catch(() => ({}));
+    const responseData = data as
+      | { message?: unknown; error?: unknown }
+      | undefined;
+    const serverMessage =
+      (typeof responseData?.message === "string" && responseData.message) ||
+      (typeof responseData?.error === "string" && responseData.error) ||
+      (typeof data === "string" && data) ||
+      (responseText.trim() && data === undefined ? responseText.trim() : undefined);
 
-    if (res.status === 401) {
-      if (typeof window !== "undefined") {
-        window.dispatchEvent(new CustomEvent("mailhost:unauthorized"));
+    if (
+      res.status === 401 &&
+      ["invalid api key", "missing api key"].includes(serverMessage?.toLowerCase() || "")
+    ) {
+      if (requestToken && this.onUnauthorizedCallback) {
+        this.onUnauthorizedCallback(requestToken);
       }
-      if (this.onUnauthorizedCallback) {
-        this.onUnauthorizedCallback();
-      }
-      throw new Error(data.message || data.error || "Session expired or unauthorized. Please sign in again.");
+      throw new APIError(
+        serverMessage || "Session expired or unauthorized. Please sign in again.",
+        res.status,
+        data
+      );
     }
 
     if (!res.ok) {
-      throw new Error(data.message || data.error || `HTTP error ${res.status}`);
+      throw new APIError(serverMessage || `HTTP error ${res.status}`, res.status, data);
+    }
+
+    if (res.status === 204 || res.status === 205) {
+      return {} as T;
+    }
+    if (data === undefined) {
+      throw new APIError(
+        responseText.trim()
+          ? `Invalid JSON response (HTTP ${res.status})`
+          : `Empty response (HTTP ${res.status})`,
+        res.status
+      );
     }
 
     return data as T;
@@ -464,11 +519,7 @@ export class APIClient {
   }
 
   async getMe() {
-    return this.request<{
-      user: UserView;
-      current_account: UserAccountView;
-      accounts: UserAccountView[];
-    }>("/v1/users/me");
+    return this.request<CurrentUserResponse>("/v1/users/me");
   }
 
   async listAccounts() {
@@ -476,7 +527,7 @@ export class APIClient {
   }
 
   async switchAccount(accountId: string) {
-    return this.request<{ object: string; token: string; account: UserAccountView }>(
+    return this.request<{ object: string; current_account: UserAccountView }>(
       "/v1/users/switch-account",
       {
         method: "POST",

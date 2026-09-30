@@ -41,15 +41,15 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <div className="relative flex min-h-screen flex-col">
+    <div className="relative flex min-h-screen flex-col bg-background">
       <Navbar isLanding={isLanding} isLogin={isLogin} />
       <div className="flex flex-1">
         {!isPublic && <Sidebar />}
         <main
           className={
             isPublic
-              ? "flex-1 w-full min-h-[calc(100vh-3.5rem)]"
-              : "flex-1 w-full pl-0 lg:pl-56 min-h-[calc(100vh-3.5rem)] pt-6 pb-16 transition-all duration-300 ease-in-out"
+              ? "min-w-0 flex-1 w-full min-h-[calc(100vh-3.5rem)]"
+              : "min-w-0 flex-1 w-full pl-0 lg:pl-60 min-h-[calc(100vh-3.5rem)] transition-all duration-200 ease-out"
           }
         >
           {children}

@@ -3,8 +3,6 @@
 import React, { useState, useEffect } from "react";
 import { api, WebhookView } from "@/lib/api";
 import { useToast } from "@/lib/toast-context";
-import { TableSkeleton } from "@/components/ui/LoadingState";
-import { ErrorState } from "@/components/ui/ErrorState";
 import {
   Webhook,
   Plus,
@@ -29,7 +27,6 @@ export default function WebhooksPage() {
   const { toast } = useToast();
   const [webhooks, setWebhooks] = useState<WebhookView[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [isOpen, setIsOpen] = useState(false);
   const [url, setUrl] = useState("");
   const [selectedEvents, setSelectedEvents] = useState<string[]>([
@@ -41,13 +38,12 @@ export default function WebhooksPage() {
 
   const fetchWebhooks = async () => {
     setIsLoading(true);
-    setError(null);
     try {
       const res = await api.listWebhooks();
       setWebhooks(res.data || []);
     } catch (err: any) {
       console.error("Failed to load webhooks", err);
-      setError(err?.message || "Failed to load webhooks from server");
+      toast.error("Failed to load webhooks: " + (err.response?.data?.message || err.message));
     } finally {
       setIsLoading(false);
     }
@@ -134,28 +130,10 @@ export default function WebhooksPage() {
         </div>
       </div>
 
-      {error && (
-        <ErrorState
-          title="Failed to Load Webhooks"
-          message={error}
-          onRetry={fetchWebhooks}
-          retryLabel="Retry"
-          actionHref="/overview"
-          actionLabel="Go to Dashboard"
-        />
-      )}
-
-      {isLoading && webhooks.length === 0 ? (
-        <TableSkeleton
-          rows={5}
-          columns={5}
-          columnWidths={["w-48", "w-40", "w-20", "w-32", "w-10"]}
-        />
-      ) : (
-        /* Webhooks Table */
-        <div className="rounded-xl border border-surface-border overflow-hidden bg-surface">
-          <table className="w-full text-left">
-            <thead className="bg-surface-raised border-b border-surface-border text-[11px] font-medium uppercase tracking-wider text-zinc-500">
+      {/* Webhooks Table */}
+      <div className="rounded-xl border border-surface-border overflow-hidden bg-surface">
+        <table className="w-full text-left">
+          <thead className="bg-surface-raised border-b border-surface-border text-[11px] font-medium uppercase tracking-wider text-zinc-500">
             <tr>
               <th className="px-4 py-3">Endpoint URL</th>
               <th className="px-4 py-3">Subscribed Events</th>
@@ -235,7 +213,6 @@ export default function WebhooksPage() {
           </tbody>
         </table>
       </div>
-      )}
 
       {/* Add Webhook Modal */}
       {isOpen && (

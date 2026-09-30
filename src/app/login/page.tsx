@@ -54,15 +54,15 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex min-h-[calc(100vh-3.5rem)] items-center justify-center p-4 animate-fade-in bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-zinc-100/50 via-surface to-surface dark:from-zinc-900/20 dark:via-surface dark:to-surface relative">
+    <div className="relative flex min-h-[calc(100vh-3.5rem)] items-center justify-center bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-teal-50/70 via-surface to-surface p-4 py-8 animate-fade-in dark:from-teal-950/20 dark:via-surface dark:to-surface sm:py-10">
       <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px]"></div>
-      <div className="w-full max-w-sm space-y-8 z-10">
+      <div className="z-10 w-full max-w-[420px] space-y-6">
         {/* Brand Header */}
-        <div className="flex flex-col items-center text-center space-y-3">
-          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-zinc-900 text-white dark:bg-white dark:text-black font-bold text-xl shadow-lg">
+        <div className="flex flex-col items-center space-y-2.5 text-center">
+          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-teal-800 text-lg font-bold text-white shadow-sm dark:bg-teal-300 dark:text-teal-950">
             R
           </div>
-          <h1 className="text-xl font-semibold tracking-tight text-zinc-900 dark:text-white">
+          <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-white">
             {mode === "login"
               ? "Sign in to Resend"
               : mode === "register"
@@ -77,16 +77,16 @@ export default function LoginPage() {
         </div>
 
         {/* Tab switch */}
-        <div className="flex rounded-xl border border-surface-border bg-surface p-1.5 text-xs gap-1 shadow-sm">
+        <div className="flex gap-1 rounded-lg border border-surface-border bg-surface p-1 shadow-sm">
           <button
             type="button"
             onClick={() => {
               setMode("login");
               setError(null);
             }}
-            className={`flex-1 rounded-lg py-2 text-center font-medium transition-all ${
+            className={`flex min-h-10 flex-1 items-center justify-center rounded-md px-2 text-[13px] font-medium transition-all ${
               mode === "login"
-                ? "bg-zinc-900 text-white dark:bg-white dark:text-black shadow-sm"
+                ? "bg-teal-800 text-white shadow-sm dark:bg-teal-300 dark:text-teal-950"
                 : "text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:text-white dark:hover:bg-zinc-800/50"
             }`}
           >
@@ -98,9 +98,9 @@ export default function LoginPage() {
               setMode("register");
               setError(null);
             }}
-            className={`flex-1 rounded-lg py-2 text-center font-medium transition-all ${
+            className={`flex min-h-10 flex-1 items-center justify-center rounded-md px-2 text-[13px] font-medium transition-all ${
               mode === "register"
-                ? "bg-zinc-900 text-white dark:bg-white dark:text-black shadow-sm"
+                ? "bg-teal-800 text-white shadow-sm dark:bg-teal-300 dark:text-teal-950"
                 : "text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:text-white dark:hover:bg-zinc-800/50"
             }`}
           >
@@ -112,9 +112,9 @@ export default function LoginPage() {
               setMode("apikey");
               setError(null);
             }}
-            className={`flex-1 rounded-lg py-2 text-center font-medium transition-all ${
+            className={`flex min-h-10 flex-1 items-center justify-center rounded-md px-2 text-[13px] font-medium transition-all ${
               mode === "apikey"
-                ? "bg-zinc-900 text-white dark:bg-white dark:text-black shadow-sm"
+                ? "bg-teal-800 text-white shadow-sm dark:bg-teal-300 dark:text-teal-950"
                 : "text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:text-white dark:hover:bg-zinc-800/50"
             }`}
           >
@@ -123,7 +123,7 @@ export default function LoginPage() {
         </div>
 
         {/* Form Card */}
-        <div className="rounded-2xl border border-surface-border bg-surface p-8 shadow-2xl space-y-6">
+        <div className="space-y-5 rounded-lg border border-surface-border bg-surface p-5 shadow-lg sm:p-6">
           {error && (
             <div className="flex items-start gap-2.5 rounded-xl border border-red-200 bg-red-50 dark:border-red-900/50 dark:bg-red-950/20 p-4 text-xs text-red-700 dark:text-red-300">
               <AlertCircle className="h-4 w-4 flex-shrink-0 text-red-500 dark:text-red-400 mt-0.5" />
@@ -131,7 +131,7 @@ export default function LoginPage() {
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-5">
+          <form onSubmit={handleSubmit} className="space-y-4">
             {mode === "apikey" ? (
               <div>
                 <label className="block text-[11px] font-medium text-zinc-600 dark:text-zinc-300 mb-1">
@@ -228,7 +228,7 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full flex items-center justify-center gap-2 rounded-lg bg-zinc-900 py-2.5 text-sm font-medium text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200 active:scale-[0.98] disabled:opacity-50 transition-all shadow-md"
+              className="btn-primary w-full"
             >
               {loading && <Loader2 className="h-4 w-4 animate-spin" />}
               <span>{loading ? "Authenticating..." : mode === "login" ? "Sign In" : mode === "register" ? "Create Account" : "Connect"}</span>

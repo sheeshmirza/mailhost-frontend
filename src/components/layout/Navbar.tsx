@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
 import { useTheme } from "@/lib/theme-context";
+import { useToast } from "@/lib/toast-context";
 import {
   Send,
   Building,
@@ -80,11 +81,12 @@ export default function Navbar({
   isLanding?: boolean;
   isLogin?: boolean;
 }) {
-  const pathname = usePathname();
+  const pathname = usePathname() || "/";
   const isHomepage = isLanding ?? pathname === "/";
   const isLoginPage = isLogin ?? (pathname === "/login" || pathname === "/login/");
   const { token, user, account, accounts, switchAccount, logout } = useAuth();
   const { resolvedTheme, toggleTheme } = useTheme();
+  const toast = useToast();
 
   const [isSendOpen, setIsSendOpen] = useState(false);
   const [showOrgDropdown, setShowOrgDropdown] = useState(false);
@@ -93,7 +95,7 @@ export default function Navbar({
 
   return (
     <>
-      <header className="sticky top-0 z-40 flex h-14 w-full items-center justify-between border-b border-surface-border bg-background/85 px-4 sm:px-6 backdrop-blur-md transition-colors">
+      <header className="sticky top-0 z-40 flex h-14 w-full items-center justify-between border-b border-surface-border bg-surface/95 px-4 shadow-sm backdrop-blur-md transition-colors sm:px-6">
         {/* Left Section: Logo (+ Mobile Menu or Org Switcher) */}
         <div className="flex items-center gap-3 sm:gap-4">
           {!isHomepage && !isLoginPage && (
@@ -147,9 +149,13 @@ export default function Navbar({
                           accounts.map((acct) => (
                             <button
                               key={acct.id}
-                              onClick={() => {
-                                switchAccount(acct.id);
-                                setShowOrgDropdown(false);
+                              onClick={async () => {
+                                try {
+                                  await switchAccount(acct.id);
+                                  setShowOrgDropdown(false);
+                                } catch (err) {
+                                  toast.error("Could not switch account: " + (err instanceof Error ? err.message : "Unknown error"));
+                                }
                               }}
                               className="flex w-full items-center justify-between rounded-md px-2 py-1.5 text-left text-xs text-zinc-700 dark:text-zinc-200 hover:bg-surface-raised hover:text-zinc-900 dark:hover:text-white"
                             >
@@ -256,15 +262,6 @@ export default function Navbar({
           ) : (
             /* Dashboard Action Buttons */
             <>
-              {/* Live Status indicator */}
-              <div className="hidden md:flex items-center gap-1.5 rounded-full border border-surface-border bg-surface-raised px-2.5 py-1 text-[11px] text-zinc-600 dark:text-zinc-300">
-                <span className="relative flex h-2 w-2">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-                </span>
-                <span className="font-medium text-[11px] text-zinc-600 dark:text-zinc-400">Operational</span>
-              </div>
-
               {/* Quick Send Email Action */}
               <button
                 onClick={() => setIsSendOpen(true)}

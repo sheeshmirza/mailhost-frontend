@@ -3,8 +3,6 @@
 import React, { useState, useEffect } from "react";
 import { api, SMTPCredView, DomainView } from "@/lib/api";
 import { useToast } from "@/lib/toast-context";
-import { TableSkeleton } from "@/components/ui/LoadingState";
-import { ErrorState } from "@/components/ui/ErrorState";
 import {
   Server,
   Plus,
@@ -21,7 +19,6 @@ export default function SMTPPage() {
   const [credentials, setCredentials] = useState<SMTPCredView[]>([]);
   const [domains, setDomains] = useState<DomainView[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
   // New credential modal
   const [isOpen, setIsOpen] = useState(false);
@@ -35,30 +32,25 @@ export default function SMTPPage() {
 
   const fetchData = async () => {
     setIsLoading(true);
-    setError(null);
     try {
       const [credsRes, domainsRes] = await Promise.allSettled([
         api.listSMTPCredentials(),
         api.listDomains(),
       ]);
-      if (credsRes.status === "rejected" && domainsRes.status === "rejected") {
-        setError("Unable to load SMTP credentials. Please check server connection.");
-      } else {
-        if (credsRes.status === "fulfilled") {
-          setCredentials(credsRes.value.data || []);
-        }
-        if (domainsRes.status === "fulfilled") {
-          const domList = domainsRes.value.data || [];
-          setDomains(domList);
-          if (domList.length > 0 && !email) {
-            const verified = domList.find((d) => d.status === "verified") || domList[0];
-            setEmail(`smtp@${verified.name}`);
-          }
+      if (credsRes.status === "fulfilled") {
+        setCredentials(credsRes.value.data || []);
+      }
+      if (domainsRes.status === "fulfilled") {
+        const domList = domainsRes.value.data || [];
+        setDomains(domList);
+        if (domList.length > 0 && !email) {
+          const verified = domList.find((d) => d.status === "verified") || domList[0];
+          setEmail(`smtp@${verified.name}`);
         }
       }
     } catch (err: any) {
       console.error("Failed to load SMTP credentials", err);
-      setError(err?.message || "Failed to load SMTP data");
+      toast.error("Failed to load SMTP data: " + (err.response?.data?.message || err.message));
     } finally {
       setIsLoading(false);
     }
@@ -159,28 +151,10 @@ export default function SMTPPage() {
         </div>
       </div>
 
-      {error && (
-        <ErrorState
-          title="Failed to Load SMTP Credentials"
-          message={error}
-          onRetry={fetchData}
-          retryLabel="Retry"
-          actionHref="/overview"
-          actionLabel="Go to Dashboard"
-        />
-      )}
-
-      {isLoading && credentials.length === 0 ? (
-        <TableSkeleton
-          rows={5}
-          columns={5}
-          columnWidths={["w-32", "w-40", "w-24", "w-20", "w-8"]}
-        />
-      ) : (
-        /* Credentials Table */
-        <div className="overflow-x-auto rounded-xl border border-surface-border bg-surface">
-          <table className="w-full text-left text-xs min-w-[700px]">
-            <thead className="border-b border-surface-border bg-surface-raised text-[11px] font-medium uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+      {/* Credentials Table */}
+      <div className="overflow-x-auto rounded-xl border border-surface-border bg-surface">
+        <table className="w-full text-left text-xs min-w-[700px]">
+          <thead className="border-b border-surface-border bg-surface-raised text-[11px] font-medium uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
             <tr>
               <th className="px-5 py-3">Description</th>
               <th className="px-5 py-3">Username / From Address</th>
@@ -228,7 +202,6 @@ export default function SMTPPage() {
           </tbody>
         </table>
       </div>
-      )}
 
       {/* Nodemailer / Python Example Snippet */}
       <div className="space-y-3">

@@ -21,8 +21,6 @@ import {
   ExternalLink,
 } from "lucide-react";
 import { useToast } from "@/lib/toast-context";
-import { Skeleton } from "@/components/ui/LoadingState";
-import { ErrorState } from "@/components/ui/ErrorState";
 
 export default function DomainsPage() {
   const toast = useToast();
@@ -32,13 +30,11 @@ export default function DomainsPage() {
   const [domainName, setDomainName] = useState("");
   const [region, setRegion] = useState("us-east-1");
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [isVerifying, setIsVerifying] = useState(false);
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
 
   const fetchDomains = async () => {
     setIsLoading(true);
-    setError(null);
     try {
       const res = await api.listDomains();
       const list = res.data || [];
@@ -49,9 +45,8 @@ export default function DomainsPage() {
         const updated = list.find((d) => d.id === selectedDomain.id);
         if (updated) setSelectedDomain(updated);
       }
-    } catch (err: any) {
+    } catch (err) {
       console.error("Failed to fetch domains", err);
-      setError(err?.message || "Failed to load domains from server");
     } finally {
       setIsLoading(false);
     }
@@ -151,17 +146,6 @@ export default function DomainsPage() {
         </button>
       </div>
 
-      {error && (
-        <ErrorState
-          title="Failed to Load Domains"
-          message={error}
-          onRetry={fetchDomains}
-          retryLabel="Retry"
-          actionHref="/overview"
-          actionLabel="Go to Dashboard"
-        />
-      )}
-
       {/* Main Content Layout: Domains List & Active Domain DNS Config */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left Column: Domain List */}
@@ -172,17 +156,7 @@ export default function DomainsPage() {
           </div>
 
           <div className="space-y-2">
-            {isLoading && domains.length === 0 ? (
-              Array.from({ length: 3 }).map((_, i) => (
-                <div key={i} className="rounded-xl border border-surface-border bg-surface p-4 space-y-2 animate-pulse">
-                  <div className="flex items-center justify-between">
-                    <Skeleton className="h-4 w-32" />
-                    <Skeleton className="h-4 w-16 rounded-full" />
-                  </div>
-                  <Skeleton className="h-2.5 w-20" />
-                </div>
-              ))
-            ) : domains.length > 0 ? (
+            {domains.length > 0 ? (
               domains.map((dom) => (
                 <div
                   key={dom.id}

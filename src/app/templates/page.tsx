@@ -16,15 +16,12 @@ import {
 } from "lucide-react";
 import { api, TemplateView, TemplateVersion } from "@/lib/api";
 import { useToast } from "@/lib/toast-context";
-import { Skeleton } from "@/components/ui/LoadingState";
-import { ErrorState } from "@/components/ui/ErrorState";
 
 export default function TemplatesPage() {
   const { toast } = useToast();
   const [templates, setTemplates] = useState<TemplateView[]>([]);
   const [selectedTemplate, setSelectedTemplate] = useState<TemplateView | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [isOpen, setIsOpen] = useState(false);
 
   // Form fields
@@ -37,7 +34,6 @@ export default function TemplatesPage() {
 
   const fetchTemplates = async () => {
     setIsLoading(true);
-    setError(null);
     try {
       const res = await api.listTemplates();
       const list = res.data || [];
@@ -47,7 +43,7 @@ export default function TemplatesPage() {
       }
     } catch (err: any) {
       console.error("Failed to load templates", err);
-      setError(err?.message || "Failed to load templates from server");
+      toast.error("Failed to load templates: " + (err.response?.data?.message || err.message));
     } finally {
       setIsLoading(false);
     }
@@ -152,17 +148,6 @@ export default function TemplatesPage() {
         </button>
       </div>
 
-      {error && (
-        <ErrorState
-          title="Failed to Load Templates"
-          message={error}
-          onRetry={fetchTemplates}
-          retryLabel="Retry"
-          actionHref="/overview"
-          actionLabel="Go to Dashboard"
-        />
-      )}
-
       {/* Grid: Templates List & Preview */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left Column: Template List */}
@@ -173,17 +158,7 @@ export default function TemplatesPage() {
           </div>
 
           <div className="space-y-2">
-            {isLoading && templates.length === 0 ? (
-              Array.from({ length: 4 }).map((_, i) => (
-                <div key={i} className="rounded-xl border border-surface-border bg-surface p-4 space-y-2 animate-pulse">
-                  <div className="flex items-center justify-between">
-                    <Skeleton className="h-4 w-32" />
-                    <Skeleton className="h-4 w-16 rounded-full" />
-                  </div>
-                  <Skeleton className="h-2.5 w-24" />
-                </div>
-              ))
-            ) : templates.length > 0 ? (
+            {templates.length > 0 ? (
               templates.map((tpl) => (
                 <div
                   key={tpl.id}

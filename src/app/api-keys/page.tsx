@@ -13,16 +13,16 @@ import {
   RefreshCw,
 } from "lucide-react";
 import { useToast } from "@/lib/toast-context";
-import { TableSkeleton } from "@/components/ui/LoadingState";
-import { ErrorState } from "@/components/ui/ErrorState";
 
 export default function APIKeysPage() {
   const toast = useToast();
   const [keys, setKeys] = useState<APIKeyView[]>([]);
   const [domains, setDomains] = useState<DomainView[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [loadError, setLoadError] = useState("");
   const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [isCreating, setIsCreating] = useState(false);
+  const [revokingId, setRevokingId] = useState<string | null>(null);
   const [keyName, setKeyName] = useState("");
   const [permission, setPermission] = useState<"full_access" | "sending_access">(
     "full_access"
@@ -33,25 +33,27 @@ export default function APIKeysPage() {
 
   const fetchKeys = async () => {
     setIsLoading(true);
-    setError(null);
+    setLoadError("");
     try {
       const [keysRes, domainsRes] = await Promise.allSettled([
         api.listAPIKeys(),
         api.listDomains(),
       ]);
-      if (keysRes.status === "rejected" && domainsRes.status === "rejected") {
-        setError("Unable to load API keys. Please verify connection to the server.");
+      const failures: string[] = [];
+      if (keysRes.status === "fulfilled") {
+        setKeys(keysRes.value.data || []);
       } else {
-        if (keysRes.status === "fulfilled") {
-          setKeys(keysRes.value.data || []);
-        }
-        if (domainsRes.status === "fulfilled") {
-          setDomains(domainsRes.value.data || []);
-        }
+        failures.push("API keys");
       }
-    } catch (err: any) {
+      if (domainsRes.status === "fulfilled") {
+        setDomains(domainsRes.value.data || []);
+      } else {
+        failures.push("domains");
+      }
+      if (failures.length) setLoadError(`Could not load ${failures.join(" and ")}.`);
+    } catch (err) {
       console.error("Failed to load API keys", err);
-      setError(err?.message || "Failed to load API keys");
+      setLoadError("Could not load API keys. Please try again.");
     } finally {
       setIsLoading(false);
     }
@@ -63,6 +65,8 @@ export default function APIKeysPage() {
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isCreating) return;
+    setIsCreating(true);
     try {
       const res = await api.createAPIKey(
         keyName.trim() || "Default Key",
@@ -72,29 +76,42 @@ export default function APIKeysPage() {
       setNewKeyCreated(res.api_key);
       toast.success("API key generated successfully!");
       setKeyName("");
-      fetchKeys();
-    } catch (err: any) {
-      toast.error("Failed to create API key: " + err.message);
+      await fetchKeys();
+    } catch (err) {
+      toast.error("Failed to create API key: " + (err instanceof Error ? err.message : "Unknown error"));
+    } finally {
+      setIsCreating(false);
     }
   };
 
   const handleDelete = async (id: string) => {
+    if (revokingId) return;
     if (!confirm("Are you sure you want to revoke this API key? This action is irreversible.")) return;
+    setRevokingId(id);
     try {
       await api.deleteAPIKey(id);
       toast.success("API key revoked successfully");
-      fetchKeys();
-    } catch (err: any) {
-      toast.error("Failed to revoke API key: " + err.message);
+      await fetchKeys();
+    } catch (err) {
+      toast.error("Failed to revoke API key: " + (err instanceof Error ? err.message : "Unknown error"));
+    } finally {
+      setRevokingId(null);
     }
   };
 
-  const copyKey = () => {
+  const copyKey = async () => {
     if (!newKeyCreated) return;
-    navigator.clipboard.writeText(newKeyCreated);
-    setCopied(true);
-    toast.success("API key copied to clipboard!");
-    setTimeout(() => setCopied(false), 2000);
+    try {
+      if (!navigator.clipboard?.writeText) {
+        throw new Error("Clipboard access is unavailable in this browser.");
+      }
+      await navigator.clipboard.writeText(newKeyCreated);
+      setCopied(true);
+      toast.success("API key copied to clipboard!");
+      setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      toast.error("Could not copy API key: " + (err instanceof Error ? err.message : "Unknown error"));
+    }
   };
 
   return (
@@ -122,28 +139,20 @@ export default function APIKeysPage() {
         </button>
       </div>
 
-      {error && (
-        <ErrorState
-          title="Failed to Load API Keys"
-          message={error}
-          onRetry={fetchKeys}
-          retryLabel="Retry"
-          actionHref="/overview"
-          actionLabel="Go to Dashboard"
-        />
+      {loadError && (
+        <div role="alert" className="flex items-center justify-between gap-3 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-xs text-red-800 dark:border-red-900/50 dark:bg-red-950/20 dark:text-red-300">
+          <span>{loadError}</span>
+          <button onClick={fetchKeys} disabled={isLoading} className="btn-secondary shrink-0" title="Retry loading">
+            <RefreshCw className={`h-3.5 w-3.5 ${isLoading ? "animate-spin" : ""}`} />
+            <span>Retry</span>
+          </button>
+        </div>
       )}
 
-      {isLoading && keys.length === 0 ? (
-        <TableSkeleton
-          rows={6}
-          columns={6}
-          columnWidths={["w-32", "w-28", "w-20", "w-24", "w-20", "w-8"]}
-        />
-      ) : (
-        /* Keys Table */
-        <div className="overflow-x-auto rounded-xl border border-surface-border bg-surface">
-          <table className="w-full text-left text-xs min-w-[550px]">
-            <thead className="border-b border-surface-border bg-surface-raised text-[11px] font-medium uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+      {/* Keys Table */}
+      <div className="overflow-x-auto rounded-xl border border-surface-border bg-surface">
+        <table className="w-full text-left text-xs min-w-[550px]">
+          <thead className="border-b border-surface-border bg-surface-raised text-[11px] font-medium uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
             <tr>
               <th className="px-5 py-3">Name</th>
               <th className="px-5 py-3">Key Preview</th>
@@ -187,6 +196,7 @@ export default function APIKeysPage() {
                       onClick={() => handleDelete(k.id)}
                       title="Revoke key"
                       className="btn-danger p-1.5"
+                      disabled={revokingId !== null}
                     >
                       <Trash2 className="h-3.5 w-3.5" />
                     </button>
@@ -196,14 +206,17 @@ export default function APIKeysPage() {
             ) : (
               <tr>
                 <td colSpan={6} className="py-12 text-center text-xs text-zinc-500 dark:text-zinc-400 font-sans">
-                  {isLoading ? "Loading API keys..." : "No API keys found. Create one to begin."}
+                  {isLoading
+                    ? "Loading API keys..."
+                    : loadError
+                      ? "API keys could not be loaded."
+                      : "No API keys found. Create one to begin."}
                 </td>
               </tr>
             )}
           </tbody>
         </table>
       </div>
-      )}
 
       {/* Create Key Modal */}
       {isCreateOpen && (
@@ -312,8 +325,9 @@ export default function APIKeysPage() {
                   <button
                     type="submit"
                     className="btn-primary"
+                    disabled={isCreating}
                   >
-                    Generate API Key
+                    {isCreating ? "Generating..." : "Generate API Key"}
                   </button>
                 </div>
               </form>

@@ -1,5 +1,5 @@
 import { FullPageLoader } from "@/components/ui/LoadingState";
 
 export default function Loading() {
-  return <FullPageLoader label="Loading workspace..." />;
+	return <FullPageLoader label="Loading workspace..." />;
 }

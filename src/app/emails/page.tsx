@@ -23,20 +23,17 @@ import {
 } from "lucide-react";
 import SendEmailModal from "@/components/emails/SendEmailModal";
 import { useToast } from "@/lib/toast-context";
-import { TableSkeleton } from "@/components/ui/LoadingState";
-import { ErrorState } from "@/components/ui/ErrorState";
 
 function EmailsPageContent() {
   const toast = useToast();
   const searchParams = useSearchParams();
-  const initialId = searchParams.get("id");
+  const initialId = searchParams?.get("id") ?? null;
 
   const [emails, setEmails] = useState<EmailSummary[]>([]);
   const [selectedEmail, setSelectedEmail] = useState<EmailDetail | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [isSendOpen, setIsSendOpen] = useState(false);
   const [isBatchOpen, setIsBatchOpen] = useState(false);
   const [batchJson, setBatchJson] = useState(`[
@@ -57,16 +54,14 @@ function EmailsPageContent() {
 
   const fetchEmails = async () => {
     setIsLoading(true);
-    setError(null);
     try {
       const res = await api.listEmails(100);
       setEmails(res.data || []);
       if (initialId) {
         loadEmailDetail(initialId);
       }
-    } catch (err: any) {
+    } catch (err) {
       console.error("Failed to fetch emails", err);
-      setError(err?.message || "Failed to load emails from server");
     } finally {
       setIsLoading(false);
     }
@@ -275,28 +270,10 @@ function EmailsPageContent() {
         </div>
       </div>
 
-      {error && (
-        <ErrorState
-          title="Failed to Load Emails"
-          message={error}
-          onRetry={fetchEmails}
-          retryLabel="Retry"
-          actionHref="/overview"
-          actionLabel="Go to Dashboard"
-        />
-      )}
-
-      {isLoading && emails.length === 0 ? (
-        <TableSkeleton
-          rows={8}
-          columns={5}
-          columnWidths={["w-40", "w-32", "w-20", "w-28", "w-10"]}
-        />
-      ) : (
-        /* Emails Table */
-        <div className="overflow-x-auto rounded-xl border border-surface-border bg-surface">
-          <table className="w-full text-left text-xs min-w-[600px]">
-            <thead className="border-b border-surface-border bg-surface-raised/50 text-[11px] font-medium uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+      {/* Emails Table */}
+      <div className="overflow-x-auto rounded-xl border border-surface-border bg-surface">
+        <table className="w-full text-left text-xs min-w-[600px]">
+          <thead className="border-b border-surface-border bg-surface-raised/50 text-[11px] font-medium uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
             <tr>
               <th className="px-5 py-3 w-1/3">Subject</th>
               <th className="px-5 py-3 w-1/4">From</th>
@@ -354,7 +331,6 @@ function EmailsPageContent() {
           </tbody>
         </table>
       </div>
-      )}
 
       {/* Email Detail Slide-over / Modal */}
       {selectedEmail && (

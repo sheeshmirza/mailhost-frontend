@@ -27,8 +27,16 @@ import {
 import { TableSkeleton } from "@/components/ui/LoadingState";
 import { ErrorState } from "@/components/ui/ErrorState";
 
+const formatSessionTime = (value?: string) => {
+  if (!value) return "Not recorded";
+  const date = new Date(value);
+  return Number.isNaN(date.getTime())
+    ? "Unknown"
+    : date.toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" });
+};
+
 export default function SettingsPage() {
-  const { user, account, accounts, refresh } = useAuth();
+  const { user, account, accounts, credentialType, refresh, logout } = useAuth();
   const { toast } = useToast();
 
   const [activeTab, setActiveTab] = useState<
@@ -62,6 +70,9 @@ export default function SettingsPage() {
 
   // Sessions
   const [sessions, setSessions] = useState<UserSession[]>([]);
+  const [sessionsError, setSessionsError] = useState<string | null>(null);
+  const [revokingSessionId, setRevokingSessionId] = useState<string | null>(null);
+  const [isRevokingOthers, setIsRevokingOthers] = useState(false);
 
   // MCP Snippet
   const [copiedMcp, setCopiedMcp] = useState(false);
@@ -70,15 +81,18 @@ export default function SettingsPage() {
     if (user?.name) setName(user.name);
     if (user?.email) setEmail(user.email);
     fetchTeamAndSessions();
-  }, [user]);
+  }, [user, credentialType]);
 
   const fetchTeamAndSessions = async () => {
     setIsLoading(true);
     setError(null);
+    setSessionsError(null);
     try {
       const [membersRes, sessionsRes] = await Promise.allSettled([
         api.listMembers(),
-        api.listSessions(),
+        credentialType === "user"
+          ? api.listSessions()
+          : Promise.resolve({ data: [] as UserSession[] }),
       ]);
       let hasSuccess = false;
       if (membersRes.status === "fulfilled") {
@@ -88,6 +102,12 @@ export default function SettingsPage() {
       if (sessionsRes.status === "fulfilled") {
         setSessions(sessionsRes.value.data || []);
         hasSuccess = true;
+      } else {
+        setSessionsError(
+          sessionsRes.reason instanceof Error
+            ? sessionsRes.reason.message
+            : "Could not load active sessions."
+        );
       }
       if (!hasSuccess && (membersRes.status === "rejected" || sessionsRes.status === "rejected")) {
         const reason = (membersRes.status === "rejected" ? (membersRes as PromiseRejectedResult).reason : (sessionsRes as PromiseRejectedResult).reason)?.message || "Failed to load settings data";
@@ -126,6 +146,7 @@ export default function SettingsPage() {
       setNewPassword("");
       toast.success("Password changed successfully");
       setTimeout(() => setPassSaved(false), 2500);
+      await fetchTeamAndSessions();
     } catch (err: any) {
       toast.error("Failed to change password: " + (err.response?.data?.message || err.message));
     }
@@ -183,12 +204,38 @@ export default function SettingsPage() {
   };
 
   const handleRevokeSession = async (id: string) => {
+    if (revokingSessionId) return;
+    const session = sessions.find((item) => item.id === id);
+    if (!confirm(session?.is_current
+      ? "This is your current session. Revoking it will sign you out. Continue?"
+      : "Revoke this session? The device will need to sign in again.")) return;
+    if (session?.is_current) {
+      await logout();
+      return;
+    }
+    setRevokingSessionId(id);
     try {
       await api.revokeSession(id);
       toast.success("Session revoked");
-      fetchTeamAndSessions();
-    } catch (err: any) {
-      toast.error("Failed to revoke session: " + (err.response?.data?.message || err.message));
+      await fetchTeamAndSessions();
+    } catch (err) {
+      toast.error("Failed to revoke session: " + (err instanceof Error ? err.message : "Unknown error"));
+    } finally {
+      setRevokingSessionId(null);
+    }
+  };
+
+  const handleRevokeOtherSessions = async () => {
+    if (isRevokingOthers || !confirm("Sign out all other devices? Your current session will remain active.")) return;
+    setIsRevokingOthers(true);
+    try {
+      const result = await api.revokeAllOtherSessions();
+      toast.success("Other sessions revoked", `${result.revoked} session${result.revoked === 1 ? "" : "s"} signed out.`);
+      await fetchTeamAndSessions();
+    } catch (err) {
+      toast.error("Failed to revoke other sessions: " + (err instanceof Error ? err.message : "Unknown error"));
+    } finally {
+      setIsRevokingOthers(false);
     }
   };
 
@@ -505,6 +552,18 @@ export default function SettingsPage() {
 
       {/* Tab 3: Security & Sessions */}
       {activeTab === "sessions" && (
+        credentialType === "api_key" ? (
+          <div role="status" className="flex flex-col items-start gap-3 rounded-lg border border-surface-border bg-surface p-5">
+            <div className="flex items-center gap-2 text-sm font-semibold text-zinc-900 dark:text-white">
+              <Key className="h-4 w-4 text-teal-700 dark:text-teal-300" />
+              User sessions are unavailable for API-key access
+            </div>
+            <p className="max-w-2xl text-xs leading-relaxed text-zinc-600 dark:text-zinc-400">
+              Sign in with your email and password to change your password or manage active browser sessions.
+            </p>
+            <button onClick={logout} className="btn-secondary">Sign out</button>
+          </div>
+        ) : (
         <div className="space-y-6">
           {/* Change Password */}
           <div className="rounded-xl border border-surface-border bg-surface p-6 space-y-4">
@@ -554,55 +613,79 @@ export default function SettingsPage() {
           </div>
 
           {/* Active Sessions */}
-          <div className="rounded-xl border border-surface-border bg-surface p-6 space-y-4">
-            <h2 className="text-sm font-semibold text-zinc-900 dark:text-white">Active Sessions</h2>
-            {isLoading && sessions.length === 0 ? (
+          <div className="space-y-4 rounded-lg border border-surface-border bg-surface p-5 sm:p-6">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <h2 className="text-sm font-semibold text-zinc-900 dark:text-white">Active Sessions</h2>
+                <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">Review signed-in devices and revoke access you no longer recognize.</p>
+              </div>
+              <button
+                onClick={handleRevokeOtherSessions}
+                disabled={isRevokingOthers || isLoading || !!sessionsError || !sessions.some((session) => !session.is_current)}
+                className="btn-secondary shrink-0"
+              >
+                {isRevokingOthers ? "Revoking..." : "Sign out other devices"}
+              </button>
+            </div>
+            {sessionsError ? (
+              <ErrorState message={sessionsError} onRetry={fetchTeamAndSessions} />
+            ) : isLoading && sessions.length === 0 ? (
               <TableSkeleton rows={3} cols={4} />
+            ) : sessions.length === 0 ? (
+              <div className="rounded-md bg-surface-raised px-4 py-8 text-center">
+                <p className="text-sm font-medium text-zinc-800 dark:text-zinc-200">No active sessions</p>
+                <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">Sessions created by signing in will appear here.</p>
+              </div>
             ) : (
-              <div className="overflow-x-auto rounded-lg border border-surface-border">
-                <table className="w-full text-left text-xs font-mono min-w-[500px]">
-                  <thead className="border-b border-surface-border bg-surface-raised text-[10px] uppercase text-zinc-500 dark:text-zinc-400">
-                    <tr>
-                      <th className="px-4 py-2.5">Session ID</th>
-                      <th className="px-4 py-2.5">Created</th>
-                      <th className="px-4 py-2.5">Expires</th>
-                      <th className="px-4 py-2.5 text-right">Revoke</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-surface-border">
-                    {sessions.length > 0 ? (
-                      sessions.map((s) => (
-                        <tr key={s.id} className="hover:bg-surface-raised/40 transition-colors">
-                          <td className="px-4 py-2.5 text-zinc-900 dark:text-white truncate max-w-xs">{s.id}</td>
-                          <td className="px-4 py-2.5 text-zinc-500 dark:text-zinc-400 text-[11px]">
-                            {new Date(s.created_at).toLocaleDateString()}
-                          </td>
-                          <td className="px-4 py-2.5 text-zinc-400 dark:text-zinc-500 text-[11px]">
-                            {new Date(s.expires_at).toLocaleDateString()}
-                          </td>
-                          <td className="px-4 py-2.5 text-right">
-                            <button
-                              onClick={() => handleRevokeSession(s.id)}
-                              className="text-zinc-500 hover:text-red-500 font-sans transition-colors"
-                            >
-                              Revoke
-                            </button>
-                          </td>
-                        </tr>
-                      ))
-                    ) : (
-                      <tr>
-                        <td colSpan={4} className="py-8 text-center text-xs text-zinc-500 dark:text-zinc-400 font-sans">
-                          No active sessions found.
-                        </td>
-                      </tr>
-                    )}
-                  </tbody>
-                </table>
+              <div className="divide-y divide-surface-border">
+                {sessions.map((session) => (
+                  <article key={session.id} className="grid gap-4 py-4 first:pt-0 last:pb-0 sm:grid-cols-[minmax(0,1.5fr)_repeat(3,minmax(110px,1fr))_auto] sm:items-center">
+                    <div className="flex min-w-0 items-center gap-3">
+                      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-surface-subtle text-content-muted">
+                        <Shield className="h-4 w-4" />
+                      </span>
+                      <div className="min-w-0">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span className="text-[13px] font-semibold text-content-primary">
+                            {session.is_current ? "Current session" : "Other session"}
+                          </span>
+                          {session.is_current && <span className="badge badge-success">This device</span>}
+                        </div>
+                        <p title={session.id} className="mt-0.5 truncate font-mono text-[11px] text-content-subtle">
+                          ID ending {session.id.slice(-8)}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-x-4 gap-y-3 sm:contents">
+                      <div>
+                        <p className="text-[10px] font-semibold uppercase text-content-subtle">Created</p>
+                        <p className="mt-1 text-xs text-content-secondary">{formatSessionTime(session.created_at)}</p>
+                      </div>
+                      <div>
+                        <p className="text-[10px] font-semibold uppercase text-content-subtle">Last active</p>
+                        <p className="mt-1 text-xs text-content-secondary">{formatSessionTime(session.last_used_at)}</p>
+                      </div>
+                      <div>
+                        <p className="text-[10px] font-semibold uppercase text-content-subtle">Expires</p>
+                        <p className="mt-1 text-xs text-content-secondary">{formatSessionTime(session.expires_at)}</p>
+                      </div>
+                    </div>
+                    <div className="flex justify-end sm:pl-2">
+                      <button
+                        onClick={() => handleRevokeSession(session.id)}
+                        disabled={revokingSessionId !== null}
+                        className="btn-danger min-h-8 px-2 py-1"
+                      >
+                        {revokingSessionId === session.id ? "Revoking..." : session.is_current ? "Sign out" : "Revoke"}
+                      </button>
+                    </div>
+                  </article>
+                ))}
               </div>
             )}
           </div>
         </div>
+        )
       )}
 
       {/* Tab 4: AI & MCP Server */}

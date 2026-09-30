@@ -63,21 +63,21 @@ const navGroups = [
 ];
 
 export default function Sidebar() {
-  const pathname = usePathname();
+  const pathname = usePathname() || "/";
 
   // If on landing page, sidebar is hidden
   if (pathname === "/") return null;
 
   return (
-    <aside className="hidden lg:flex fixed left-0 top-14 bottom-0 z-30 w-56 flex-col justify-between border-r border-surface-border bg-surface px-3 py-4 transition-colors overflow-y-auto">
+    <aside className="hidden lg:flex fixed left-0 top-14 bottom-0 z-30 w-60 flex-col justify-between border-r border-surface-border bg-surface px-3 py-5 transition-colors overflow-y-auto">
       {/* Navigation Links */}
       <nav className="flex flex-col">
         {navGroups.map((group, groupIdx) => (
-          <div key={group.title} className={groupIdx !== 0 ? "pt-4" : ""}>
-            <div className="px-3 mb-1 text-[10px] font-semibold uppercase tracking-widest text-zinc-400">
+          <div key={group.title} className={groupIdx !== 0 ? "pt-5" : ""}>
+            <div className="px-3 mb-2 text-[10px] font-semibold uppercase tracking-[0.08em] text-content-subtle">
               {group.title}
             </div>
-            <div className="flex flex-col gap-0.5">
+              <div className="flex flex-col gap-1">
               {group.items.map((item) => {
                 const isActive =
                   item.href === "/overview"
@@ -90,18 +90,18 @@ export default function Sidebar() {
                     key={item.href}
                     href={item.href}
                     className={clsx(
-                      "group flex items-center gap-2.5 rounded-md px-3 py-1.5 text-xs font-medium transition-colors border-l-2",
+                      "group flex min-h-9 items-center gap-3 rounded-md border-l-2 px-3 text-[13px] font-medium transition-colors",
                       isActive
-                        ? "border-zinc-900 dark:border-white bg-zinc-50 dark:bg-zinc-900/50 text-zinc-900 dark:text-white shadow-sm"
-                        : "border-transparent text-zinc-600 dark:text-zinc-400 hover:bg-surface-raised hover:text-zinc-900 dark:hover:text-white"
+                        ? "border-teal-700 bg-teal-50/80 text-teal-900 dark:border-teal-300 dark:bg-teal-300/10 dark:text-teal-100"
+                        : "border-transparent text-content-muted hover:bg-surface-raised hover:text-content-primary"
                     )}
                   >
                     <Icon
                       className={clsx(
                         "h-4 w-4 transition-colors",
                         isActive
-                          ? "text-zinc-900 dark:text-white"
-                          : "text-zinc-400 dark:text-zinc-500 group-hover:text-zinc-700 dark:group-hover:text-zinc-300"
+                          ? "text-teal-800 dark:text-teal-200"
+                          : "text-content-subtle group-hover:text-content-secondary"
                       )}
                     />
                     <span>{item.label}</span>
@@ -114,10 +114,10 @@ export default function Sidebar() {
       </nav>
 
       {/* Bottom Documentation & Quick API Specs */}
-      <div className="border-t border-surface-border pt-3 space-y-1">
+      <div className="space-y-1 border-t border-surface-border pt-4">
         <Link
           href="/"
-          className="flex items-center justify-between rounded-md px-2.5 py-1.5 text-xs font-medium text-zinc-600 dark:text-zinc-400 hover:bg-surface-raised hover:text-zinc-900 dark:hover:text-white transition-colors"
+          className="flex min-h-9 items-center justify-between rounded-md px-3 text-[13px] font-medium text-content-muted transition-colors hover:bg-surface-raised hover:text-content-primary"
         >
           <span>Landing Page</span>
           <ExternalLink className="h-3 w-3 text-zinc-400" />
@@ -126,12 +126,12 @@ export default function Sidebar() {
           href="/backend/openapi.json"
           target="_blank"
           rel="noreferrer"
-          className="flex items-center gap-2 rounded-md px-2.5 py-1.5 text-xs font-medium text-zinc-600 dark:text-zinc-400 hover:bg-surface-raised hover:text-zinc-900 dark:hover:text-white transition-colors"
+          className="flex min-h-9 items-center gap-2 rounded-md px-3 text-[13px] font-medium text-content-muted transition-colors hover:bg-surface-raised hover:text-content-primary"
         >
           <Code2 className="h-4 w-4 text-zinc-400 dark:text-zinc-500" />
           <span>OpenAPI Spec</span>
         </a>
-        <div className="px-2.5 pt-1 text-[10px] text-zinc-400 dark:text-zinc-600 font-mono">
+        <div className="px-3 pt-2 text-[10px] text-content-subtle font-mono">
           Mailhost v1.0.0 (Go)
         </div>
       </div>

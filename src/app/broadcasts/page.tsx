@@ -18,15 +18,12 @@ import {
   Users,
 } from "lucide-react";
 import { useToast } from "@/lib/toast-context";
-import { TableSkeleton } from "@/components/ui/LoadingState";
-import { ErrorState } from "@/components/ui/ErrorState";
 
 export default function BroadcastsPage() {
   const toast = useToast();
   const [broadcasts, setBroadcasts] = useState<BroadcastView[]>([]);
   const [audiences, setAudiences] = useState<AudienceView[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
   const [domains, setDomains] = useState<any[]>([]);
 
@@ -40,40 +37,34 @@ export default function BroadcastsPage() {
 
   const fetchData = async () => {
     setIsLoading(true);
-    setError(null);
     try {
       const [bcRes, audRes, domRes] = await Promise.allSettled([
         api.listBroadcasts(),
         api.listAudiences(),
         api.listDomains(),
       ]);
-      if (bcRes.status === "rejected") {
-        setError("Unable to load broadcasts from server.");
-      } else {
-        if (bcRes.status === "fulfilled") {
-          setBroadcasts(bcRes.value.data || []);
-        }
-        if (audRes.status === "fulfilled") {
-          const auds = audRes.value.data || [];
-          setAudiences(auds);
-          if (auds.length > 0 && !selectedAudienceId) {
-            setSelectedAudienceId(auds[0].id);
-          }
-        }
-        if (domRes.status === "fulfilled") {
-          const domList = domRes.value.data || [];
-          setDomains(domList);
-          if (domList.length > 0 && !from) {
-            const verified = domList.find((d: any) => d.status === "verified") || domList[0];
-            setFrom(`Acme <newsletter@${verified.name}>`);
-          } else if (!from) {
-            setFrom("Acme <newsletter@example.com>");
-          }
+      if (bcRes.status === "fulfilled") {
+        setBroadcasts(bcRes.value.data || []);
+      }
+      if (audRes.status === "fulfilled") {
+        const auds = audRes.value.data || [];
+        setAudiences(auds);
+        if (auds.length > 0 && !selectedAudienceId) {
+          setSelectedAudienceId(auds[0].id);
         }
       }
-    } catch (err: any) {
+      if (domRes.status === "fulfilled") {
+        const domList = domRes.value.data || [];
+        setDomains(domList);
+        if (domList.length > 0 && !from) {
+          const verified = domList.find((d: any) => d.status === "verified") || domList[0];
+          setFrom(`Acme <newsletter@${verified.name}>`);
+        } else if (!from) {
+          setFrom("Acme <newsletter@example.com>");
+        }
+      }
+    } catch (err) {
       console.error("Failed to load broadcasts", err);
-      setError(err?.message || "Failed to load broadcasts");
     } finally {
       setIsLoading(false);
     }
@@ -157,28 +148,10 @@ export default function BroadcastsPage() {
         </button>
       </div>
 
-      {error && (
-        <ErrorState
-          title="Failed to Load Broadcasts"
-          message={error}
-          onRetry={fetchData}
-          retryLabel="Retry"
-          actionHref="/overview"
-          actionLabel="Go to Dashboard"
-        />
-      )}
-
-      {isLoading && broadcasts.length === 0 ? (
-        <TableSkeleton
-          rows={6}
-          columns={6}
-          columnWidths={["w-36", "w-32", "w-28", "w-16", "w-20", "w-10"]}
-        />
-      ) : (
-        /* Broadcasts Table */
-        <div className="rounded-xl border border-surface-border overflow-hidden bg-surface">
-          <table className="w-full text-left text-sm min-w-[600px]">
-            <thead className="bg-surface-raised border-b border-surface-border">
+      {/* Broadcasts Table */}
+      <div className="rounded-xl border border-surface-border overflow-hidden bg-surface">
+        <table className="w-full text-left text-sm min-w-[600px]">
+          <thead className="bg-surface-raised border-b border-surface-border">
             <tr>
               <th className="px-4 py-3 text-[11px] font-medium uppercase tracking-wider text-zinc-500">Campaign Name</th>
               <th className="px-4 py-3 text-[11px] font-medium uppercase tracking-wider text-zinc-500">Subject</th>
@@ -259,7 +232,6 @@ export default function BroadcastsPage() {
           </tbody>
         </table>
       </div>
-      )}
 
       {/* New Broadcast Modal */}
       {isOpen && (

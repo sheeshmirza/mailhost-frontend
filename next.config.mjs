@@ -1,6 +1,7 @@
 import path from "path";
 
 const nextConfig = {
+  distDir: process.env.NEXT_DIST_DIR || ".next",
   // Optimize static images by disabling Next.js server-side image optimization
   images: {
     domains: [],
@@ -18,7 +19,7 @@ const nextConfig = {
   trailingSlash: true,
   // Custom Webpack alias for simpler imports using "@"
   webpack: (config) => {
-    config.resolve.alias["@"] = path.resolve(process.cwd());
+    config.resolve.alias["@"] = path.resolve(process.cwd(), "src");
     return config;
   }
 };
