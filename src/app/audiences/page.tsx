@@ -25,6 +25,8 @@ import {
   CheckCircle2,
 } from "lucide-react";
 import { useToast } from "@/lib/toast-context";
+import { ErrorState } from "@/components/ui/ErrorState";
+import { TableSkeleton } from "@/components/ui/LoadingState";
 
 export default function AudiencesPage() {
   const toast = useToast();
@@ -40,17 +42,22 @@ export default function AudiencesPage() {
   const [segments, setSegments] = useState<SegmentView[]>([]);
   const [topics, setTopics] = useState<TopicView[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [contactsError, setContactsError] = useState<string | null>(null);
+  const [isContactsLoading, setIsContactsLoading] = useState(false);
 
   // Contact Detail Drawer State
   const [selectedContact, setSelectedContact] = useState<ContactView | null>(null);
   const [contactSegments, setContactSegments] = useState<SegmentView[]>([]);
   const [contactTopics, setContactTopics] = useState<(TopicView & { status: string })[]>([]);
   const [isDetailLoading, setIsDetailLoading] = useState(false);
+  const [contactDetailsError, setContactDetailsError] = useState<string | null>(null);
 
   // Segment Detail Drill-Down State
   const [selectedSegment, setSelectedSegment] = useState<SegmentView | null>(null);
   const [segmentContacts, setSegmentContacts] = useState<ContactView[]>([]);
   const [isSegmentLoading, setIsSegmentLoading] = useState(false);
+  const [segmentContactsError, setSegmentContactsError] = useState<string | null>(null);
 
   // Modals
   const [isAudienceOpen, setIsAudienceOpen] = useState(false);
@@ -72,12 +79,14 @@ export default function AudiencesPage() {
 
   const fetchData = async () => {
     setIsLoading(true);
+    setLoadError(null);
     try {
       const [audRes, segRes, topRes] = await Promise.allSettled([
         api.listAudiences(),
         api.listSegments(),
         api.listTopics(),
       ]);
+      const failedResources: string[] = [];
 
       if (audRes.status === "fulfilled") {
         const list = audRes.value.data || [];
@@ -90,28 +99,43 @@ export default function AudiencesPage() {
         } else {
           loadContacts();
         }
+      } else {
+        failedResources.push("audiences");
       }
 
       if (segRes.status === "fulfilled") {
         setSegments(segRes.value.data || []);
+      } else {
+        failedResources.push("segments");
       }
 
       if (topRes.status === "fulfilled") {
         setTopics(topRes.value.data || []);
+      } else {
+        failedResources.push("topics");
+      }
+      if (failedResources.length) {
+        setLoadError(`Could not load ${failedResources.join(" and ")}.`);
       }
     } catch (err) {
       console.error("Failed to load audience data", err);
+      setLoadError(err instanceof Error ? err.message : "Could not load audience data.");
     } finally {
       setIsLoading(false);
     }
   };
 
   const loadContacts = async (audienceId?: string) => {
+    setIsContactsLoading(true);
+    setContactsError(null);
     try {
       const res = await api.listContacts(audienceId);
       setContacts(res.data || []);
     } catch (err) {
       console.error("Failed to load contacts", err);
+      setContactsError(err instanceof Error ? err.message : "Could not load contacts.");
+    } finally {
+      setIsContactsLoading(false);
     }
   };
 
@@ -235,6 +259,7 @@ export default function AudiencesPage() {
   const openContactDetail = async (c: ContactView) => {
     setSelectedContact(c);
     setIsDetailLoading(true);
+    setContactDetailsError(null);
     try {
       const [segRes, topRes] = await Promise.allSettled([
         api.listContactSegments(c.id),
@@ -246,6 +271,11 @@ export default function AudiencesPage() {
       if (topRes.status === "fulfilled") {
         setContactTopics(topRes.value.data || []);
       }
+      if (segRes.status === "rejected" || topRes.status === "rejected") {
+        setContactDetailsError("Some contact preferences could not be loaded.");
+      }
+    } catch (err) {
+      setContactDetailsError(err instanceof Error ? err.message : "Could not load contact details.");
     } finally {
       setIsDetailLoading(false);
     }
@@ -305,12 +335,14 @@ export default function AudiencesPage() {
   const openSegmentDetail = async (seg: SegmentView) => {
     setSelectedSegment(seg);
     setIsSegmentLoading(true);
+    setSegmentContactsError(null);
     try {
       const res = await api.listSegmentContacts(seg.id);
       setSegmentContacts(res.data || []);
     } catch (err) {
       console.error(err);
       setSegmentContacts([]);
+      setSegmentContactsError(err instanceof Error ? err.message : "Could not load enrolled contacts.");
     } finally {
       setIsSegmentLoading(false);
     }
@@ -415,6 +447,14 @@ export default function AudiencesPage() {
         </div>
       </div>
 
+      {loadError && <ErrorState message={loadError} onRetry={fetchData} />}
+      {mainTab === "contacts" && contactsError && (
+        <ErrorState
+          message={contactsError}
+          onRetry={() => loadContacts(selectedAudience?.id)}
+        />
+      )}
+
       {/* View 1: Contacts & Audiences */}
       {mainTab === "contacts" && (
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
@@ -425,6 +465,9 @@ export default function AudiencesPage() {
               <span className="font-mono">{audiences.length}</span>
             </div>
 
+            {isLoading && audiences.length === 0 ? (
+              <TableSkeleton rows={4} cols={1} />
+            ) : (
             <div className="space-y-1.5">
               <button
                 onClick={() => {
@@ -468,7 +511,11 @@ export default function AudiencesPage() {
                   </button>
                 </div>
               ))}
+              {!isLoading && !loadError && audiences.length === 0 && (
+                <p className="px-3 py-2 text-xs text-zinc-500 dark:text-zinc-400">No audiences yet.</p>
+              )}
             </div>
+            )}
           </div>
 
           {/* Right: Contacts Table */}
@@ -480,6 +527,9 @@ export default function AudiencesPage() {
               </span>
             </div>
 
+            {isContactsLoading && contacts.length === 0 ? (
+              <TableSkeleton rows={5} cols={6} />
+            ) : (
             <div className="overflow-hidden rounded-xl border border-surface-border bg-surface shadow-sm">
               <table className="w-full text-left text-sm min-w-[550px]">
                 <thead className="border-b border-surface-border bg-surface-raised text-xs font-medium text-zinc-500 dark:text-zinc-400">
@@ -548,12 +598,16 @@ export default function AudiencesPage() {
                 </tbody>
               </table>
             </div>
+            )}
           </div>
         </div>
       )}
 
       {/* View 2: Segments */}
       {mainTab === "segments" && (
+        isLoading && segments.length === 0 ? (
+          <TableSkeleton rows={5} cols={3} />
+        ) : (
         <div className="overflow-hidden rounded-xl border border-surface-border bg-surface shadow-sm">
           <table className="w-full text-left text-sm min-w-[450px]">
             <thead className="border-b border-surface-border bg-surface-raised text-xs font-medium text-zinc-500 dark:text-zinc-400">
@@ -606,10 +660,14 @@ export default function AudiencesPage() {
             </tbody>
           </table>
         </div>
+        )
       )}
 
       {/* View 3: Topics */}
       {mainTab === "topics" && (
+        isLoading && topics.length === 0 ? (
+          <TableSkeleton rows={5} cols={4} />
+        ) : (
         <div className="overflow-x-auto rounded-xl border border-surface-border bg-surface">
           <table className="w-full text-left text-xs min-w-[500px]">
             <thead className="border-b border-surface-border bg-surface-raised text-[11px] font-medium uppercase text-zinc-500 dark:text-zinc-400">
@@ -656,6 +714,7 @@ export default function AudiencesPage() {
             </tbody>
           </table>
         </div>
+        )
       )}
 
       {/* New Audience Modal */}
@@ -889,6 +948,16 @@ export default function AudiencesPage() {
               </button>
             </div>
 
+            {isDetailLoading && (
+              <div role="status" className="flex items-center gap-2 text-xs text-zinc-500 dark:text-zinc-400">
+                <RefreshCw className="h-3.5 w-3.5 animate-spin" />
+                Loading contact preferences...
+              </div>
+            )}
+            {contactDetailsError && (
+              <ErrorState message={contactDetailsError} onRetry={() => openContactDetail(selectedContact)} />
+            )}
+
             {/* Basic Info */}
             <div className="space-y-3">
               <div className="flex items-center justify-between text-xs">
@@ -1066,7 +1135,9 @@ export default function AudiencesPage() {
             </div>
 
             <div className="divide-y divide-surface-border overflow-hidden rounded-lg border border-surface-border bg-surface-raised">
-              {isSegmentLoading ? (
+              {segmentContactsError ? (
+                <ErrorState message={segmentContactsError} onRetry={() => openSegmentDetail(selectedSegment)} />
+              ) : isSegmentLoading ? (
                 <div className="py-8 text-center text-xs text-zinc-500 dark:text-zinc-400 flex items-center justify-center gap-2">
                   <RefreshCw className="h-3.5 w-3.5 animate-spin" />
                   <span>Loading enrolled contacts...</span>

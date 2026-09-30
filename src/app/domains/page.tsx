@@ -21,6 +21,8 @@ import {
   ExternalLink,
 } from "lucide-react";
 import { useToast } from "@/lib/toast-context";
+import { ErrorState } from "@/components/ui/ErrorState";
+import { CardSkeleton } from "@/components/ui/LoadingState";
 
 export default function DomainsPage() {
   const toast = useToast();
@@ -30,11 +32,13 @@ export default function DomainsPage() {
   const [domainName, setDomainName] = useState("");
   const [region, setRegion] = useState("us-east-1");
   const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [isVerifying, setIsVerifying] = useState(false);
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
 
   const fetchDomains = async () => {
     setIsLoading(true);
+    setLoadError(null);
     try {
       const res = await api.listDomains();
       const list = res.data || [];
@@ -47,6 +51,7 @@ export default function DomainsPage() {
       }
     } catch (err) {
       console.error("Failed to fetch domains", err);
+      setLoadError(err instanceof Error ? err.message : "Could not load domains.");
     } finally {
       setIsLoading(false);
     }
@@ -146,6 +151,10 @@ export default function DomainsPage() {
         </button>
       </div>
 
+      {loadError && domains.length > 0 && (
+        <ErrorState message={loadError} onRetry={fetchDomains} />
+      )}
+
       {/* Main Content Layout: Domains List & Active Domain DNS Config */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left Column: Domain List */}
@@ -156,7 +165,15 @@ export default function DomainsPage() {
           </div>
 
           <div className="space-y-2">
-            {domains.length > 0 ? (
+            {isLoading && domains.length === 0 ? (
+              <div className="space-y-3">
+                <CardSkeleton />
+                <CardSkeleton />
+                <CardSkeleton />
+              </div>
+            ) : loadError && domains.length === 0 ? (
+              <ErrorState message={loadError} onRetry={fetchDomains} />
+            ) : domains.length > 0 ? (
               domains.map((dom) => (
                 <div
                   key={dom.id}
@@ -209,7 +226,7 @@ export default function DomainsPage() {
               ))
             ) : (
               <div className="rounded-xl border border-dashed border-zinc-300 bg-surface p-8 text-center text-sm text-zinc-500 dark:border-zinc-800 dark:text-zinc-400">
-                {isLoading ? "Loading domains..." : "No domains registered yet."}
+                No domains registered yet.
               </div>
             )}
           </div>

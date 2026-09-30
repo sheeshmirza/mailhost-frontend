@@ -6,7 +6,6 @@ import {
   AuditLogView,
   DedicatedIPView,
 } from "@/lib/api";
-import { useToast } from "@/lib/toast-context";
 import {
   Activity,
   CheckCircle2,
@@ -16,6 +15,8 @@ import {
   Flame,
   RefreshCw,
 } from "lucide-react";
+import { ErrorState } from "@/components/ui/ErrorState";
+import { TableSkeleton } from "@/components/ui/LoadingState";
 
 function formatAuditIP(ip?: string) {
   if (!ip || ip === "127.0.0.1" || ip === "::1" || ip.startsWith("172.") || ip.startsWith("10.") || ip.startsWith("192.168.")) {
@@ -25,15 +26,18 @@ function formatAuditIP(ip?: string) {
 }
 
 export default function LogsHealthPage() {
-  const { toast } = useToast();
   const [readiness, setReadiness] = useState<string | null>(null);
   const [auditLogs, setAuditLogs] = useState<AuditLogView[]>([]);
   const [dedicatedIPs, setDedicatedIPs] = useState<DedicatedIPView[]>([]);
   const [warmupSchedule, setWarmupSchedule] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [auditLogsError, setAuditLogsError] = useState<string | null>(null);
 
   const fetchHealthAndLogs = async () => {
     setIsLoading(true);
+    setLoadError(null);
+    setAuditLogsError(null);
     try {
       const [readyRes, logsRes, ipsRes, schedRes] = await Promise.allSettled([
         api.getReadiness(),
@@ -42,23 +46,38 @@ export default function LogsHealthPage() {
         api.getWarmingSchedule(),
       ]);
 
+      const failedResources: string[] = [];
       if (readyRes.status === "fulfilled") {
         setReadiness(readyRes.value.status);
       } else {
         setReadiness("unavailable");
+        failedResources.push("service availability");
       }
       if (logsRes.status === "fulfilled") {
         setAuditLogs(logsRes.value.data || []);
+      } else {
+        const message = logsRes.reason instanceof Error ? logsRes.reason.message : "Could not load audit logs.";
+        setAuditLogsError(message);
+        failedResources.push("audit logs");
       }
       if (ipsRes.status === "fulfilled") {
         setDedicatedIPs(ipsRes.value.data || []);
+      } else {
+        failedResources.push("dedicated IP data");
       }
       if (schedRes.status === "fulfilled") {
         setWarmupSchedule(schedRes.value.schedule || []);
+      } else {
+        failedResources.push("warmup schedule");
       }
-    } catch (err: any) {
+      if (failedResources.length) {
+        setLoadError(`Could not load ${failedResources.join(" and ")}.`);
+      }
+    } catch (err) {
       console.error("Failed to load health and logs", err);
-      toast.error("Failed to load logs and system health: " + (err.response?.data?.message || err.message));
+      const message = err instanceof Error ? err.message : "Could not load logs and system health.";
+      setLoadError(message);
+      setAuditLogsError(message);
     } finally {
       setIsLoading(false);
     }
@@ -91,6 +110,8 @@ export default function LogsHealthPage() {
           </button>
         </div>
       </div>
+
+      {loadError && <ErrorState message={loadError} onRetry={fetchHealthAndLogs} />}
 
       {/* Platform Service Status */}
       <div className="flex flex-col gap-3 rounded-lg border border-surface-border bg-surface p-4 sm:flex-row sm:items-center sm:justify-between">
@@ -142,6 +163,11 @@ export default function LogsHealthPage() {
       {/* Audit Logs Table */}
       <div className="space-y-3">
         <h2 className="text-sm font-semibold text-zinc-900 dark:text-white">Audit Log Activity</h2>
+        {isLoading && auditLogs.length === 0 ? (
+          <TableSkeleton rows={6} cols={5} />
+        ) : auditLogsError && auditLogs.length === 0 ? (
+          <ErrorState message={auditLogsError} onRetry={fetchHealthAndLogs} />
+        ) : (
         <div className="overflow-x-auto rounded-xl border border-surface-border bg-surface">
           <table className="w-full text-left text-xs min-w-[700px]">
             <thead className="border-b border-surface-border bg-surface-raised text-[11px] font-medium uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
@@ -184,6 +210,7 @@ export default function LogsHealthPage() {
             </tbody>
           </table>
         </div>
+        )}
       </div>
     </div>
   );

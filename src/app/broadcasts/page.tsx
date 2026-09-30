@@ -18,12 +18,15 @@ import {
   Users,
 } from "lucide-react";
 import { useToast } from "@/lib/toast-context";
+import { ErrorState } from "@/components/ui/ErrorState";
+import { TableSkeleton } from "@/components/ui/LoadingState";
 
 export default function BroadcastsPage() {
   const toast = useToast();
   const [broadcasts, setBroadcasts] = useState<BroadcastView[]>([]);
   const [audiences, setAudiences] = useState<AudienceView[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   const [domains, setDomains] = useState<any[]>([]);
 
@@ -37,14 +40,18 @@ export default function BroadcastsPage() {
 
   const fetchData = async () => {
     setIsLoading(true);
+    setLoadError(null);
     try {
       const [bcRes, audRes, domRes] = await Promise.allSettled([
         api.listBroadcasts(),
         api.listAudiences(),
         api.listDomains(),
       ]);
+      const failedResources: string[] = [];
       if (bcRes.status === "fulfilled") {
         setBroadcasts(bcRes.value.data || []);
+      } else {
+        failedResources.push("broadcasts");
       }
       if (audRes.status === "fulfilled") {
         const auds = audRes.value.data || [];
@@ -52,6 +59,8 @@ export default function BroadcastsPage() {
         if (auds.length > 0 && !selectedAudienceId) {
           setSelectedAudienceId(auds[0].id);
         }
+      } else {
+        failedResources.push("audiences");
       }
       if (domRes.status === "fulfilled") {
         const domList = domRes.value.data || [];
@@ -62,9 +71,15 @@ export default function BroadcastsPage() {
         } else if (!from) {
           setFrom("Acme <newsletter@example.com>");
         }
+      } else {
+        failedResources.push("domains");
+      }
+      if (failedResources.length) {
+        setLoadError(`Could not load ${failedResources.join(" and ")}.`);
       }
     } catch (err) {
       console.error("Failed to load broadcasts", err);
+      setLoadError(err instanceof Error ? err.message : "Could not load broadcast data.");
     } finally {
       setIsLoading(false);
     }
@@ -148,7 +163,16 @@ export default function BroadcastsPage() {
         </button>
       </div>
 
+      {loadError && broadcasts.length > 0 && (
+        <ErrorState message={loadError} onRetry={fetchData} />
+      )}
+
       {/* Broadcasts Table */}
+      {isLoading && broadcasts.length === 0 ? (
+        <TableSkeleton rows={5} cols={6} />
+      ) : loadError && broadcasts.length === 0 ? (
+        <ErrorState message={loadError} onRetry={fetchData} />
+      ) : (
       <div className="rounded-xl border border-surface-border overflow-hidden bg-surface">
         <table className="w-full text-left text-sm min-w-[600px]">
           <thead className="bg-surface-raised border-b border-surface-border">
@@ -223,15 +247,14 @@ export default function BroadcastsPage() {
             ) : (
               <tr>
                 <td colSpan={6} className="py-16 text-center text-sm text-zinc-500">
-                  {isLoading
-                    ? "Loading broadcasts..."
-                    : "No broadcasts found. Create your first campaign above."}
+                  No broadcasts found. Create your first campaign above.
                 </td>
               </tr>
             )}
           </tbody>
         </table>
       </div>
+      )}
 
       {/* New Broadcast Modal */}
       {isOpen && (

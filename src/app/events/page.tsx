@@ -3,6 +3,8 @@
 import React, { useState, useEffect } from "react";
 import { api, CustomEvent } from "@/lib/api";
 import { useToast } from "@/lib/toast-context";
+import { ErrorState } from "@/components/ui/ErrorState";
+import { TableSkeleton } from "@/components/ui/LoadingState";
 import {
   Zap,
   Plus,
@@ -17,6 +19,7 @@ export default function EventsPage() {
   const { toast } = useToast();
   const [events, setEvents] = useState<CustomEvent[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [isOpen, setIsOpen] = useState(false);
 
   // Form fields
@@ -31,12 +34,13 @@ export default function EventsPage() {
 
   const fetchEvents = async () => {
     setIsLoading(true);
+    setLoadError(null);
     try {
       const res = await api.listEvents();
       setEvents(res.data || []);
-    } catch (err: any) {
+    } catch (err) {
       console.error("Failed to load events", err);
-      toast.error("Failed to load events: " + (err.response?.data?.message || err.message));
+      setLoadError(err instanceof Error ? err.message : "Could not load events.");
     } finally {
       setIsLoading(false);
     }
@@ -98,6 +102,11 @@ export default function EventsPage() {
       </div>
 
       {/* Events Table */}
+      {isLoading && events.length === 0 ? (
+        <TableSkeleton rows={5} cols={4} />
+      ) : loadError && events.length === 0 ? (
+        <ErrorState message={loadError} onRetry={fetchEvents} />
+      ) : (
       <div className="overflow-x-auto rounded-xl border border-surface-border bg-surface">
         <table className="w-full text-left text-xs min-w-[650px]">
           <thead className="border-b border-surface-border bg-surface-raised text-[11px] font-medium uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
@@ -128,15 +137,17 @@ export default function EventsPage() {
             ) : (
               <tr>
                 <td colSpan={4} className="py-12 text-center text-xs text-zinc-500 dark:text-zinc-400 font-sans">
-                  {isLoading
-                    ? "Loading custom events..."
-                    : "No events recorded yet. Click 'Trigger Event' to test."}
+                  No events recorded yet. Click 'Trigger Event' to test.
                 </td>
               </tr>
             )}
           </tbody>
         </table>
       </div>
+      )}
+      {loadError && events.length > 0 && (
+        <ErrorState message={loadError} onRetry={fetchEvents} />
+      )}
 
       {/* Trigger Event Modal */}
       {isOpen && (

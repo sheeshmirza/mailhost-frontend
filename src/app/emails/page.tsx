@@ -23,6 +23,8 @@ import {
 } from "lucide-react";
 import SendEmailModal from "@/components/emails/SendEmailModal";
 import { useToast } from "@/lib/toast-context";
+import { ErrorState } from "@/components/ui/ErrorState";
+import { TableSkeleton } from "@/components/ui/LoadingState";
 
 function EmailsPageContent() {
   const toast = useToast();
@@ -34,6 +36,7 @@ function EmailsPageContent() {
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [isSendOpen, setIsSendOpen] = useState(false);
   const [isBatchOpen, setIsBatchOpen] = useState(false);
   const [batchJson, setBatchJson] = useState(`[
@@ -54,6 +57,7 @@ function EmailsPageContent() {
 
   const fetchEmails = async () => {
     setIsLoading(true);
+    setLoadError(null);
     try {
       const res = await api.listEmails(100);
       setEmails(res.data || []);
@@ -62,6 +66,7 @@ function EmailsPageContent() {
       }
     } catch (err) {
       console.error("Failed to fetch emails", err);
+      setLoadError(err instanceof Error ? err.message : "Could not load emails.");
     } finally {
       setIsLoading(false);
     }
@@ -73,6 +78,7 @@ function EmailsPageContent() {
       setSelectedEmail(detail);
     } catch (err) {
       console.error("Failed to load email detail", err);
+      toast.error("Failed to load email details: " + (err instanceof Error ? err.message : "Unknown error"));
     }
   };
 
@@ -271,6 +277,11 @@ function EmailsPageContent() {
       </div>
 
       {/* Emails Table */}
+      {isLoading && emails.length === 0 ? (
+        <TableSkeleton rows={6} columns={5} />
+      ) : loadError && emails.length === 0 ? (
+        <ErrorState message={loadError} onRetry={fetchEmails} />
+      ) : (
       <div className="overflow-x-auto rounded-xl border border-surface-border bg-surface">
         <table className="w-full text-left text-xs min-w-[600px]">
           <thead className="border-b border-surface-border bg-surface-raised/50 text-[11px] font-medium uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
@@ -317,7 +328,7 @@ function EmailsPageContent() {
                       {isLoading ? <RefreshCw className="h-5 w-5 animate-spin" /> : <Search className="h-5 w-5" />}
                     </div>
                     <div className="text-sm font-medium text-zinc-900 dark:text-white">
-                      {isLoading ? "Loading emails..." : "No emails found"}
+                      No emails found
                     </div>
                     {!isLoading && (
                       <div className="text-xs text-zinc-500 dark:text-zinc-400 max-w-sm mx-auto">
@@ -331,6 +342,8 @@ function EmailsPageContent() {
           </tbody>
         </table>
       </div>
+      )}
+      {loadError && emails.length > 0 && <ErrorState message={loadError} onRetry={fetchEmails} />}
 
       {/* Email Detail Slide-over / Modal */}
       {selectedEmail && (

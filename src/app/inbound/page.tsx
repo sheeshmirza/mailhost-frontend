@@ -87,6 +87,7 @@ export default function InboundPage() {
       setSelectedInbound(detail);
     } catch (err) {
       console.error("Failed to fetch inbound detail", err);
+      toast.error("Could not load inbound message details: " + (err instanceof Error ? err.message : "Unknown error"));
     }
   };
 

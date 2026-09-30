@@ -3,6 +3,8 @@
 import React, { useState, useEffect } from "react";
 import { api, SMTPCredView, DomainView } from "@/lib/api";
 import { useToast } from "@/lib/toast-context";
+import { ErrorState } from "@/components/ui/ErrorState";
+import { TableSkeleton } from "@/components/ui/LoadingState";
 import {
   Server,
   Plus,
@@ -19,6 +21,7 @@ export default function SMTPPage() {
   const [credentials, setCredentials] = useState<SMTPCredView[]>([]);
   const [domains, setDomains] = useState<DomainView[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   // New credential modal
   const [isOpen, setIsOpen] = useState(false);
@@ -32,13 +35,17 @@ export default function SMTPPage() {
 
   const fetchData = async () => {
     setIsLoading(true);
+    setLoadError(null);
     try {
       const [credsRes, domainsRes] = await Promise.allSettled([
         api.listSMTPCredentials(),
         api.listDomains(),
       ]);
+      const failedResources: string[] = [];
       if (credsRes.status === "fulfilled") {
         setCredentials(credsRes.value.data || []);
+      } else {
+        failedResources.push("SMTP credentials");
       }
       if (domainsRes.status === "fulfilled") {
         const domList = domainsRes.value.data || [];
@@ -47,10 +54,15 @@ export default function SMTPPage() {
           const verified = domList.find((d) => d.status === "verified") || domList[0];
           setEmail(`smtp@${verified.name}`);
         }
+      } else {
+        failedResources.push("domains");
       }
-    } catch (err: any) {
+      if (failedResources.length) {
+        setLoadError(`Could not load ${failedResources.join(" and ")}.`);
+      }
+    } catch (err) {
       console.error("Failed to load SMTP credentials", err);
-      toast.error("Failed to load SMTP data: " + (err.response?.data?.message || err.message));
+      setLoadError(err instanceof Error ? err.message : "Could not load SMTP data.");
     } finally {
       setIsLoading(false);
     }
@@ -118,6 +130,10 @@ export default function SMTPPage() {
         </button>
       </div>
 
+      {loadError && credentials.length > 0 && (
+        <ErrorState message={loadError} onRetry={fetchData} />
+      )}
+
       {/* SMTP Connection Details Card */}
       <div className="rounded-xl border border-surface-border bg-surface p-5 space-y-4">
         <h2 className="text-xs font-semibold text-zinc-900 dark:text-white uppercase tracking-wider">
@@ -152,6 +168,11 @@ export default function SMTPPage() {
       </div>
 
       {/* Credentials Table */}
+      {isLoading && credentials.length === 0 ? (
+        <TableSkeleton rows={4} cols={5} />
+      ) : loadError && credentials.length === 0 ? (
+        <ErrorState message={loadError} onRetry={fetchData} />
+      ) : (
       <div className="overflow-x-auto rounded-xl border border-surface-border bg-surface">
         <table className="w-full text-left text-xs min-w-[700px]">
           <thead className="border-b border-surface-border bg-surface-raised text-[11px] font-medium uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
@@ -193,15 +214,14 @@ export default function SMTPPage() {
             ) : (
               <tr>
                 <td colSpan={5} className="py-12 text-center text-xs text-zinc-500 dark:text-zinc-400 font-sans">
-                  {isLoading
-                    ? "Loading SMTP credentials..."
-                    : "No SMTP application passwords generated yet."}
+                  No SMTP application passwords generated yet.
                 </td>
               </tr>
             )}
           </tbody>
         </table>
       </div>
+      )}
 
       {/* Nodemailer / Python Example Snippet */}
       <div className="space-y-3">

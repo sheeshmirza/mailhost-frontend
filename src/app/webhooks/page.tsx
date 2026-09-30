@@ -3,6 +3,8 @@
 import React, { useState, useEffect } from "react";
 import { api, WebhookView } from "@/lib/api";
 import { useToast } from "@/lib/toast-context";
+import { ErrorState } from "@/components/ui/ErrorState";
+import { TableSkeleton } from "@/components/ui/LoadingState";
 import {
   Webhook,
   Plus,
@@ -27,6 +29,7 @@ export default function WebhooksPage() {
   const { toast } = useToast();
   const [webhooks, setWebhooks] = useState<WebhookView[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [isOpen, setIsOpen] = useState(false);
   const [url, setUrl] = useState("");
   const [selectedEvents, setSelectedEvents] = useState<string[]>([
@@ -38,12 +41,13 @@ export default function WebhooksPage() {
 
   const fetchWebhooks = async () => {
     setIsLoading(true);
+    setLoadError(null);
     try {
       const res = await api.listWebhooks();
       setWebhooks(res.data || []);
     } catch (err: any) {
       console.error("Failed to load webhooks", err);
-      toast.error("Failed to load webhooks: " + (err.response?.data?.message || err.message));
+      setLoadError(err instanceof Error ? err.message : "Could not load webhooks.");
     } finally {
       setIsLoading(false);
     }
@@ -131,6 +135,11 @@ export default function WebhooksPage() {
       </div>
 
       {/* Webhooks Table */}
+      {isLoading && webhooks.length === 0 ? (
+        <TableSkeleton rows={5} cols={5} />
+      ) : loadError && webhooks.length === 0 ? (
+        <ErrorState message={loadError} onRetry={fetchWebhooks} />
+      ) : (
       <div className="rounded-xl border border-surface-border overflow-hidden bg-surface">
         <table className="w-full text-left">
           <thead className="bg-surface-raised border-b border-surface-border text-[11px] font-medium uppercase tracking-wider text-zinc-500">
@@ -204,15 +213,15 @@ export default function WebhooksPage() {
             ) : (
               <tr>
                 <td colSpan={5} className="py-16 text-center text-sm text-zinc-500">
-                  {isLoading
-                    ? "Loading webhooks..."
-                    : "No webhook endpoints registered yet."}
+                  No webhook endpoints registered yet.
                 </td>
               </tr>
             )}
           </tbody>
         </table>
       </div>
+      )}
+      {loadError && webhooks.length > 0 && <ErrorState message={loadError} onRetry={fetchWebhooks} />}
 
       {/* Add Webhook Modal */}
       {isOpen && (

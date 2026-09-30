@@ -21,16 +21,19 @@ import {
   RefreshCw,
 } from "lucide-react";
 import CodeSnippet from "@/components/ui/CodeSnippet";
+import { ErrorState } from "@/components/ui/ErrorState";
 
 export default function OverviewPage() {
   const [analytics, setAnalytics] = useState<AnalyticsResponse | null>(null);
   const [recentEmails, setRecentEmails] = useState<EmailSummary[]>([]);
   const [domains, setDomains] = useState<DomainView[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [interval, setInterval] = useState<"hour" | "day" | "week" | "month">("day");
 
   const loadData = async () => {
     setIsLoading(true);
+    setLoadError(null);
     try {
       const [analyticsData, emailsData, domainsData] = await Promise.allSettled([
         api.getAnalytics({ interval }),
@@ -38,17 +41,28 @@ export default function OverviewPage() {
         api.listDomains(),
       ]);
 
+      const failedResources: string[] = [];
       if (analyticsData.status === "fulfilled") {
         setAnalytics(analyticsData.value);
+      } else {
+        failedResources.push("analytics");
       }
       if (emailsData.status === "fulfilled") {
         setRecentEmails(emailsData.value.data || []);
+      } else {
+        failedResources.push("recent emails");
       }
       if (domainsData.status === "fulfilled") {
         setDomains(domainsData.value.data || []);
+      } else {
+        failedResources.push("domains");
+      }
+      if (failedResources.length) {
+        setLoadError(`Could not load ${failedResources.join(" and ")}.`);
       }
     } catch (err) {
       console.error("Failed to load overview data", err);
+      setLoadError(err instanceof Error ? err.message : "Could not load overview data.");
     } finally {
       setIsLoading(false);
     }
@@ -127,6 +141,8 @@ export default function OverviewPage() {
 
         </div>
       </div>
+
+      {loadError && <ErrorState message={loadError} onRetry={loadData} />}
 
       {/* KPI Cards Grid */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">

@@ -24,6 +24,8 @@ import {
   Zap,
 } from "lucide-react";
 import { useToast } from "@/lib/toast-context";
+import { ErrorState } from "@/components/ui/ErrorState";
+import { TableSkeleton } from "@/components/ui/LoadingState";
 
 export default function AutomationsPage() {
   const toast = useToast();
@@ -33,6 +35,9 @@ export default function AutomationsPage() {
   const [domains, setDomains] = useState<DomainView[]>([]);
   const [activeTab, setActiveTab] = useState<"workflows" | "runs">("workflows");
   const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [runsLoading, setRunsLoading] = useState(false);
+  const [runsError, setRunsError] = useState<string | null>(null);
 
   // New automation modal
   const [isOpen, setIsOpen] = useState(false);
@@ -46,11 +51,13 @@ export default function AutomationsPage() {
 
   const fetchAutomations = async () => {
     setIsLoading(true);
+    setLoadError(null);
     try {
       const [autoRes, domRes] = await Promise.allSettled([
         api.listAutomations(),
         api.listDomains(),
       ]);
+      const failedResources: string[] = [];
       if (autoRes.status === "fulfilled") {
         const list = autoRes.value.data || [];
         setAutomations(list);
@@ -60,6 +67,8 @@ export default function AutomationsPage() {
         } else if (selectedAuto) {
           loadRuns(selectedAuto.id);
         }
+      } else {
+        failedResources.push("automations");
       }
       if (domRes.status === "fulfilled") {
         const domList = domRes.value.data || [];
@@ -68,20 +77,31 @@ export default function AutomationsPage() {
           const verified = domList.find((d: any) => d.status === "verified") || domList[0];
           setEmailFrom(`Acme <welcome@${verified.name}>`);
         }
+      } else {
+        failedResources.push("domains");
+      }
+      if (failedResources.length) {
+        setLoadError(`Could not load ${failedResources.join(" and ")}.`);
       }
     } catch (err) {
       console.error("Failed to load automations", err);
+      setLoadError(err instanceof Error ? err.message : "Could not load automation data.");
     } finally {
       setIsLoading(false);
     }
   };
 
   const loadRuns = async (automationId: string) => {
+    setRunsLoading(true);
+    setRunsError(null);
     try {
       const res = await api.listAutomationRuns(automationId);
       setRuns(res.data || []);
     } catch (err) {
       console.error("Failed to load automation runs", err);
+      setRunsError(err instanceof Error ? err.message : "Could not load workflow runs.");
+    } finally {
+      setRunsLoading(false);
     }
   };
 
@@ -220,6 +240,10 @@ export default function AutomationsPage() {
         </div>
       </div>
 
+      {loadError && automations.length > 0 && (
+        <ErrorState message={loadError} onRetry={fetchAutomations} />
+      )}
+
       {/* Tab: Workflows */}
       {activeTab === "workflows" && (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -230,6 +254,11 @@ export default function AutomationsPage() {
               <span className="font-mono">{automations.length}</span>
             </div>
 
+            {isLoading && automations.length === 0 ? (
+              <TableSkeleton rows={4} cols={1} />
+            ) : loadError && automations.length === 0 ? (
+              <ErrorState message={loadError} onRetry={fetchAutomations} />
+            ) : (
             <div className="space-y-2">
               {automations.length > 0 ? (
                 automations.map((a) => (
@@ -281,12 +310,11 @@ export default function AutomationsPage() {
                 ))
               ) : (
                 <div className="rounded-xl border border-surface-border bg-surface p-6 text-center text-xs text-zinc-500 dark:text-zinc-400">
-                  {isLoading
-                    ? "Loading automations..."
-                    : "No automations found. Create your first workflow above."}
+                  No automations found. Create your first workflow above.
                 </div>
               )}
             </div>
+            )}
           </div>
 
           {/* Right: Visual Step Workflow Viewer */}
@@ -408,6 +436,14 @@ export default function AutomationsPage() {
 
       {/* Tab: Runs */}
       {activeTab === "runs" && (
+        runsError ? (
+          <ErrorState
+            message={runsError}
+            onRetry={() => selectedAuto && loadRuns(selectedAuto.id)}
+          />
+        ) : runsLoading && runs.length === 0 ? (
+          <TableSkeleton rows={5} cols={5} />
+        ) : (
         <div className="overflow-x-auto rounded-xl border border-surface-border bg-surface">
           <table className="w-full text-left text-xs min-w-[650px]">
             <thead className="border-b border-surface-border bg-surface-raised text-[11px] font-medium uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
@@ -449,13 +485,14 @@ export default function AutomationsPage() {
               ) : (
                 <tr>
                   <td colSpan={5} className="py-12 text-center text-xs text-zinc-500 dark:text-zinc-400 font-sans">
-                    No runs recorded for this workflow yet.
+                    {selectedAuto ? "No runs recorded for this workflow yet." : "Select a workflow to view its runs."}
                   </td>
                 </tr>
               )}
             </tbody>
           </table>
         </div>
+        )
       )}
 
       {/* New Automation Modal */}

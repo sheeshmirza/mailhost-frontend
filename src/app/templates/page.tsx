@@ -16,12 +16,15 @@ import {
 } from "lucide-react";
 import { api, TemplateView, TemplateVersion } from "@/lib/api";
 import { useToast } from "@/lib/toast-context";
+import { ErrorState } from "@/components/ui/ErrorState";
+import { TableSkeleton } from "@/components/ui/LoadingState";
 
 export default function TemplatesPage() {
   const { toast } = useToast();
   const [templates, setTemplates] = useState<TemplateView[]>([]);
   const [selectedTemplate, setSelectedTemplate] = useState<TemplateView | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [isOpen, setIsOpen] = useState(false);
 
   // Form fields
@@ -34,6 +37,7 @@ export default function TemplatesPage() {
 
   const fetchTemplates = async () => {
     setIsLoading(true);
+    setLoadError(null);
     try {
       const res = await api.listTemplates();
       const list = res.data || [];
@@ -41,9 +45,9 @@ export default function TemplatesPage() {
       if (list.length > 0 && !selectedTemplate) {
         setSelectedTemplate(list[0]);
       }
-    } catch (err: any) {
+    } catch (err) {
       console.error("Failed to load templates", err);
-      toast.error("Failed to load templates: " + (err.response?.data?.message || err.message));
+      setLoadError(err instanceof Error ? err.message : "Could not load templates.");
     } finally {
       setIsLoading(false);
     }
@@ -54,13 +58,20 @@ export default function TemplatesPage() {
   }, []);
 
   const [versions, setVersions] = useState<TemplateVersion[]>([]);
+  const [isVersionsLoading, setIsVersionsLoading] = useState(false);
+  const [versionsError, setVersionsError] = useState<string | null>(null);
 
   const loadVersions = async (templateId: string) => {
+    setIsVersionsLoading(true);
+    setVersionsError(null);
     try {
       const res = await api.listTemplateVersions(templateId);
       setVersions(res.data || []);
-    } catch {
+    } catch (err) {
       setVersions([]);
+      setVersionsError(err instanceof Error ? err.message : "Could not load template history.");
+    } finally {
+      setIsVersionsLoading(false);
     }
   };
 
@@ -157,6 +168,11 @@ export default function TemplatesPage() {
             <span className="font-mono">{templates.length}</span>
           </div>
 
+          {isLoading && templates.length === 0 ? (
+            <TableSkeleton rows={4} cols={1} />
+          ) : loadError && templates.length === 0 ? (
+            <ErrorState message={loadError} onRetry={fetchTemplates} />
+          ) : (
           <div className="space-y-2">
             {templates.length > 0 ? (
               templates.map((tpl) => (
@@ -195,10 +211,12 @@ export default function TemplatesPage() {
               ))
             ) : (
               <div className="rounded-xl border border-surface-border bg-surface p-6 text-center text-xs text-zinc-500 dark:text-zinc-400">
-                {isLoading ? "Loading templates..." : "No templates created yet."}
+                No templates created yet.
               </div>
             )}
           </div>
+          )}
+          {loadError && templates.length > 0 && <ErrorState message={loadError} onRetry={fetchTemplates} />}
         </div>
 
         {/* Right Column: Template Inspector & Live HTML Preview */}
@@ -266,7 +284,14 @@ export default function TemplatesPage() {
                   </button>
                 </div>
 
-                {versions.length === 0 ? (
+                {versionsError ? (
+                  <ErrorState message={versionsError} onRetry={() => loadVersions(selectedTemplate.id)} />
+                ) : isVersionsLoading ? (
+                  <div role="status" className="flex items-center gap-2 rounded-md bg-surface-raised px-3 py-4 text-xs text-zinc-500 dark:text-zinc-400">
+                    <RefreshCw className="h-3.5 w-3.5 animate-spin" />
+                    Loading version history...
+                  </div>
+                ) : versions.length === 0 ? (
                   <div className="rounded-lg border border-surface-border bg-surface-raised/50 p-4 text-center text-xs text-zinc-500 dark:text-zinc-400">
                     No historical snapshots found. Snapshots are created on each update and publish.
                   </div>

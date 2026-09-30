@@ -13,6 +13,7 @@ import {
   RefreshCw,
 } from "lucide-react";
 import { useToast } from "@/lib/toast-context";
+import { TableSkeleton } from "@/components/ui/LoadingState";
 
 export default function APIKeysPage() {
   const toast = useToast();
@@ -139,7 +140,7 @@ export default function APIKeysPage() {
         </button>
       </div>
 
-      {loadError && (
+      {loadError && keys.length > 0 && (
         <div role="alert" className="flex items-center justify-between gap-3 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-xs text-red-800 dark:border-red-900/50 dark:bg-red-950/20 dark:text-red-300">
           <span>{loadError}</span>
           <button onClick={fetchKeys} disabled={isLoading} className="btn-secondary shrink-0" title="Retry loading">
@@ -150,6 +151,18 @@ export default function APIKeysPage() {
       )}
 
       {/* Keys Table */}
+      {isLoading && keys.length === 0 ? (
+        <TableSkeleton rows={5} cols={6} />
+      ) : loadError && keys.length === 0 ? (
+        <div role="alert" className="rounded-lg border border-red-200 bg-red-50 p-5 dark:border-red-900/50 dark:bg-red-950/20">
+          <p className="text-sm font-semibold text-red-800 dark:text-red-300">API keys could not be loaded</p>
+          <p className="mt-1 text-xs text-red-700 dark:text-red-400">{loadError}</p>
+          <button onClick={fetchKeys} disabled={isLoading} className="btn-secondary mt-3">
+            <RefreshCw className={`h-3.5 w-3.5 ${isLoading ? "animate-spin" : ""}`} />
+            <span>Try again</span>
+          </button>
+        </div>
+      ) : (
       <div className="overflow-x-auto rounded-xl border border-surface-border bg-surface">
         <table className="w-full text-left text-xs min-w-[550px]">
           <thead className="border-b border-surface-border bg-surface-raised text-[11px] font-medium uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
@@ -206,17 +219,14 @@ export default function APIKeysPage() {
             ) : (
               <tr>
                 <td colSpan={6} className="py-12 text-center text-xs text-zinc-500 dark:text-zinc-400 font-sans">
-                  {isLoading
-                    ? "Loading API keys..."
-                    : loadError
-                      ? "API keys could not be loaded."
-                      : "No API keys found. Create one to begin."}
+                  No API keys found. Create one to begin.
                 </td>
               </tr>
             )}
           </tbody>
         </table>
       </div>
+      )}
 
       {/* Create Key Modal */}
       {isCreateOpen && (

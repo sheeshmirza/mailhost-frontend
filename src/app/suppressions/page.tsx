@@ -3,6 +3,8 @@
 import React, { useState, useEffect } from "react";
 import { api } from "@/lib/api";
 import { useToast } from "@/lib/toast-context";
+import { ErrorState } from "@/components/ui/ErrorState";
+import { TableSkeleton } from "@/components/ui/LoadingState";
 import {
   ShieldAlert,
   Trash2,
@@ -17,15 +19,17 @@ export default function SuppressionsPage() {
     { address: string; reason?: string; created_at: string }[]
   >([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   const fetchSuppressions = async () => {
     setIsLoading(true);
+    setLoadError(null);
     try {
       const res = await api.listSuppressions();
       setSuppressions(res.data || []);
-    } catch (err: any) {
+    } catch (err) {
       console.error("Failed to load suppressions", err);
-      toast.error("Failed to load suppressions: " + (err.response?.data?.message || err.message));
+      setLoadError(err instanceof Error ? err.message : "Could not load suppressions.");
     } finally {
       setIsLoading(false);
     }
@@ -79,6 +83,11 @@ export default function SuppressionsPage() {
       </div>
 
       {/* Suppressions Table */}
+      {isLoading && suppressions.length === 0 ? (
+        <TableSkeleton rows={5} cols={4} />
+      ) : loadError && suppressions.length === 0 ? (
+        <ErrorState message={loadError} onRetry={fetchSuppressions} />
+      ) : (
       <div className="rounded-xl border border-surface-border overflow-hidden bg-surface">
         <table className="w-full text-left">
           <thead className="bg-surface-raised border-b border-surface-border text-[11px] font-medium uppercase tracking-wider text-zinc-500">
@@ -116,15 +125,17 @@ export default function SuppressionsPage() {
             ) : (
               <tr>
                 <td colSpan={4} className="py-16 text-center text-sm text-zinc-500">
-                  {isLoading
-                    ? "Loading suppressions..."
-                    : "No addresses currently suppressed. Your sender reputation is clean!"}
+                  No addresses currently suppressed. Your sender reputation is clean!
                 </td>
               </tr>
             )}
           </tbody>
         </table>
       </div>
+      )}
+      {loadError && suppressions.length > 0 && (
+        <ErrorState message={loadError} onRetry={fetchSuppressions} />
+      )}
     </div>
   );
 }
