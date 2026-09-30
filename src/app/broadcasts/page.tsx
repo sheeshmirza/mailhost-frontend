@@ -35,6 +35,9 @@ export default function BroadcastsPage() {
   const [isOpen, setIsOpen] = useState(false);
   const [editingBroadcastId, setEditingBroadcastId] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+  const [scheduledBroadcastId, setScheduledBroadcastId] = useState<string | null>(null);
+  const [scheduledAt, setScheduledAt] = useState("");
+  const [isSending, setIsSending] = useState(false);
   const [name, setName] = useState("");
   const [from, setFrom] = useState("");
   const [subject, setSubject] = useState("");
@@ -143,13 +146,26 @@ export default function BroadcastsPage() {
   };
 
   const handleSend = async (id: string) => {
-    if (!confirm("Are you sure you want to send this broadcast to all recipients in the audience?")) return;
+    setScheduledBroadcastId(id);
+    setScheduledAt("");
+  };
+
+  const confirmSend = async (schedule = false) => {
+    if (!scheduledBroadcastId || isSending) return;
+    if (!confirm(schedule
+      ? "Schedule this broadcast for the selected time?"
+      : "Send this broadcast to all recipients now?")) return;
+    setIsSending(true);
     try {
-      await api.sendBroadcast(id);
-      toast.success("Broadcast is sending to all recipients!");
-      fetchData();
+      const scheduledTime = schedule ? new Date(scheduledAt).toISOString() : undefined;
+      await api.sendBroadcast(scheduledBroadcastId, scheduledTime);
+      toast.success(schedule ? "Broadcast scheduled" : "Broadcast is sending to all recipients!");
+      setScheduledBroadcastId(null);
+      await fetchData();
     } catch (err: any) {
       toast.error("Failed to send broadcast: " + err.message);
+    } finally {
+      setIsSending(false);
     }
   };
 
@@ -395,6 +411,26 @@ export default function BroadcastsPage() {
               </div>
             </form>
           </div>
+        </div>
+      )}
+
+      {scheduledBroadcastId && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
+          <section role="dialog" aria-modal="true" aria-labelledby="broadcast-send-title" className="w-full max-w-md space-y-4 rounded-lg border border-surface-border bg-surface p-5 shadow-2xl">
+            <div>
+              <h2 id="broadcast-send-title" className="text-sm font-semibold text-content-primary">Send broadcast</h2>
+              <p className="mt-1 text-xs text-content-muted">Send immediately, or choose a future delivery time.</p>
+            </div>
+            <label className="block text-xs font-medium text-content-secondary">
+              Schedule time (optional)
+              <input type="datetime-local" value={scheduledAt} onChange={(event) => setScheduledAt(event.target.value)} className="input-base mt-1" />
+            </label>
+            <div className="flex flex-wrap justify-end gap-2 border-t border-surface-border pt-3">
+              <button type="button" onClick={() => setScheduledBroadcastId(null)} className="btn-secondary">Cancel</button>
+              <button type="button" disabled={isSending || !scheduledAt} onClick={() => confirmSend(true)} className="btn-secondary">{isSending && scheduledAt ? "Scheduling..." : "Schedule"}</button>
+              <button type="button" disabled={isSending} onClick={() => confirmSend(false)} className="btn-primary">{isSending && !scheduledAt ? "Sending..." : "Send now"}</button>
+            </div>
+          </section>
         </div>
       )}
     </div>

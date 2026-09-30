@@ -40,6 +40,33 @@ export default function SendEmailModal({
   const [cc, setCc] = useState("");
   const [bcc, setBcc] = useState("");
   const [replyTo, setReplyTo] = useState("");
+  const [scheduledAt, setScheduledAt] = useState("");
+  const [templateRef, setTemplateRef] = useState("");
+  const [templateVariablesJson, setTemplateVariablesJson] = useState("{}");
+  const [tagsJson, setTagsJson] = useState("[]");
+  const [attachments, setAttachments] = useState<{ filename: string; content: string; content_type: string }[]>([]);
+
+  const handleFiles = async (files: FileList | null) => {
+    if (!files?.length) return;
+    try {
+      const added = await Promise.all(Array.from(files).map(async (file) => {
+        const dataUrl = await new Promise<string>((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => typeof reader.result === "string" ? resolve(reader.result) : reject(new Error("Could not read attachment"));
+          reader.onerror = () => reject(new Error("Could not read attachment"));
+          reader.readAsDataURL(file);
+        });
+        return {
+          filename: file.name,
+          content: dataUrl.split(",", 2)[1] || "",
+          content_type: file.type || "application/octet-stream",
+        };
+      }));
+      setAttachments((current) => [...current, ...added]);
+    } catch (err) {
+      toast.error("Could not add attachment: " + (err instanceof Error ? err.message : "Unknown error"));
+    }
+  };
 
   useEffect(() => {
     if (isOpen) {
@@ -85,6 +112,11 @@ export default function SendEmailModal({
       if (recipients.length === 0) {
         throw new Error("At least one recipient email is required");
       }
+      const tags = JSON.parse(tagsJson) as { name: string; value: string }[];
+      const variables = JSON.parse(templateVariablesJson) as Record<string, unknown>;
+      if (!Array.isArray(tags) || !variables || Array.isArray(variables) || typeof variables !== "object") {
+        throw new Error("Tags must be a JSON array and template variables must be a JSON object.");
+      }
 
       const res = await api.sendEmail({
         from: from.trim(),
@@ -95,6 +127,11 @@ export default function SendEmailModal({
         cc: cc ? cc.split(",").map((s) => s.trim()).filter(Boolean) : undefined,
         bcc: bcc ? bcc.split(",").map((s) => s.trim()).filter(Boolean) : undefined,
         reply_to: replyTo ? [replyTo.trim()] : undefined,
+        scheduled_at: scheduledAt ? new Date(scheduledAt).toISOString() : undefined,
+        template: templateRef.trim() || undefined,
+        variables,
+        tags,
+        attachments,
       });
 
       setSuccessId(res.id);
@@ -288,7 +325,7 @@ export default function SendEmailModal({
                 onClick={() => setShowAdvanced(!showAdvanced)}
                 className="text-[11px] text-zinc-500 hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-200 underline"
               >
-                {showAdvanced ? "Hide CC, BCC & Reply-To" : "+ Add CC, BCC, Reply-To"}
+                {showAdvanced ? "Hide advanced options" : "+ Add scheduling, templates, tags & attachments"}
               </button>
 
               {showAdvanced && (
@@ -323,6 +360,45 @@ export default function SendEmailModal({
                       className="w-full rounded border border-surface-border bg-surface-raised px-2.5 py-1 text-xs text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-600"
                     />
                   </div>
+                </div>
+              )}
+
+              {showAdvanced && (
+                <div className="mt-3 space-y-3 animate-fade-in">
+                  <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                    <label className="block text-[10px] text-zinc-500 dark:text-zinc-400">
+                      Scheduled delivery (optional)
+                      <input type="datetime-local" value={scheduledAt} onChange={(event) => setScheduledAt(event.target.value)} className="input-base mt-1" />
+                    </label>
+                    <label className="block text-[10px] text-zinc-500 dark:text-zinc-400">
+                      Published template ID or alias
+                      <input value={templateRef} onChange={(event) => setTemplateRef(event.target.value)} placeholder="welcome-email" className="input-base mt-1 font-mono" />
+                    </label>
+                  </div>
+                  <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                    <label className="block text-[10px] text-zinc-500 dark:text-zinc-400">
+                      Template variables (JSON object)
+                      <textarea value={templateVariablesJson} onChange={(event) => setTemplateVariablesJson(event.target.value)} rows={3} className="input-base mt-1 font-mono" />
+                    </label>
+                    <label className="block text-[10px] text-zinc-500 dark:text-zinc-400">
+                      Tags (JSON array)
+                      <textarea value={tagsJson} onChange={(event) => setTagsJson(event.target.value)} rows={3} className="input-base mt-1 font-mono" />
+                    </label>
+                  </div>
+                  <label className="block text-[10px] text-zinc-500 dark:text-zinc-400">
+                    Attachments
+                    <input type="file" multiple onChange={(event) => { void handleFiles(event.target.files); event.currentTarget.value = ""; }} className="mt-1 block w-full text-xs text-content-secondary file:mr-3 file:rounded-md file:border file:border-surface-border file:bg-surface file:px-3 file:py-1.5 file:text-xs" />
+                  </label>
+                  {attachments.length > 0 && (
+                    <ul className="space-y-1">
+                      {attachments.map((attachment, index) => (
+                        <li key={`${attachment.filename}-${index}`} className="flex items-center justify-between gap-2 rounded-md bg-surface-raised px-2.5 py-1.5 text-xs">
+                          <span className="min-w-0 truncate text-content-secondary">{attachment.filename}</span>
+                          <button type="button" onClick={() => setAttachments((current) => current.filter((_, itemIndex) => itemIndex !== index))} className="text-red-600 hover:text-red-800 dark:text-red-300">Remove</button>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
                 </div>
               )}
             </div>

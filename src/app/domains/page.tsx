@@ -34,6 +34,8 @@ export default function DomainsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [isVerifying, setIsVerifying] = useState(false);
+  const [inboundWebhookURL, setInboundWebhookURL] = useState("");
+  const [isSavingInboundWebhook, setIsSavingInboundWebhook] = useState(false);
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
 
   const fetchDomains = async () => {
@@ -60,6 +62,10 @@ export default function DomainsPage() {
   useEffect(() => {
     fetchDomains();
   }, []);
+
+  useEffect(() => {
+    setInboundWebhookURL(selectedDomain?.inbound_webhook_url || "");
+  }, [selectedDomain?.id, selectedDomain?.inbound_webhook_url]);
 
   const handleAddDomain = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -119,6 +125,23 @@ export default function DomainsPage() {
       fetchDomains();
     } catch (err: any) {
       toast.error("Failed to update domain setting: " + err.message);
+    }
+  };
+
+  const saveInboundWebhook = async () => {
+    if (!selectedDomain || isSavingInboundWebhook) return;
+    setIsSavingInboundWebhook(true);
+    try {
+      const updated = await api.updateDomain(selectedDomain.id, {
+        inbound_webhook_url: inboundWebhookURL.trim() || null,
+      });
+      setSelectedDomain(updated);
+      toast.success(inboundWebhookURL.trim() ? "Inbound webhook saved" : "Inbound webhook removed");
+      await fetchDomains();
+    } catch (err) {
+      toast.error("Could not update inbound webhook: " + (err instanceof Error ? err.message : "Unknown error"));
+    } finally {
+      setIsSavingInboundWebhook(false);
     }
   };
 
@@ -427,6 +450,24 @@ export default function DomainsPage() {
                         <ChevronDown className="h-4 w-4" />
                       </div>
                     </div>
+                  </div>
+                </div>
+                <div className="rounded-lg border border-surface-border bg-surface-raised p-4">
+                  <div className="mb-3">
+                    <h4 className="text-sm font-medium text-content-primary">Inbound email webhook</h4>
+                    <p className="mt-1 text-xs text-content-muted">Receive a signed callback when mail arrives for this domain.</p>
+                  </div>
+                  <div className="flex flex-col gap-2 sm:flex-row">
+                    <input
+                      type="url"
+                      value={inboundWebhookURL}
+                      onChange={(event) => setInboundWebhookURL(event.target.value)}
+                      placeholder="https://api.example.com/inbound"
+                      className="input-base"
+                    />
+                    <button onClick={saveInboundWebhook} disabled={isSavingInboundWebhook} className="btn-primary shrink-0">
+                      {isSavingInboundWebhook ? "Saving..." : "Save URL"}
+                    </button>
                   </div>
                 </div>
               </div>

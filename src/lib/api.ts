@@ -123,9 +123,12 @@ export interface SendEmailPayload {
   html?: string;
   text?: string;
   headers?: Record<string, string>;
+  attachments?: { filename: string; content: string; content_type?: string }[];
   tags?: { name: string; value: string }[];
   scheduled_at?: string;
   template_id?: string;
+  template?: string;
+  variables?: Record<string, unknown>;
 }
 
 export interface BulkEmailPayload {
@@ -900,10 +903,13 @@ export class APIClient {
     });
   }
 
-  async sendBroadcast(id: string) {
+  async sendBroadcast(id: string, scheduledAt?: string) {
     return this.request<{ id: string; status: string }>(
       `/v1/broadcasts/${id}/send`,
-      { method: "POST" }
+      {
+        method: "POST",
+        body: JSON.stringify(scheduledAt ? { scheduled_at: scheduledAt } : {}),
+      }
     );
   }
 
