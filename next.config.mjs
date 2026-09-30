@@ -1,7 +1,6 @@
 import path from "path";
 
 const nextConfig = {
-  ...(process.env.NEXT_DIST_DIR ? { distDir: process.env.NEXT_DIST_DIR } : {}),
   // Optimize static images by disabling Next.js server-side image optimization
   images: {
     domains: [],
@@ -9,8 +8,6 @@ const nextConfig = {
   },
   // Output as a static HTML export (required for fully static deployments)
   output: "export",
-  // Disable X-Powered-By header to prevent server technology leakage
-  poweredByHeader: false,
   // Enable React strict mode for improved debugging and performance checks
   reactStrictMode: true,
   // Use the Rust-based SWC compiler for faster builds
@@ -19,7 +16,7 @@ const nextConfig = {
   trailingSlash: true,
   // Custom Webpack alias for simpler imports using "@"
   webpack: (config) => {
-    config.resolve.alias["@"] = path.resolve(process.cwd(), "src");
+    config.resolve.alias["@"] = path.resolve(process.cwd());
     return config;
   }
 };
