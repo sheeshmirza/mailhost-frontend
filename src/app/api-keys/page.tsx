@@ -13,12 +13,15 @@ import {
   RefreshCw,
 } from "lucide-react";
 import { useToast } from "@/lib/toast-context";
+import { TableSkeleton } from "@/components/ui/LoadingState";
+import { ErrorState } from "@/components/ui/ErrorState";
 
 export default function APIKeysPage() {
   const toast = useToast();
   const [keys, setKeys] = useState<APIKeyView[]>([]);
   const [domains, setDomains] = useState<DomainView[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [keyName, setKeyName] = useState("");
   const [permission, setPermission] = useState<"full_access" | "sending_access">(
@@ -30,19 +33,25 @@ export default function APIKeysPage() {
 
   const fetchKeys = async () => {
     setIsLoading(true);
+    setError(null);
     try {
       const [keysRes, domainsRes] = await Promise.allSettled([
         api.listAPIKeys(),
         api.listDomains(),
       ]);
-      if (keysRes.status === "fulfilled") {
-        setKeys(keysRes.value.data || []);
+      if (keysRes.status === "rejected" && domainsRes.status === "rejected") {
+        setError("Unable to load API keys. Please verify connection to the server.");
+      } else {
+        if (keysRes.status === "fulfilled") {
+          setKeys(keysRes.value.data || []);
+        }
+        if (domainsRes.status === "fulfilled") {
+          setDomains(domainsRes.value.data || []);
+        }
       }
-      if (domainsRes.status === "fulfilled") {
-        setDomains(domainsRes.value.data || []);
-      }
-    } catch (err) {
+    } catch (err: any) {
       console.error("Failed to load API keys", err);
+      setError(err?.message || "Failed to load API keys");
     } finally {
       setIsLoading(false);
     }
@@ -113,10 +122,28 @@ export default function APIKeysPage() {
         </button>
       </div>
 
-      {/* Keys Table */}
-      <div className="overflow-x-auto rounded-xl border border-surface-border bg-surface">
-        <table className="w-full text-left text-xs min-w-[550px]">
-          <thead className="border-b border-surface-border bg-surface-raised text-[11px] font-medium uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+      {error && (
+        <ErrorState
+          title="Failed to Load API Keys"
+          message={error}
+          onRetry={fetchKeys}
+          retryLabel="Retry"
+          actionHref="/overview"
+          actionLabel="Go to Dashboard"
+        />
+      )}
+
+      {isLoading && keys.length === 0 ? (
+        <TableSkeleton
+          rows={6}
+          columns={6}
+          columnWidths={["w-32", "w-28", "w-20", "w-24", "w-20", "w-8"]}
+        />
+      ) : (
+        /* Keys Table */
+        <div className="overflow-x-auto rounded-xl border border-surface-border bg-surface">
+          <table className="w-full text-left text-xs min-w-[550px]">
+            <thead className="border-b border-surface-border bg-surface-raised text-[11px] font-medium uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
             <tr>
               <th className="px-5 py-3">Name</th>
               <th className="px-5 py-3">Key Preview</th>
@@ -176,6 +203,7 @@ export default function APIKeysPage() {
           </tbody>
         </table>
       </div>
+      )}
 
       {/* Create Key Modal */}
       {isCreateOpen && (

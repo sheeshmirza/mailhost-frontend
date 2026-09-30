@@ -25,6 +25,8 @@ import {
   CheckCircle2,
 } from "lucide-react";
 import { useToast } from "@/lib/toast-context";
+import { TableSkeleton, Skeleton } from "@/components/ui/LoadingState";
+import { ErrorState } from "@/components/ui/ErrorState";
 
 export default function AudiencesPage() {
   const toast = useToast();
@@ -40,6 +42,7 @@ export default function AudiencesPage() {
   const [segments, setSegments] = useState<SegmentView[]>([]);
   const [topics, setTopics] = useState<TopicView[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   // Contact Detail Drawer State
   const [selectedContact, setSelectedContact] = useState<ContactView | null>(null);
@@ -72,6 +75,7 @@ export default function AudiencesPage() {
 
   const fetchData = async () => {
     setIsLoading(true);
+    setError(null);
     try {
       const [audRes, segRes, topRes] = await Promise.allSettled([
         api.listAudiences(),
@@ -79,28 +83,33 @@ export default function AudiencesPage() {
         api.listTopics(),
       ]);
 
-      if (audRes.status === "fulfilled") {
-        const list = audRes.value.data || [];
-        setAudiences(list);
-        if (list.length > 0 && !selectedAudience) {
-          setSelectedAudience(list[0]);
-          loadContacts(list[0].id);
-        } else if (selectedAudience) {
-          loadContacts(selectedAudience.id);
-        } else {
-          loadContacts();
+      if (audRes.status === "rejected" && segRes.status === "rejected" && topRes.status === "rejected") {
+        setError("Unable to load audiences and subscribers. Please check server status.");
+      } else {
+        if (audRes.status === "fulfilled") {
+          const list = audRes.value.data || [];
+          setAudiences(list);
+          if (list.length > 0 && !selectedAudience) {
+            setSelectedAudience(list[0]);
+            loadContacts(list[0].id);
+          } else if (selectedAudience) {
+            loadContacts(selectedAudience.id);
+          } else {
+            loadContacts();
+          }
+        }
+
+        if (segRes.status === "fulfilled") {
+          setSegments(segRes.value.data || []);
+        }
+
+        if (topRes.status === "fulfilled") {
+          setTopics(topRes.value.data || []);
         }
       }
-
-      if (segRes.status === "fulfilled") {
-        setSegments(segRes.value.data || []);
-      }
-
-      if (topRes.status === "fulfilled") {
-        setTopics(topRes.value.data || []);
-      }
-    } catch (err) {
+    } catch (err: any) {
       console.error("Failed to load audience data", err);
+      setError(err?.message || "Failed to load audience data");
     } finally {
       setIsLoading(false);
     }
@@ -414,6 +423,17 @@ export default function AudiencesPage() {
           </button>
         </div>
       </div>
+
+      {error && (
+        <ErrorState
+          title="Failed to Load Audience Data"
+          message={error}
+          onRetry={fetchData}
+          retryLabel="Retry"
+          actionHref="/overview"
+          actionLabel="Go to Dashboard"
+        />
+      )}
 
       {/* View 1: Contacts & Audiences */}
       {mainTab === "contacts" && (

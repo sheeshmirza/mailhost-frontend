@@ -22,17 +22,21 @@ import {
 } from "lucide-react";
 import CodeSnippet from "@/components/ui/CodeSnippet";
 import SendEmailModal from "@/components/emails/SendEmailModal";
+import { CardSkeleton, ChartSkeleton, Skeleton } from "@/components/ui/LoadingState";
+import { ErrorState } from "@/components/ui/ErrorState";
 
 export default function OverviewPage() {
   const [analytics, setAnalytics] = useState<AnalyticsResponse | null>(null);
   const [recentEmails, setRecentEmails] = useState<EmailSummary[]>([]);
   const [domains, setDomains] = useState<DomainView[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [interval, setInterval] = useState<"hour" | "day" | "week" | "month">("day");
   const [isSendModalOpen, setIsSendModalOpen] = useState(false);
 
   const loadData = async () => {
     setIsLoading(true);
+    setError(null);
     try {
       const [analyticsData, emailsData, domainsData] = await Promise.allSettled([
         api.getAnalytics({ interval }),
@@ -40,17 +44,27 @@ export default function OverviewPage() {
         api.listDomains(),
       ]);
 
-      if (analyticsData.status === "fulfilled") {
-        setAnalytics(analyticsData.value);
+      const allFailed =
+        analyticsData.status === "rejected" &&
+        emailsData.status === "rejected" &&
+        domainsData.status === "rejected";
+
+      if (allFailed) {
+        setError("Unable to connect to the backend API services. Please verify your connection or service status.");
+      } else {
+        if (analyticsData.status === "fulfilled") {
+          setAnalytics(analyticsData.value);
+        }
+        if (emailsData.status === "fulfilled") {
+          setRecentEmails(emailsData.value.data || []);
+        }
+        if (domainsData.status === "fulfilled") {
+          setDomains(domainsData.value.data || []);
+        }
       }
-      if (emailsData.status === "fulfilled") {
-        setRecentEmails(emailsData.value.data || []);
-      }
-      if (domainsData.status === "fulfilled") {
-        setDomains(domainsData.value.data || []);
-      }
-    } catch (err) {
+    } catch (err: any) {
       console.error("Failed to load overview data", err);
+      setError(err?.message || "Failed to load overview data");
     } finally {
       setIsLoading(false);
     }
@@ -137,8 +151,30 @@ export default function OverviewPage() {
         </div>
       </div>
 
-      {/* KPI Cards Grid */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+      {error && (
+        <ErrorState
+          title="Overview Analytics Unavailable"
+          message={error}
+          onRetry={loadData}
+          retryLabel="Retry Connection"
+          actionHref="/logs"
+          actionLabel="Check Service Status"
+        />
+      )}
+
+      {isLoading && !analytics ? (
+        <div className="space-y-6">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+            {Array.from({ length: 5 }).map((_, i) => (
+              <CardSkeleton key={i} />
+            ))}
+          </div>
+          <ChartSkeleton />
+        </div>
+      ) : (
+        <>
+          {/* KPI Cards Grid */}
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
         {/* Sent */}
         <div className="rounded-xl border border-surface-border bg-surface p-5 space-y-3 shadow-sm">
           <div className="flex items-center justify-between">
@@ -381,6 +417,8 @@ export default function OverviewPage() {
           </div>
         </div>
       </div>
+      </>
+      )}
 
       {/* Send Email Modal */}
       <SendEmailModal

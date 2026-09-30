@@ -7,6 +7,8 @@ import {
   DedicatedIPView,
 } from "@/lib/api";
 import { useToast } from "@/lib/toast-context";
+import { TableSkeleton } from "@/components/ui/LoadingState";
+import { ErrorState } from "@/components/ui/ErrorState";
 import {
   Activity,
   CheckCircle2,
@@ -39,9 +41,11 @@ export default function LogsHealthPage() {
   const [dedicatedIPs, setDedicatedIPs] = useState<DedicatedIPView[]>([]);
   const [warmupSchedule, setWarmupSchedule] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   const fetchHealthAndLogs = async () => {
     setIsLoading(true);
+    setError(null);
     try {
       const [readyRes, logsRes, ipsRes, schedRes] = await Promise.allSettled([
         api.getReadiness(),
@@ -50,21 +54,25 @@ export default function LogsHealthPage() {
         api.getWarmingSchedule(),
       ]);
 
-      if (readyRes.status === "fulfilled") {
-        setReadiness(readyRes.value.checks || {});
-      }
-      if (logsRes.status === "fulfilled") {
-        setAuditLogs(logsRes.value.data || []);
-      }
-      if (ipsRes.status === "fulfilled") {
-        setDedicatedIPs(ipsRes.value.data || []);
-      }
-      if (schedRes.status === "fulfilled") {
-        setWarmupSchedule(schedRes.value.schedule || []);
+      if (readyRes.status === "rejected" && logsRes.status === "rejected") {
+        setError("Unable to retrieve system health telemetry and audit trail. Server may be offline.");
+      } else {
+        if (readyRes.status === "fulfilled") {
+          setReadiness(readyRes.value.checks || {});
+        }
+        if (logsRes.status === "fulfilled") {
+          setAuditLogs(logsRes.value.data || []);
+        }
+        if (ipsRes.status === "fulfilled") {
+          setDedicatedIPs(ipsRes.value.data || []);
+        }
+        if (schedRes.status === "fulfilled") {
+          setWarmupSchedule(schedRes.value.schedule || []);
+        }
       }
     } catch (err: any) {
       console.error("Failed to load health and logs", err);
-      toast.error("Failed to load logs and system health: " + (err.response?.data?.message || err.message));
+      setError(err?.message || "Failed to load logs and system health");
     } finally {
       setIsLoading(false);
     }
@@ -97,6 +105,17 @@ export default function LogsHealthPage() {
           </button>
         </div>
       </div>
+
+      {error && (
+        <ErrorState
+          title="Telemetry Connection Error"
+          message={error}
+          onRetry={fetchHealthAndLogs}
+          retryLabel="Retry Connection"
+          actionHref="/overview"
+          actionLabel="Go to Dashboard"
+        />
+      )}
 
       {/* Platform Service Status */}
       <div className="rounded-xl border border-surface-border bg-surface p-5 space-y-4">

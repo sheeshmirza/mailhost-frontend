@@ -20,6 +20,8 @@ import {
   Mail,
 } from "lucide-react";
 import { useToast } from "@/lib/toast-context";
+import { TableSkeleton } from "@/components/ui/LoadingState";
+import { ErrorState } from "@/components/ui/ErrorState";
 
 export default function InboundPage() {
   const toast = useToast();
@@ -29,6 +31,7 @@ export default function InboundPage() {
   const [aliases, setAliases] = useState<AliasView[]>([]);
   const [domains, setDomains] = useState<DomainView[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   // New alias modal
   const [isAliasOpen, setIsAliasOpen] = useState(false);
@@ -38,17 +41,21 @@ export default function InboundPage() {
 
   const fetchData = async () => {
     setIsLoading(true);
+    setError(null);
     try {
       const [inboundRes, aliasesRes, domainsRes] = await Promise.allSettled([
         api.listInbound(),
         api.listAliases(),
         api.listDomains(),
       ]);
+      let hasSuccess = false;
       if (inboundRes.status === "fulfilled") {
         setInboundEmails(inboundRes.value.data || []);
+        hasSuccess = true;
       }
       if (aliasesRes.status === "fulfilled") {
         setAliases(aliasesRes.value.data || []);
+        hasSuccess = true;
       }
       if (domainsRes.status === "fulfilled") {
         const domList = domainsRes.value.data || [];
@@ -56,9 +63,15 @@ export default function InboundPage() {
         if (domList.length > 0 && !selectedDomain) {
           setSelectedDomain(domList[0].name);
         }
+        hasSuccess = true;
       }
-    } catch (err) {
+      if (!hasSuccess && (inboundRes.status === "rejected" || aliasesRes.status === "rejected")) {
+        const reason = (inboundRes.status === "rejected" ? (inboundRes as PromiseRejectedResult).reason : (aliasesRes as PromiseRejectedResult).reason)?.message || "Failed to load inbound data";
+        setError(reason);
+      }
+    } catch (err: any) {
       console.error("Failed to load inbound data", err);
+      setError(err?.message || "Failed to load inbound data");
     } finally {
       setIsLoading(false);
     }
@@ -172,104 +185,106 @@ export default function InboundPage() {
         </div>
       </div>
 
-      {/* Tab: Received Emails */}
-      {activeTab === "emails" && (
-        <div className="overflow-x-auto rounded-xl border border-surface-border bg-surface">
-          <table className="w-full text-left text-xs min-w-[650px]">
-            <thead className="border-b border-surface-border bg-surface-raised text-[11px] font-medium uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
-              <tr>
-                <th className="px-5 py-3">Subject</th>
-                <th className="px-5 py-3">From</th>
-                <th className="px-5 py-3">To (Recipient)</th>
-                <th className="px-5 py-3">Size</th>
-                <th className="px-5 py-3">Received At</th>
-                <th className="px-5 py-3 text-right">Inspect</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-surface-border">
-              {inboundEmails.length > 0 ? (
-                inboundEmails.map((item) => (
-                  <tr
-                    key={item.id}
-                    onClick={() => loadDetail(item.id)}
-                    className="cursor-pointer hover:bg-surface-raised/40 transition-colors"
-                  >
-                    <td className="px-5 py-3 font-medium text-zinc-900 dark:text-white max-w-xs truncate">
-                      {item.subject || "(no subject)"}
-                    </td>
-                    <td className="px-5 py-3 font-mono text-zinc-600 dark:text-zinc-400 max-w-xs truncate">
-                      {item.mail_from || item.from}
-                    </td>
-                    <td className="px-5 py-3 font-mono text-zinc-600 dark:text-zinc-400 max-w-xs truncate">
-                      {item.rcpt_to?.join(", ") || "—"}
-                    </td>
-                    <td className="px-5 py-3 font-mono text-zinc-500 dark:text-zinc-400">
-                      {(item.size / 1024).toFixed(1)} KB
-                    </td>
-                    <td className="px-5 py-3 font-mono text-zinc-500 dark:text-zinc-400">
-                      {new Date(item.created_at).toLocaleString()}
-                    </td>
-                    <td className="px-5 py-3 text-right">
-                      <ChevronRight className="h-4 w-4 text-zinc-400 dark:text-zinc-500 ml-auto" />
-                    </td>
-                  </tr>
-                ))
-              ) : (
+      {error ? (
+        <ErrorState message={error} onRetry={fetchData} />
+      ) : activeTab === "emails" ? (
+        isLoading && inboundEmails.length === 0 ? (
+          <TableSkeleton rows={5} cols={6} />
+        ) : (
+          <div className="overflow-x-auto rounded-xl border border-surface-border bg-surface">
+            <table className="w-full text-left text-xs min-w-[650px]">
+              <thead className="border-b border-surface-border bg-surface-raised text-[11px] font-medium uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
                 <tr>
-                  <td colSpan={6} className="py-12 text-center text-xs text-zinc-500 dark:text-zinc-400">
-                    {isLoading
-                      ? "Loading received emails..."
-                      : "No inbound emails received yet. Configure MX records pointing to port 25 to receive mail."}
-                  </td>
+                  <th className="px-5 py-3">Subject</th>
+                  <th className="px-5 py-3">From</th>
+                  <th className="px-5 py-3">To (Recipient)</th>
+                  <th className="px-5 py-3">Size</th>
+                  <th className="px-5 py-3">Received At</th>
+                  <th className="px-5 py-3 text-right">Inspect</th>
                 </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-      )}
-
-      {/* Tab: Aliases */}
-      {activeTab === "aliases" && (
-        <div className="overflow-x-auto rounded-xl border border-surface-border bg-surface">
-          <table className="w-full text-left text-xs min-w-[500px]">
-            <thead className="border-b border-surface-border bg-surface-raised text-[11px] font-medium uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
-              <tr>
-                <th className="px-5 py-3">Alias Address</th>
-                <th className="px-5 py-3">Forward To</th>
-                <th className="px-5 py-3">Created</th>
-                <th className="px-5 py-3 text-right">Delete</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-surface-border font-mono">
-              {aliases.length > 0 ? (
-                aliases.map((al) => (
-                  <tr key={al.id} className="hover:bg-surface-raised/40 transition-colors">
-                    <td className="px-5 py-3 text-zinc-900 dark:text-white font-semibold">
-                      {al.address || al.alias || al.name}
-                    </td>
-                    <td className="px-5 py-3 text-zinc-700 dark:text-zinc-300">
-                      {al.destinations && al.destinations.length > 0
-                        ? al.destinations.join(", ")
-                        : al.forward_to && al.forward_to.length > 0
-                        ? al.forward_to.join(", ")
-                        : al.store_copy
-                        ? "Stored in Inbox"
-                        : "—"}
-                    </td>
-                    <td className="px-5 py-3 text-zinc-500 dark:text-zinc-400 text-[11px]">
-                      {new Date(al.created_at).toLocaleDateString()}
-                    </td>
-                    <td className="px-5 py-3 text-right">
-                      <button
-                        onClick={() => handleDeleteAlias(al.id)}
-                        className="rounded p-1 text-zinc-400 hover:text-red-500 dark:hover:text-red-400 transition-colors"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </button>
+              </thead>
+              <tbody className="divide-y divide-surface-border">
+                {inboundEmails.length > 0 ? (
+                  inboundEmails.map((item) => (
+                    <tr
+                      key={item.id}
+                      onClick={() => loadDetail(item.id)}
+                      className="cursor-pointer hover:bg-surface-raised/40 transition-colors"
+                    >
+                      <td className="px-5 py-3 font-medium text-zinc-900 dark:text-white max-w-xs truncate">
+                        {item.subject || "(no subject)"}
+                      </td>
+                      <td className="px-5 py-3 font-mono text-zinc-600 dark:text-zinc-400 max-w-xs truncate">
+                        {item.mail_from || item.from}
+                      </td>
+                      <td className="px-5 py-3 font-mono text-zinc-600 dark:text-zinc-400 max-w-xs truncate">
+                        {item.rcpt_to?.join(", ") || "—"}
+                      </td>
+                      <td className="px-5 py-3 font-mono text-zinc-500 dark:text-zinc-400">
+                        {(item.size / 1024).toFixed(1)} KB
+                      </td>
+                      <td className="px-5 py-3 font-mono text-zinc-500 dark:text-zinc-400">
+                        {new Date(item.created_at).toLocaleString()}
+                      </td>
+                      <td className="px-5 py-3 text-right">
+                        <ChevronRight className="h-4 w-4 text-zinc-400 dark:text-zinc-500 ml-auto" />
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan={6} className="py-12 text-center text-xs text-zinc-500 dark:text-zinc-400">
+                      No inbound emails received yet. Configure MX records pointing to port 25 to receive mail.
                     </td>
                   </tr>
-                ))
-              ) : (
+                )}
+              </tbody>
+            </table>
+          </div>
+        )
+      ) : isLoading && aliases.length === 0 ? (
+          <TableSkeleton rows={4} cols={4} />
+        ) : (
+          <div className="overflow-x-auto rounded-xl border border-surface-border bg-surface">
+            <table className="w-full text-left text-xs min-w-[500px]">
+              <thead className="border-b border-surface-border bg-surface-raised text-[11px] font-medium uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+                <tr>
+                  <th className="px-5 py-3">Alias Address</th>
+                  <th className="px-5 py-3">Forward To</th>
+                  <th className="px-5 py-3">Created</th>
+                  <th className="px-5 py-3 text-right">Delete</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-surface-border font-mono">
+                {aliases.length > 0 ? (
+                  aliases.map((al) => (
+                    <tr key={al.id} className="hover:bg-surface-raised/40 transition-colors">
+                      <td className="px-5 py-3 text-zinc-900 dark:text-white font-semibold">
+                        {al.address || al.alias || al.name}
+                      </td>
+                      <td className="px-5 py-3 text-zinc-700 dark:text-zinc-300">
+                        {al.destinations && al.destinations.length > 0
+                          ? al.destinations.join(", ")
+                          : al.forward_to && al.forward_to.length > 0
+                          ? al.forward_to.join(", ")
+                          : al.store_copy
+                          ? "Stored in Inbox"
+                          : "—"}
+                      </td>
+                      <td className="px-5 py-3 text-zinc-500 dark:text-zinc-400 text-[11px]">
+                        {new Date(al.created_at).toLocaleDateString()}
+                      </td>
+                      <td className="px-5 py-3 text-right">
+                        <button
+                          onClick={() => handleDeleteAlias(al.id)}
+                          className="rounded p-1 text-zinc-400 hover:text-red-500 dark:hover:text-red-400 transition-colors"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </td>
+                    </tr>
+                  ))
+                ) : (
                 <tr>
                   <td colSpan={4} className="py-12 text-center text-xs text-zinc-500 dark:text-zinc-400 font-sans">
                     No forwarding aliases configured yet.

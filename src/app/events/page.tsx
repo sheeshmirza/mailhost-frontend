@@ -3,6 +3,8 @@
 import React, { useState, useEffect } from "react";
 import { api, CustomEvent } from "@/lib/api";
 import { useToast } from "@/lib/toast-context";
+import { TableSkeleton } from "@/components/ui/LoadingState";
+import { ErrorState } from "@/components/ui/ErrorState";
 import {
   Zap,
   Plus,
@@ -17,6 +19,7 @@ export default function EventsPage() {
   const { toast } = useToast();
   const [events, setEvents] = useState<CustomEvent[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [isOpen, setIsOpen] = useState(false);
 
   // Form fields
@@ -31,12 +34,13 @@ export default function EventsPage() {
 
   const fetchEvents = async () => {
     setIsLoading(true);
+    setError(null);
     try {
       const res = await api.listEvents();
       setEvents(res.data || []);
     } catch (err: any) {
       console.error("Failed to load events", err);
-      toast.error("Failed to load events: " + (err.response?.data?.message || err.message));
+      setError(err?.message || "Failed to load events from server");
     } finally {
       setIsLoading(false);
     }
@@ -97,46 +101,65 @@ export default function EventsPage() {
         </div>
       </div>
 
-      {/* Events Table */}
-      <div className="overflow-x-auto rounded-xl border border-surface-border bg-surface">
-        <table className="w-full text-left text-xs min-w-[650px]">
-          <thead className="border-b border-surface-border bg-surface-raised text-[11px] font-medium uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
-            <tr>
-              <th className="px-5 py-3">Event Name</th>
-              <th className="px-5 py-3">Contact Email</th>
-              <th className="px-5 py-3">Payload Data</th>
-              <th className="px-5 py-3 text-right">Triggered At</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-surface-border font-mono">
-            {events.length > 0 ? (
-              events.map((ev) => (
-                <tr key={ev.id} className="hover:bg-surface-raised/40 transition-colors">
-                  <td className="px-5 py-3 text-zinc-900 dark:text-white font-semibold flex items-center gap-2">
-                    <Zap className="h-3.5 w-3.5 text-purple-500" />
-                    <span>{ev.name}</span>
-                  </td>
-                  <td className="px-5 py-3 text-zinc-700 dark:text-zinc-300">{ev.contact_email}</td>
-                  <td className="px-5 py-3 max-w-sm truncate text-zinc-500 dark:text-zinc-400">
-                    {JSON.stringify(ev.data)}
-                  </td>
-                  <td className="px-5 py-3 text-right text-zinc-400 dark:text-zinc-500 text-[11px]">
-                    {new Date(ev.created_at).toLocaleString()}
+      {error && (
+        <ErrorState
+          title="Failed to Load Events"
+          message={error}
+          onRetry={fetchEvents}
+          retryLabel="Retry"
+          actionHref="/overview"
+          actionLabel="Go to Dashboard"
+        />
+      )}
+
+      {isLoading && events.length === 0 ? (
+        <TableSkeleton
+          rows={5}
+          columns={4}
+          columnWidths={["w-32", "w-40", "w-48", "w-24"]}
+        />
+      ) : (
+        /* Events Table */
+        <div className="overflow-x-auto rounded-xl border border-surface-border bg-surface">
+          <table className="w-full text-left text-xs min-w-[650px]">
+            <thead className="border-b border-surface-border bg-surface-raised text-[11px] font-medium uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+              <tr>
+                <th className="px-5 py-3">Event Name</th>
+                <th className="px-5 py-3">Contact Email</th>
+                <th className="px-5 py-3">Payload Data</th>
+                <th className="px-5 py-3 text-right">Triggered At</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-surface-border font-mono">
+              {events.length > 0 ? (
+                events.map((ev) => (
+                  <tr key={ev.id} className="hover:bg-surface-raised/40 transition-colors">
+                    <td className="px-5 py-3 text-zinc-900 dark:text-white font-semibold flex items-center gap-2">
+                      <Zap className="h-3.5 w-3.5 text-purple-500" />
+                      <span>{ev.name}</span>
+                    </td>
+                    <td className="px-5 py-3 text-zinc-700 dark:text-zinc-300">{ev.contact_email}</td>
+                    <td className="px-5 py-3 max-w-sm truncate text-zinc-500 dark:text-zinc-400">
+                      {JSON.stringify(ev.data)}
+                    </td>
+                    <td className="px-5 py-3 text-right text-zinc-400 dark:text-zinc-500 text-[11px]">
+                      {new Date(ev.created_at).toLocaleString()}
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan={4} className="py-12 text-center text-xs text-zinc-500 dark:text-zinc-400 font-sans">
+                    {isLoading
+                      ? "Loading custom events..."
+                      : "No events recorded yet. Click 'Trigger Event' to test."}
                   </td>
                 </tr>
-              ))
-            ) : (
-              <tr>
-                <td colSpan={4} className="py-12 text-center text-xs text-zinc-500 dark:text-zinc-400 font-sans">
-                  {isLoading
-                    ? "Loading custom events..."
-                    : "No events recorded yet. Click 'Trigger Event' to test."}
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
+              )}
+            </tbody>
+          </table>
+        </div>
+      )}
 
       {/* Trigger Event Modal */}
       {isOpen && (

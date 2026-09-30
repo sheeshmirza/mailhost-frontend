@@ -3,6 +3,8 @@
 import React, { useState, useEffect } from "react";
 import { api } from "@/lib/api";
 import { useToast } from "@/lib/toast-context";
+import { TableSkeleton } from "@/components/ui/LoadingState";
+import { ErrorState } from "@/components/ui/ErrorState";
 import {
   ShieldAlert,
   Trash2,
@@ -17,15 +19,17 @@ export default function SuppressionsPage() {
     { address: string; reason?: string; created_at: string }[]
   >([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   const fetchSuppressions = async () => {
     setIsLoading(true);
+    setError(null);
     try {
       const res = await api.listSuppressions();
       setSuppressions(res.data || []);
     } catch (err: any) {
       console.error("Failed to load suppressions", err);
-      toast.error("Failed to load suppressions: " + (err.response?.data?.message || err.message));
+      setError(err?.message || "Failed to load suppressions from server");
     } finally {
       setIsLoading(false);
     }
@@ -78,53 +82,72 @@ export default function SuppressionsPage() {
         </p>
       </div>
 
-      {/* Suppressions Table */}
-      <div className="rounded-xl border border-surface-border overflow-hidden bg-surface">
-        <table className="w-full text-left">
-          <thead className="bg-surface-raised border-b border-surface-border text-[11px] font-medium uppercase tracking-wider text-zinc-500">
-            <tr>
-              <th className="px-4 py-3">Suppressed Email Address</th>
-              <th className="px-4 py-3">Reason</th>
-              <th className="px-4 py-3">Suppressed Since</th>
-              <th className="px-4 py-3 text-right">Action</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-surface-border">
-            {suppressions.length > 0 ? (
-              suppressions.map((s) => (
-                <tr key={s.address} className="hover:bg-surface-raised/50 transition-colors">
-                  <td className="px-4 py-3 text-sm font-mono text-zinc-900 dark:text-white font-medium">{s.address}</td>
-                  <td className="px-4 py-3 text-sm">
-                    <span className="inline-flex items-center rounded-full bg-red-50 text-red-700 dark:bg-red-950/30 dark:text-red-400 px-2 py-0.5 text-[11px] font-medium">
-                      {s.reason || "Hard Bounce"}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 text-sm font-mono text-zinc-500 dark:text-zinc-400">
-                    {new Date(s.created_at).toLocaleString()}
-                  </td>
-                  <td className="px-4 py-3 text-right">
-                    <button
-                      onClick={() => handleRemove(s.address)}
-                      title="Remove suppression"
-                      className="rounded-lg p-1.5 text-zinc-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 transition-colors"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </button>
+      {error && (
+        <ErrorState
+          title="Failed to Load Suppressions"
+          message={error}
+          onRetry={fetchSuppressions}
+          retryLabel="Retry"
+          actionHref="/overview"
+          actionLabel="Go to Dashboard"
+        />
+      )}
+
+      {isLoading && suppressions.length === 0 ? (
+        <TableSkeleton
+          rows={5}
+          columns={4}
+          columnWidths={["w-48", "w-28", "w-36", "w-10"]}
+        />
+      ) : (
+        /* Suppressions Table */
+        <div className="rounded-xl border border-surface-border overflow-hidden bg-surface">
+          <table className="w-full text-left">
+            <thead className="bg-surface-raised border-b border-surface-border text-[11px] font-medium uppercase tracking-wider text-zinc-500">
+              <tr>
+                <th className="px-4 py-3">Suppressed Email Address</th>
+                <th className="px-4 py-3">Reason</th>
+                <th className="px-4 py-3">Suppressed Since</th>
+                <th className="px-4 py-3 text-right">Action</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-surface-border">
+              {suppressions.length > 0 ? (
+                suppressions.map((s) => (
+                  <tr key={s.address} className="hover:bg-surface-raised/50 transition-colors">
+                    <td className="px-4 py-3 text-sm font-mono text-zinc-900 dark:text-white font-medium">{s.address}</td>
+                    <td className="px-4 py-3 text-sm">
+                      <span className="inline-flex items-center rounded-full bg-red-50 text-red-700 dark:bg-red-950/30 dark:text-red-400 px-2 py-0.5 text-[11px] font-medium">
+                        {s.reason || "Hard Bounce"}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 text-sm font-mono text-zinc-500 dark:text-zinc-400">
+                      {new Date(s.created_at).toLocaleString()}
+                    </td>
+                    <td className="px-4 py-3 text-right">
+                      <button
+                        onClick={() => handleRemove(s.address)}
+                        title="Remove suppression"
+                        className="rounded-lg p-1.5 text-zinc-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 transition-colors"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan={4} className="py-16 text-center text-sm text-zinc-500">
+                    {isLoading
+                      ? "Loading suppressions..."
+                      : "No addresses currently suppressed. Your sender reputation is clean!"}
                   </td>
                 </tr>
-              ))
-            ) : (
-              <tr>
-                <td colSpan={4} className="py-16 text-center text-sm text-zinc-500">
-                  {isLoading
-                    ? "Loading suppressions..."
-                    : "No addresses currently suppressed. Your sender reputation is clean!"}
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
+              )}
+            </tbody>
+          </table>
+        </div>
+      )}
     </div>
   );
 }

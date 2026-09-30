@@ -24,6 +24,8 @@ import {
   Zap,
 } from "lucide-react";
 import { useToast } from "@/lib/toast-context";
+import { TableSkeleton } from "@/components/ui/LoadingState";
+import { ErrorState } from "@/components/ui/ErrorState";
 
 export default function AutomationsPage() {
   const toast = useToast();
@@ -33,6 +35,7 @@ export default function AutomationsPage() {
   const [domains, setDomains] = useState<DomainView[]>([]);
   const [activeTab, setActiveTab] = useState<"workflows" | "runs">("workflows");
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   // New automation modal
   const [isOpen, setIsOpen] = useState(false);
@@ -46,31 +49,37 @@ export default function AutomationsPage() {
 
   const fetchAutomations = async () => {
     setIsLoading(true);
+    setError(null);
     try {
       const [autoRes, domRes] = await Promise.allSettled([
         api.listAutomations(),
         api.listDomains(),
       ]);
-      if (autoRes.status === "fulfilled") {
-        const list = autoRes.value.data || [];
-        setAutomations(list);
-        if (list.length > 0 && !selectedAuto) {
-          setSelectedAuto(list[0]);
-          loadRuns(list[0].id);
-        } else if (selectedAuto) {
-          loadRuns(selectedAuto.id);
+      if (autoRes.status === "rejected") {
+        setError("Unable to load automations. Please check server connection.");
+      } else {
+        if (autoRes.status === "fulfilled") {
+          const list = autoRes.value.data || [];
+          setAutomations(list);
+          if (list.length > 0 && !selectedAuto) {
+            setSelectedAuto(list[0]);
+            loadRuns(list[0].id);
+          } else if (selectedAuto) {
+            loadRuns(selectedAuto.id);
+          }
+        }
+        if (domRes.status === "fulfilled") {
+          const domList = domRes.value.data || [];
+          setDomains(domList);
+          if (domList.length > 0) {
+            const verified = domList.find((d: any) => d.status === "verified") || domList[0];
+            setEmailFrom(`Acme <welcome@${verified.name}>`);
+          }
         }
       }
-      if (domRes.status === "fulfilled") {
-        const domList = domRes.value.data || [];
-        setDomains(domList);
-        if (domList.length > 0) {
-          const verified = domList.find((d: any) => d.status === "verified") || domList[0];
-          setEmailFrom(`Acme <welcome@${verified.name}>`);
-        }
-      }
-    } catch (err) {
+    } catch (err: any) {
       console.error("Failed to load automations", err);
+      setError(err?.message || "Failed to load automations");
     } finally {
       setIsLoading(false);
     }
@@ -219,6 +228,17 @@ export default function AutomationsPage() {
           </button>
         </div>
       </div>
+
+      {error && (
+        <ErrorState
+          title="Failed to Load Automations"
+          message={error}
+          onRetry={fetchAutomations}
+          retryLabel="Retry"
+          actionHref="/overview"
+          actionLabel="Go to Dashboard"
+        />
+      )}
 
       {/* Tab: Workflows */}
       {activeTab === "workflows" && (

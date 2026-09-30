@@ -24,6 +24,8 @@ import {
   Check,
   RefreshCw,
 } from "lucide-react";
+import { TableSkeleton } from "@/components/ui/LoadingState";
+import { ErrorState } from "@/components/ui/ErrorState";
 
 export default function SettingsPage() {
   const { user, account, accounts, refresh } = useAuth();
@@ -32,6 +34,10 @@ export default function SettingsPage() {
   const [activeTab, setActiveTab] = useState<
     "profile" | "team" | "sessions" | "mcp"
   >("profile");
+
+  // Loading & Error states
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   // Profile fields
   const [name, setName] = useState(user?.name || "");
@@ -67,19 +73,31 @@ export default function SettingsPage() {
   }, [user]);
 
   const fetchTeamAndSessions = async () => {
+    setIsLoading(true);
+    setError(null);
     try {
       const [membersRes, sessionsRes] = await Promise.allSettled([
         api.listMembers(),
         api.listSessions(),
       ]);
+      let hasSuccess = false;
       if (membersRes.status === "fulfilled") {
         setMembers(membersRes.value.data || []);
+        hasSuccess = true;
       }
       if (sessionsRes.status === "fulfilled") {
         setSessions(sessionsRes.value.data || []);
+        hasSuccess = true;
+      }
+      if (!hasSuccess && (membersRes.status === "rejected" || sessionsRes.status === "rejected")) {
+        const reason = (membersRes.status === "rejected" ? (membersRes as PromiseRejectedResult).reason : (sessionsRes as PromiseRejectedResult).reason)?.message || "Failed to load settings data";
+        setError(reason);
       }
     } catch (err: any) {
       console.error("Failed to load settings data", err);
+      setError(err?.message || "Failed to load settings data");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -209,6 +227,13 @@ export default function SettingsPage() {
             Manage your user account, organizations, teammates, and remote AI MCP server.
           </p>
         </div>
+        <button
+          onClick={fetchTeamAndSessions}
+          className="flex h-8 w-8 items-center justify-center rounded-lg border border-surface-border bg-surface text-zinc-500 hover:bg-surface-raised hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white transition-colors"
+          title="Refresh Settings"
+        >
+          <RefreshCw className={`h-3.5 w-3.5 ${isLoading ? "animate-spin" : ""}`} />
+        </button>
       </div>
 
       {/* Tab switch */}
@@ -428,38 +453,52 @@ export default function SettingsPage() {
               </button>
             </form>
 
-            <div className="overflow-x-auto rounded-lg border border-surface-border">
-              <table className="w-full text-left text-xs min-w-[500px]">
-                <thead className="border-b border-surface-border bg-surface-raised text-[10px] uppercase font-mono text-zinc-500 dark:text-zinc-400">
-                  <tr>
-                    <th className="px-4 py-2.5">Email</th>
-                    <th className="px-4 py-2.5">Role</th>
-                    <th className="px-4 py-2.5">Joined</th>
-                    <th className="px-4 py-2.5 text-right">Remove</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-surface-border font-mono">
-                  {members.map((m) => (
-                    <tr key={m.id} className="hover:bg-surface-raised/40 transition-colors">
-                      <td className="px-4 py-2.5 text-zinc-900 dark:text-white">{m.email}</td>
-                      <td className="px-4 py-2.5 text-zinc-700 dark:text-zinc-300 capitalize font-sans">{m.role}</td>
-                      <td className="px-4 py-2.5 text-zinc-400 dark:text-zinc-500 text-[11px]">
-                        {new Date(m.created_at).toLocaleDateString()}
-                      </td>
-                      <td className="px-4 py-2.5 text-right">
-                        <button
-                          onClick={() => handleRemoveMember(m.id)}
-                          className="text-zinc-400 hover:text-red-500 transition-colors"
-                          title="Remove member"
-                        >
-                          <Trash2 className="h-3.5 w-3.5 ml-auto" />
-                        </button>
-                      </td>
+            {error ? (
+              <ErrorState message={error} onRetry={fetchTeamAndSessions} />
+            ) : isLoading && members.length === 0 ? (
+              <TableSkeleton rows={3} cols={4} />
+            ) : (
+              <div className="overflow-x-auto rounded-lg border border-surface-border">
+                <table className="w-full text-left text-xs min-w-[500px]">
+                  <thead className="border-b border-surface-border bg-surface-raised text-[10px] uppercase font-mono text-zinc-500 dark:text-zinc-400">
+                    <tr>
+                      <th className="px-4 py-2.5">Email</th>
+                      <th className="px-4 py-2.5">Role</th>
+                      <th className="px-4 py-2.5">Joined</th>
+                      <th className="px-4 py-2.5 text-right">Remove</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                  </thead>
+                  <tbody className="divide-y divide-surface-border font-mono">
+                    {members.length > 0 ? (
+                      members.map((m) => (
+                        <tr key={m.id} className="hover:bg-surface-raised/40 transition-colors">
+                          <td className="px-4 py-2.5 text-zinc-900 dark:text-white">{m.email}</td>
+                          <td className="px-4 py-2.5 text-zinc-700 dark:text-zinc-300 capitalize font-sans">{m.role}</td>
+                          <td className="px-4 py-2.5 text-zinc-400 dark:text-zinc-500 text-[11px]">
+                            {new Date(m.created_at).toLocaleDateString()}
+                          </td>
+                          <td className="px-4 py-2.5 text-right">
+                            <button
+                              onClick={() => handleRemoveMember(m.id)}
+                              className="text-zinc-400 hover:text-red-500 transition-colors"
+                              title="Remove member"
+                            >
+                              <Trash2 className="h-3.5 w-3.5 ml-auto" />
+                            </button>
+                          </td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td colSpan={4} className="py-8 text-center text-xs text-zinc-500 dark:text-zinc-400 font-sans">
+                          No team members found.
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </div>
         </div>
       )}
@@ -517,39 +556,51 @@ export default function SettingsPage() {
           {/* Active Sessions */}
           <div className="rounded-xl border border-surface-border bg-surface p-6 space-y-4">
             <h2 className="text-sm font-semibold text-zinc-900 dark:text-white">Active Sessions</h2>
-            <div className="overflow-x-auto rounded-lg border border-surface-border">
-              <table className="w-full text-left text-xs font-mono min-w-[500px]">
-                <thead className="border-b border-surface-border bg-surface-raised text-[10px] uppercase text-zinc-500 dark:text-zinc-400">
-                  <tr>
-                    <th className="px-4 py-2.5">Session ID</th>
-                    <th className="px-4 py-2.5">Created</th>
-                    <th className="px-4 py-2.5">Expires</th>
-                    <th className="px-4 py-2.5 text-right">Revoke</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-surface-border">
-                  {sessions.map((s) => (
-                    <tr key={s.id} className="hover:bg-surface-raised/40 transition-colors">
-                      <td className="px-4 py-2.5 text-zinc-900 dark:text-white truncate max-w-xs">{s.id}</td>
-                      <td className="px-4 py-2.5 text-zinc-500 dark:text-zinc-400 text-[11px]">
-                        {new Date(s.created_at).toLocaleDateString()}
-                      </td>
-                      <td className="px-4 py-2.5 text-zinc-400 dark:text-zinc-500 text-[11px]">
-                        {new Date(s.expires_at).toLocaleDateString()}
-                      </td>
-                      <td className="px-4 py-2.5 text-right">
-                        <button
-                          onClick={() => handleRevokeSession(s.id)}
-                          className="text-zinc-500 hover:text-red-500 font-sans transition-colors"
-                        >
-                          Revoke
-                        </button>
-                      </td>
+            {isLoading && sessions.length === 0 ? (
+              <TableSkeleton rows={3} cols={4} />
+            ) : (
+              <div className="overflow-x-auto rounded-lg border border-surface-border">
+                <table className="w-full text-left text-xs font-mono min-w-[500px]">
+                  <thead className="border-b border-surface-border bg-surface-raised text-[10px] uppercase text-zinc-500 dark:text-zinc-400">
+                    <tr>
+                      <th className="px-4 py-2.5">Session ID</th>
+                      <th className="px-4 py-2.5">Created</th>
+                      <th className="px-4 py-2.5">Expires</th>
+                      <th className="px-4 py-2.5 text-right">Revoke</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                  </thead>
+                  <tbody className="divide-y divide-surface-border">
+                    {sessions.length > 0 ? (
+                      sessions.map((s) => (
+                        <tr key={s.id} className="hover:bg-surface-raised/40 transition-colors">
+                          <td className="px-4 py-2.5 text-zinc-900 dark:text-white truncate max-w-xs">{s.id}</td>
+                          <td className="px-4 py-2.5 text-zinc-500 dark:text-zinc-400 text-[11px]">
+                            {new Date(s.created_at).toLocaleDateString()}
+                          </td>
+                          <td className="px-4 py-2.5 text-zinc-400 dark:text-zinc-500 text-[11px]">
+                            {new Date(s.expires_at).toLocaleDateString()}
+                          </td>
+                          <td className="px-4 py-2.5 text-right">
+                            <button
+                              onClick={() => handleRevokeSession(s.id)}
+                              className="text-zinc-500 hover:text-red-500 font-sans transition-colors"
+                            >
+                              Revoke
+                            </button>
+                          </td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td colSpan={4} className="py-8 text-center text-xs text-zinc-500 dark:text-zinc-400 font-sans">
+                          No active sessions found.
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </div>
         </div>
       )}
