@@ -114,45 +114,45 @@ function EmailsPageContent() {
     switch (s) {
       case "delivered":
         return (
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50/50 border border-emerald-200/50 px-2 py-0.5 text-[11px] font-medium text-emerald-700 dark:bg-emerald-500/10 dark:border-emerald-500/20 dark:text-emerald-400">
-            <CheckCircle2 className="h-3.5 w-3.5" />
+          <span className="badge badge-success">
+            <CheckCircle2 className="h-3 w-3" />
             Delivered
           </span>
         );
       case "bounced":
         return (
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-red-50/50 border border-red-200/50 px-2 py-0.5 text-[11px] font-medium text-red-700 dark:bg-red-500/10 dark:border-red-500/20 dark:text-red-400">
-            <AlertCircle className="h-3.5 w-3.5" />
+          <span className="badge badge-error">
+            <AlertCircle className="h-3 w-3" />
             Bounced
           </span>
         );
       case "failed":
         return (
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-red-50/50 border border-red-200/50 px-2 py-0.5 text-[11px] font-medium text-red-700 dark:bg-red-500/10 dark:border-red-500/20 dark:text-red-400">
-            <AlertCircle className="h-3.5 w-3.5" />
+          <span className="badge badge-error">
+            <AlertCircle className="h-3 w-3" />
             Failed
           </span>
         );
       case "canceled":
       case "cancelled":
         return (
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-zinc-100/50 border border-zinc-200/50 px-2 py-0.5 text-[11px] font-medium text-zinc-700 dark:bg-zinc-800/50 dark:border-zinc-700/50 dark:text-zinc-400">
-            <Ban className="h-3.5 w-3.5" />
+          <span className="badge badge-neutral">
+            <Ban className="h-3 w-3" />
             Canceled
           </span>
         );
       case "sent":
         return (
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-sky-50/50 border border-sky-200/50 px-2 py-0.5 text-[11px] font-medium text-sky-700 dark:bg-sky-500/10 dark:border-sky-500/20 dark:text-sky-400">
-            <Clock className="h-3.5 w-3.5" />
+          <span className="badge badge-info">
+            <Clock className="h-3 w-3" />
             Sent
           </span>
         );
       case "queued":
       default:
         return (
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-50/50 border border-amber-200/50 px-2 py-0.5 text-[11px] font-medium text-amber-700 dark:bg-amber-500/10 dark:border-amber-500/20 dark:text-amber-400">
-            <Clock className="h-3.5 w-3.5" />
+          <span className="badge badge-warning">
+            <Clock className="h-3 w-3" />
             Queued
           </span>
         );
@@ -250,22 +250,22 @@ function EmailsPageContent() {
 
         <div className="flex items-center gap-2">
           <div className="relative w-full sm:w-64">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400 dark:text-zinc-500" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-zinc-400 dark:text-zinc-500" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search subject or sender..."
-              className="w-full h-9 rounded-lg border border-surface-border bg-surface pl-9 pr-3 text-sm text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-500 focus:border-zinc-500 focus:outline-none focus:ring-1 focus:ring-zinc-500 transition-shadow"
+              className="input-base pl-9 h-8 text-xs"
             />
           </div>
 
           <button
             onClick={fetchEmails}
-            className="flex h-9 w-9 items-center justify-center rounded-lg border border-surface-border bg-surface text-zinc-500 hover:bg-surface-raised hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white transition-colors"
+            className="flex h-8 w-8 items-center justify-center rounded-lg border border-surface-border bg-surface text-zinc-500 hover:bg-surface-raised hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white transition-colors"
             title="Refresh emails"
           >
-            <RefreshCw className={`h-4 w-4 ${isLoading ? "animate-spin" : ""}`} />
+            <RefreshCw className={`h-3.5 w-3.5 ${isLoading ? "animate-spin" : ""}`} />
           </button>
         </div>
       </div>
@@ -474,7 +474,7 @@ function EmailsPageContent() {
       {/* Batch Send Modal */}
       {isBatchOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
-          <div className="relative flex flex-col w-full max-w-xl rounded-xl border border-surface-border bg-surface shadow-2xl overflow-hidden p-6 space-y-4">
+          <div className="relative flex flex-col w-full max-w-xl rounded-xl border border-surface-border bg-surface shadow-2xl overflow-hidden p-6 space-y-4 animate-slide-up">
             <div className="flex items-center justify-between border-b border-surface-border pb-3">
               <h2 className="text-sm font-semibold text-zinc-900 dark:text-white">Send Batch Emails</h2>
               <button
@@ -494,20 +494,20 @@ function EmailsPageContent() {
                 value={batchJson}
                 onChange={(e) => setBatchJson(e.target.value)}
                 rows={10}
-                className="w-full rounded-md border border-surface-border bg-surface-raised p-3 font-mono text-xs text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-600 focus:border-zinc-500 focus:outline-none"
+                className="input-base font-mono text-xs p-3 leading-relaxed"
               />
-              <div className="flex justify-end gap-2">
+              <div className="flex justify-end gap-2 pt-2 border-t border-surface-border">
                 <button
                   type="button"
                   onClick={() => setIsBatchOpen(false)}
-                  className="rounded-md border border-surface-border px-3 py-1.5 text-xs text-zinc-700 hover:bg-surface-raised hover:text-zinc-900 dark:text-zinc-300 dark:hover:text-white transition-colors"
+                  className="btn-secondary"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={batchSending}
-                  className="rounded-md bg-zinc-900 px-4 py-1.5 text-xs font-medium text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200 disabled:opacity-50 transition-colors"
+                  className="btn-primary"
                 >
                   {batchSending ? "Sending..." : "Enqueue Batch"}
                 </button>

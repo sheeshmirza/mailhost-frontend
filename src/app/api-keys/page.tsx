@@ -138,19 +138,19 @@ export default function APIKeysPage() {
                   </td>
                   <td className="px-5 py-3">
                     <span
-                      className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium border ${
+                      className={`badge ${
                         k.permission === "full_access"
-                          ? "bg-zinc-100 text-zinc-700 border-zinc-200 dark:bg-zinc-800 dark:text-zinc-200 dark:border-zinc-700"
-                          : "bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/60 dark:text-blue-300 dark:border-blue-800/40"
+                          ? "badge-neutral"
+                          : "badge-info"
                       }`}
                     >
                       {k.permission === "full_access" ? "Full Access" : "Sending Only"}
                     </span>
                   </td>
-                  <td className="px-5 py-3 text-zinc-500 dark:text-zinc-400 text-[11px]">
+                  <td className="px-5 py-3 text-zinc-500 dark:text-zinc-400 font-mono text-[11px]">
                     {new Date(k.created_at).toLocaleDateString()}
                   </td>
-                  <td className="px-5 py-3 text-zinc-500 dark:text-zinc-400 text-[11px]">
+                  <td className="px-5 py-3 text-zinc-500 dark:text-zinc-400 font-mono text-[11px]">
                     {k.last_used_at
                       ? new Date(k.last_used_at).toLocaleDateString()
                       : "Never"}
@@ -159,9 +159,9 @@ export default function APIKeysPage() {
                     <button
                       onClick={() => handleDelete(k.id)}
                       title="Revoke key"
-                      className="rounded p-1 text-zinc-500 hover:text-red-500 dark:hover:text-red-400 transition-colors"
+                      className="btn-danger p-1.5"
                     >
-                      <Trash2 className="h-4 w-4" />
+                      <Trash2 className="h-3.5 w-3.5" />
                     </button>
                   </td>
                 </tr>
@@ -180,7 +180,7 @@ export default function APIKeysPage() {
       {/* Create Key Modal */}
       {isCreateOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
-          <div className="relative flex flex-col w-full max-w-md rounded-xl border border-surface-border bg-surface p-6 shadow-2xl space-y-4">
+          <div className="relative flex flex-col w-full max-w-md rounded-xl border border-surface-border bg-surface p-6 shadow-2xl space-y-4 animate-slide-up">
             <h2 className="text-sm font-semibold text-zinc-900 dark:text-white">Create API Key</h2>
 
             {newKeyCreated ? (
@@ -218,7 +218,7 @@ export default function APIKeysPage() {
                       setIsCreateOpen(false);
                       setNewKeyCreated(null);
                     }}
-                    className="rounded-md bg-zinc-900 px-4 py-1.5 text-xs font-medium text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200 transition-colors"
+                    className="btn-primary"
                   >
                     Done
                   </button>
@@ -227,7 +227,7 @@ export default function APIKeysPage() {
             ) : (
               <form onSubmit={handleCreate} className="space-y-4">
                 <div>
-                  <label className="block text-[11px] text-zinc-600 dark:text-zinc-400 mb-1">
+                  <label className="block text-[11px] font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">
                     Name
                   </label>
                   <input
@@ -235,18 +235,18 @@ export default function APIKeysPage() {
                     value={keyName}
                     onChange={(e) => setKeyName(e.target.value)}
                     placeholder="Production Server, Marketing Script, etc."
-                    className="w-full rounded-md border border-surface-border bg-surface-raised px-3 py-1.5 text-xs text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-600 focus:outline-none focus:border-zinc-500"
+                    className="input-base"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-[11px] text-zinc-600 dark:text-zinc-400 mb-1">
+                  <label className="block text-[11px] font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">
                     Permission Scope
                   </label>
                   <select
                     value={permission}
                     onChange={(e) => setPermission(e.target.value as any)}
-                    className="w-full rounded-md border border-surface-border bg-surface-raised px-3 py-1.5 text-xs text-zinc-900 dark:text-white focus:outline-none"
+                    className="input-base"
                   >
                     <option value="full_access">Full Access (Send & Manage)</option>
                     <option value="sending_access">Sending Access Only</option>
@@ -255,13 +255,13 @@ export default function APIKeysPage() {
 
                 {permission === "sending_access" && (
                   <div>
-                    <label className="block text-[11px] text-zinc-600 dark:text-zinc-400 mb-1">
+                    <label className="block text-[11px] font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">
                       Restrict to Domain (Optional)
                     </label>
                     <select
                       value={selectedDomainId}
                       onChange={(e) => setSelectedDomainId(e.target.value)}
-                      className="w-full rounded-md border border-surface-border bg-surface-raised px-3 py-1.5 text-xs text-zinc-900 dark:text-white focus:outline-none"
+                      className="input-base"
                     >
                       <option value="">All Domains</option>
                       {domains.map((d) => (

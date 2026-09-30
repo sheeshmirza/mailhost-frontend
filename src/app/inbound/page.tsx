@@ -372,7 +372,7 @@ export default function InboundPage() {
       {/* Create Alias Modal */}
       {isAliasOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
-          <div className="relative flex flex-col w-full max-w-md rounded-xl border border-surface-border bg-surface p-6 shadow-2xl space-y-4">
+          <div className="relative flex flex-col w-full max-w-md rounded-xl border border-surface-border bg-surface p-6 shadow-2xl space-y-4 animate-slide-up">
             <h2 className="text-sm font-semibold text-zinc-900 dark:text-white">Create Inbound Alias</h2>
             <p className="text-xs text-zinc-500 dark:text-zinc-400">
               Forward all emails received at this alias to one or more destination mailboxes.
@@ -380,23 +380,23 @@ export default function InboundPage() {
 
             <form onSubmit={handleCreateAlias} className="space-y-4">
               <div>
-                <label className="block text-[11px] text-zinc-600 dark:text-zinc-400 mb-1">
+                <label className="block text-[11px] font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">
                   Alias Address
                 </label>
-                <div className="flex items-center gap-1">
+                <div className="flex items-center gap-2">
                   <input
                     type="text"
                     value={aliasPrefix}
                     onChange={(e) => setAliasPrefix(e.target.value)}
                     placeholder="support"
                     required
-                    className="flex-1 rounded-md border border-surface-border bg-surface-raised px-3 py-1.5 text-xs text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-600 focus:outline-none"
+                    className="flex-1 input-base"
                   />
-                  <span className="text-zinc-500 text-xs">@</span>
+                  <span className="text-zinc-500 text-xs font-mono">@</span>
                   <select
                     value={selectedDomain}
                     onChange={(e) => setSelectedDomain(e.target.value)}
-                    className="rounded-md border border-surface-border bg-surface-raised px-3 py-1.5 text-xs text-zinc-900 dark:text-white focus:outline-none"
+                    className="input-base w-auto"
                   >
                     {domains.map((d) => (
                       <option key={d.id} value={d.name}>
@@ -408,7 +408,7 @@ export default function InboundPage() {
               </div>
 
               <div>
-                <label className="block text-[11px] text-zinc-600 dark:text-zinc-400 mb-1">
+                <label className="block text-[11px] font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">
                   Forward To (comma separated)
                 </label>
                 <input
@@ -417,7 +417,7 @@ export default function InboundPage() {
                   onChange={(e) => setForwardTo(e.target.value)}
                   placeholder="team@mycompany.com, alerts@mycompany.com"
                   required
-                  className="w-full rounded-md border border-surface-border bg-surface-raised px-3 py-1.5 text-xs text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-600 focus:outline-none"
+                  className="input-base"
                 />
               </div>
 

@@ -161,10 +161,10 @@ export default function DomainsPage() {
                 <div
                   key={dom.id}
                   onClick={() => setSelectedDomain(dom)}
-                  className={`cursor-pointer rounded-xl border p-4 transition-all focus:outline-none focus:ring-2 focus:ring-zinc-500 ${
+                  className={`cursor-pointer rounded-xl border p-4 transition-all focus:outline-none focus:ring-1 focus:ring-zinc-500 ${
                     selectedDomain?.id === dom.id
-                      ? "border-zinc-300 bg-surface-raised shadow-sm dark:border-zinc-700"
-                      : "border-transparent bg-surface hover:border-zinc-200 dark:hover:border-zinc-800"
+                      ? "border-zinc-400 bg-surface-raised shadow-sm dark:border-zinc-600"
+                      : "border-surface-border bg-surface hover:border-zinc-300 dark:hover:border-zinc-700"
                   }`}
                   tabIndex={0}
                   onKeyDown={(e) => {
@@ -182,10 +182,10 @@ export default function DomainsPage() {
                     </div>
 
                     <span
-                      className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-medium border ${
+                      className={`badge ${
                         dom.status === "verified"
-                          ? "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/30 dark:text-emerald-400 dark:border-emerald-800/30"
-                          : "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/30 dark:text-amber-400 dark:border-amber-800/30"
+                          ? "badge-success"
+                          : "badge-warning"
                       }`}
                     >
                       {dom.status === "verified" ? (
@@ -202,13 +202,13 @@ export default function DomainsPage() {
                     </span>
                   </div>
                   <div className="mt-3 flex items-center justify-between text-xs text-zinc-500 dark:text-zinc-400">
-                    <span className="font-mono bg-zinc-100 dark:bg-zinc-800/50 px-1.5 py-0.5 rounded text-[10px]">{dom.region}</span>
+                    <span className="font-mono bg-surface-raised border border-surface-border px-1.5 py-0.5 rounded text-[10px]">{dom.region}</span>
                     <span>{new Date(dom.created_at).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })}</span>
                   </div>
                 </div>
               ))
             ) : (
-              <div className="rounded-xl border border-dashed border-zinc-300 bg-surface p-8 text-center text-sm text-zinc-500 dark:border-zinc-800 dark:text-zinc-400">
+              <div className="rounded-xl border border-dashed border-surface-border bg-surface p-8 text-center text-sm text-zinc-500 dark:text-zinc-400">
                 {isLoading ? "Loading domains..." : "No domains registered yet."}
               </div>
             )}
@@ -242,27 +242,27 @@ export default function DomainsPage() {
                   </p>
                 </div>
 
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2">
                   <button
                     onClick={() => handleVerify(selectedDomain.id)}
                     disabled={isVerifying}
-                    className="flex items-center gap-2 rounded-md border border-zinc-200 bg-white px-4 py-2 text-sm font-medium text-zinc-900 hover:bg-zinc-50 focus:outline-none focus:ring-2 focus:ring-zinc-900 focus:ring-offset-2 disabled:opacity-50 transition-colors shadow-sm dark:border-zinc-800 dark:bg-zinc-900 dark:text-white dark:hover:bg-zinc-800 dark:focus:ring-white dark:focus:ring-offset-black"
+                    className="btn-secondary"
                   >
-                    <RefreshCw className={`h-4 w-4 text-zinc-500 dark:text-zinc-400 ${isVerifying ? "animate-spin" : ""}`} />
+                    <RefreshCw className={`h-3.5 w-3.5 text-zinc-500 dark:text-zinc-400 ${isVerifying ? "animate-spin" : ""}`} />
                     <span>{isVerifying ? "Verifying..." : "Verify"}</span>
                   </button>
                   <button
                     onClick={() => handleDelete(selectedDomain.id)}
                     title="Delete domain"
-                    className="rounded-md border border-zinc-200 bg-white p-2 text-zinc-500 hover:text-red-600 hover:border-red-200 hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-colors shadow-sm dark:border-zinc-800 dark:bg-zinc-900 dark:hover:border-red-900/50 dark:hover:bg-red-950/30 dark:hover:text-red-400 dark:focus:ring-red-500 dark:focus:ring-offset-black"
+                    className="btn-danger p-2"
                   >
-                    <Trash2 className="h-5 w-5" />
+                    <Trash2 className="h-4 w-4" />
                   </button>
                 </div>
               </div>
 
               {/* DNS Instruction Banner */}
-              <div className="rounded-lg border border-zinc-200 bg-zinc-50/50 p-4 text-sm text-zinc-600 dark:border-zinc-800 dark:bg-zinc-900/50 dark:text-zinc-300 space-y-1.5 shadow-sm">
+              <div className="rounded-xl border border-surface-border bg-surface-raised p-4 text-xs text-zinc-600 dark:text-zinc-300 space-y-1.5 shadow-sm">
                 <div className="font-semibold text-zinc-900 dark:text-white flex items-center gap-2">
                   <ShieldCheck className="h-4 w-4 text-emerald-500" />
                   <span>Required DNS Records for Deliverability</span>
@@ -273,10 +273,10 @@ export default function DomainsPage() {
               </div>
 
               {/* Records Table */}
-              <div className="overflow-hidden rounded-lg border border-zinc-200 shadow-sm dark:border-zinc-800 bg-white dark:bg-zinc-950">
+              <div className="overflow-hidden rounded-xl border border-surface-border shadow-sm bg-surface">
                 <div className="overflow-x-auto">
-                  <table className="w-full text-left text-sm whitespace-nowrap min-w-[600px]">
-                    <thead className="border-b border-zinc-200 bg-zinc-50/80 text-xs text-zinc-500 dark:border-zinc-800 dark:bg-zinc-900/80 dark:text-zinc-400">
+                  <table className="w-full text-left text-xs whitespace-nowrap min-w-[600px]">
+                    <thead className="border-b border-surface-border bg-surface-raised text-[11px] font-medium uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
                       <tr>
                         <th className="px-4 py-3 font-medium">Type</th>
                         <th className="px-4 py-3 font-medium">Name / Host</th>
@@ -285,28 +285,28 @@ export default function DomainsPage() {
                         <th className="px-4 py-3 font-medium text-right">Copy</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800 font-mono text-[13px]">
+                    <tbody className="divide-y divide-surface-border font-mono text-xs">
                       {selectedDomain.records && selectedDomain.records.length > 0 ? (
                         selectedDomain.records.map((rec, i) => (
-                          <tr key={i} className="hover:bg-zinc-50/50 dark:hover:bg-zinc-900/50 transition-colors">
-                            <td className="px-4 py-3.5 font-semibold text-zinc-900 dark:text-white">
-                              <span className="rounded bg-zinc-100 px-1.5 py-0.5 border border-zinc-200 text-xs tracking-wide dark:bg-zinc-800 dark:border-zinc-700">
+                          <tr key={i} className="hover:bg-surface-raised/50 transition-colors">
+                            <td className="px-4 py-3 font-semibold text-zinc-900 dark:text-white">
+                              <span className="badge badge-neutral">
                                 {rec.type}
                               </span>
                             </td>
-                            <td className="px-4 py-3.5 text-zinc-700 dark:text-zinc-300 max-w-[180px] truncate" title={rec.name}>
+                            <td className="px-4 py-3 text-zinc-700 dark:text-zinc-300 max-w-[180px] truncate" title={rec.name}>
                               {rec.name}
                             </td>
-                            <td className="px-4 py-3.5 text-zinc-600 dark:text-zinc-400 max-w-[280px] truncate" title={rec.value}>
+                            <td className="px-4 py-3 text-zinc-600 dark:text-zinc-400 max-w-[280px] truncate" title={rec.value}>
                               {rec.value}
                             </td>
-                            <td className="px-4 py-3.5 text-xs text-zinc-500 dark:text-zinc-400 capitalize font-sans">
+                            <td className="px-4 py-3 text-xs text-zinc-500 dark:text-zinc-400 capitalize font-sans">
                               {rec.purpose}
                             </td>
-                            <td className="px-4 py-3.5 text-right">
+                            <td className="px-4 py-3 text-right">
                               <button
                                 onClick={() => copyText(rec.value, `${i}-val`)}
-                                className="rounded-md p-1.5 text-zinc-400 hover:text-zinc-900 hover:bg-zinc-100 dark:hover:bg-zinc-800 dark:hover:text-white transition-colors focus:outline-none focus:ring-2 focus:ring-zinc-500"
+                                className="rounded-md p-1.5 text-zinc-400 hover:text-zinc-900 hover:bg-surface-raised dark:hover:text-white transition-colors focus:outline-none"
                                 title="Copy record value"
                               >
                                 {copiedKey === `${i}-val` ? (
@@ -320,7 +320,7 @@ export default function DomainsPage() {
                         ))
                       ) : (
                         <tr>
-                          <td colSpan={5} className="py-8 text-center text-zinc-500 text-sm font-sans">
+                          <td colSpan={5} className="py-8 text-center text-zinc-500 text-xs font-sans">
                             No DNS records generated for this domain.
                           </td>
                         </tr>
@@ -331,17 +331,17 @@ export default function DomainsPage() {
               </div>
 
               {/* Domain Delivery & Tracking Settings */}
-              <div className="space-y-4 pt-6 border-t border-zinc-200 dark:border-zinc-800">
+              <div className="space-y-4 pt-6 border-t border-surface-border">
                 <h3 className="text-sm font-semibold text-zinc-900 dark:text-white">
                   Deliverability & Tracking Configuration
                 </h3>
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   {/* Open Tracking */}
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-lg border border-zinc-200 bg-zinc-50/50 p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900/50 transition-colors">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-xl border border-surface-border bg-surface-raised/40 p-4 shadow-sm transition-colors">
                     <div>
-                      <span className="text-sm font-medium text-zinc-900 dark:text-white block mb-0.5">Open Tracking</span>
-                      <span className="text-xs text-zinc-500 dark:text-zinc-400 block">Inject 1x1 transparent tracking pixel</span>
+                      <span className="text-xs font-medium text-zinc-900 dark:text-white block mb-0.5">Open Tracking</span>
+                      <span className="text-[11px] text-zinc-500 dark:text-zinc-400 block">Inject 1x1 transparent tracking pixel</span>
                     </div>
                     <button
                       onClick={() =>
@@ -349,7 +349,7 @@ export default function DomainsPage() {
                           open_tracking: !selectedDomain.open_tracking,
                         })
                       }
-                      className={`relative inline-flex h-5 w-9 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-zinc-900 focus:ring-offset-2 dark:focus:ring-white dark:focus:ring-offset-black ${
+                      className={`relative inline-flex h-5 w-9 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
                         selectedDomain.open_tracking ? "bg-zinc-900 dark:bg-white" : "bg-zinc-200 dark:bg-zinc-700"
                       }`}
                       role="switch"
@@ -364,10 +364,10 @@ export default function DomainsPage() {
                   </div>
 
                   {/* Click Tracking */}
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-lg border border-zinc-200 bg-zinc-50/50 p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900/50 transition-colors">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-xl border border-surface-border bg-surface-raised/40 p-4 shadow-sm transition-colors">
                     <div>
-                      <span className="text-sm font-medium text-zinc-900 dark:text-white block mb-0.5">Click Tracking</span>
-                      <span className="text-xs text-zinc-500 dark:text-zinc-400 block">Rewrite links to track CTR</span>
+                      <span className="text-xs font-medium text-zinc-900 dark:text-white block mb-0.5">Click Tracking</span>
+                      <span className="text-[11px] text-zinc-500 dark:text-zinc-400 block">Rewrite links to track CTR</span>
                     </div>
                     <button
                       onClick={() =>
@@ -375,7 +375,7 @@ export default function DomainsPage() {
                           click_tracking: !selectedDomain.click_tracking,
                         })
                       }
-                      className={`relative inline-flex h-5 w-9 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-zinc-900 focus:ring-offset-2 dark:focus:ring-white dark:focus:ring-offset-black ${
+                      className={`relative inline-flex h-5 w-9 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
                         selectedDomain.click_tracking ? "bg-zinc-900 dark:bg-white" : "bg-zinc-200 dark:bg-zinc-700"
                       }`}
                       role="switch"
@@ -390,10 +390,10 @@ export default function DomainsPage() {
                   </div>
 
                   {/* TLS Mode */}
-                  <div className="flex flex-col gap-2 rounded-lg border border-zinc-200 bg-zinc-50/50 p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900/50 transition-colors">
+                  <div className="flex flex-col gap-2 rounded-xl border border-surface-border bg-surface-raised/40 p-4 shadow-sm transition-colors">
                     <div>
-                      <span className="text-sm font-medium text-zinc-900 dark:text-white block mb-0.5">TLS Mode</span>
-                      <span className="text-xs text-zinc-500 dark:text-zinc-400 block">Outbound encryption</span>
+                      <span className="text-xs font-medium text-zinc-900 dark:text-white block mb-0.5">TLS Mode</span>
+                      <span className="text-[11px] text-zinc-500 dark:text-zinc-400 block">Outbound encryption</span>
                     </div>
                     <div className="relative mt-auto">
                       <select
@@ -401,13 +401,13 @@ export default function DomainsPage() {
                         onChange={(e) =>
                           handleUpdateDomainConfig({ tls: e.target.value })
                         }
-                        className="w-full appearance-none rounded-md border border-zinc-300 bg-white px-3 py-1.5 pr-8 text-sm text-zinc-900 shadow-sm focus:border-zinc-900 focus:outline-none focus:ring-1 focus:ring-zinc-900 dark:border-zinc-700 dark:bg-zinc-950 dark:text-white dark:focus:border-white dark:focus:ring-white transition-colors"
+                        className="w-full appearance-none rounded-lg border border-surface-border bg-surface px-3 py-1.5 pr-8 text-xs text-zinc-900 dark:text-white shadow-sm focus:outline-none focus:ring-1 focus:ring-zinc-900 dark:focus:ring-white transition-colors"
                       >
                         <option value="opportunistic">Opportunistic</option>
                         <option value="enforced">Enforced</option>
                       </select>
                       <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-zinc-500">
-                        <ChevronDown className="h-4 w-4" />
+                        <ChevronDown className="h-3.5 w-3.5" />
                       </div>
                     </div>
                   </div>
@@ -425,15 +425,17 @@ export default function DomainsPage() {
       {/* Add Domain Modal */}
       {isAddOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
-          <div className="relative flex flex-col w-full max-w-md rounded-xl border border-surface-border bg-surface p-6 shadow-2xl space-y-4">
-            <h2 className="text-sm font-semibold text-zinc-900 dark:text-white">Add Sending Domain</h2>
-            <p className="text-xs text-zinc-500 dark:text-zinc-400">
-              Enter your apex domain or subdomain to generate DKIM cryptographic keys.
-            </p>
+          <div className="relative flex flex-col w-full max-w-md rounded-xl border border-surface-border bg-surface p-6 shadow-2xl space-y-4 animate-slide-up">
+            <div>
+              <h2 className="text-sm font-semibold text-zinc-900 dark:text-white">Add Sending Domain</h2>
+              <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
+                Enter your apex domain or subdomain to generate DKIM cryptographic keys.
+              </p>
+            </div>
 
             <form onSubmit={handleAddDomain} className="space-y-4">
               <div>
-                <label className="block text-[11px] text-zinc-600 dark:text-zinc-400 mb-1">
+                <label className="block text-[11px] font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">
                   Domain Name
                 </label>
                 <input
@@ -442,18 +444,18 @@ export default function DomainsPage() {
                   onChange={(e) => setDomainName(e.target.value)}
                   placeholder="example.com or mail.example.com"
                   required
-                  className="w-full rounded-md border border-surface-border bg-surface-raised px-3 py-1.5 text-xs text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-600 focus:outline-none focus:border-zinc-500 font-mono"
+                  className="input-base font-mono"
                 />
               </div>
 
               <div>
-                <label className="block text-[11px] text-zinc-600 dark:text-zinc-400 mb-1">
+                <label className="block text-[11px] font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">
                   Region
                 </label>
                 <select
                   value={region}
                   onChange={(e) => setRegion(e.target.value)}
-                  className="w-full rounded-md border border-surface-border bg-surface-raised px-3 py-1.5 text-xs text-zinc-900 dark:text-white focus:outline-none"
+                  className="input-base"
                 >
                   <option value="us-east-1">US East (N. Virginia)</option>
                   <option value="eu-west-1">EU West (Ireland)</option>
@@ -461,17 +463,17 @@ export default function DomainsPage() {
                 </select>
               </div>
 
-              <div className="flex justify-end gap-2 pt-2">
+              <div className="flex justify-end gap-2 pt-3 border-t border-surface-border">
                 <button
                   type="button"
                   onClick={() => setIsAddOpen(false)}
-                  className="rounded-md border border-surface-border px-3 py-1.5 text-xs text-zinc-700 hover:bg-surface-raised hover:text-zinc-900 dark:text-zinc-300 dark:hover:text-white transition-colors"
+                  className="btn-secondary"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="rounded-md bg-zinc-900 px-4 py-1.5 text-xs font-medium text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200 transition-colors"
+                  className="btn-primary"
                 >
                   Add Domain
                 </button>

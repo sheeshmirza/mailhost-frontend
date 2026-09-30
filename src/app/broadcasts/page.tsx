@@ -176,15 +176,15 @@ export default function BroadcastsPage() {
                   </td>
                   <td className="px-4 py-3">
                     <span
-                      className={`inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium ${
+                      className={`badge ${
                         b.status === "sent"
-                          ? "bg-emerald-50 text-emerald-700"
+                          ? "badge-success"
                           : b.status === "sending" || b.status === "queued"
-                          ? "bg-emerald-50 text-emerald-700"
-                          : "bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300"
+                          ? "badge-info"
+                          : "badge-neutral"
                       }`}
                     >
-                      {b.status === "sent" && <CheckCircle2 className="h-2.5 w-2.5 mr-1" />}
+                      {b.status === "sent" && <CheckCircle2 className="h-3 w-3" />}
                       {b.status}
                     </span>
                   </td>
@@ -197,24 +197,24 @@ export default function BroadcastsPage() {
                         <button
                           onClick={() => handleSend(b.id)}
                           title="Send broadcast now"
-                          className="rounded p-1 text-emerald-600 hover:text-emerald-700 dark:text-emerald-400 hover:bg-surface-raised"
+                          className="btn-ghost p-1.5 text-emerald-600 hover:text-emerald-700 dark:text-emerald-400"
                         >
-                          <Send className="h-4 w-4" />
+                          <Send className="h-3.5 w-3.5" />
                         </button>
                       )}
                       <button
                         onClick={() => handleDuplicate(b.id)}
                         title="Duplicate broadcast"
-                        className="rounded p-1 text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white hover:bg-surface-raised"
+                        className="btn-ghost p-1.5"
                       >
-                        <Copy className="h-4 w-4" />
+                        <Copy className="h-3.5 w-3.5" />
                       </button>
                       <button
                         onClick={() => handleDelete(b.id)}
                         title="Delete broadcast"
-                        className="rounded p-1 text-zinc-400 hover:text-red-500 dark:text-zinc-500 dark:hover:text-red-400 hover:bg-surface-raised"
+                        className="btn-danger p-1.5"
                       >
-                        <Trash2 className="h-4 w-4" />
+                        <Trash2 className="h-3.5 w-3.5" />
                       </button>
                     </div>
                   </td>
@@ -222,7 +222,7 @@ export default function BroadcastsPage() {
               ))
             ) : (
               <tr>
-                <td colSpan={6} className="py-16 text-center text-sm text-zinc-500">
+                <td colSpan={6} className="py-16 text-center text-xs text-zinc-500 dark:text-zinc-400">
                   {isLoading
                     ? "Loading broadcasts..."
                     : "No broadcasts found. Create your first campaign above."}
@@ -235,12 +235,12 @@ export default function BroadcastsPage() {
 
       {/* New Broadcast Modal */}
       {isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-fade-in p-4">
-          <div className="relative flex flex-col w-full max-w-lg rounded-xl border border-surface-border bg-surface p-6 shadow-2xl">
-            <h2 className="text-lg font-semibold text-zinc-900 dark:text-white">Create Broadcast Campaign</h2>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm animate-fade-in p-4">
+          <div className="relative flex flex-col w-full max-w-lg rounded-xl border border-surface-border bg-surface p-6 shadow-2xl animate-slide-up">
+            <h2 className="text-sm font-semibold text-zinc-900 dark:text-white">Create Broadcast Campaign</h2>
             <form onSubmit={handleCreate} className="space-y-4 mt-4">
               <div>
-                <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">
+                <label className="block text-[11px] font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">
                   Internal Campaign Name
                 </label>
                 <input
@@ -249,18 +249,18 @@ export default function BroadcastsPage() {
                   onChange={(e) => setName(e.target.value)}
                   placeholder="e.g. October Product Launch"
                   required
-                  className="w-full rounded-lg border border-surface-border bg-surface-raised px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-zinc-900/10 dark:focus:ring-white/10"
+                  className="input-base"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">
+                <label className="block text-[11px] font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">
                   Target Audience
                 </label>
                 <select
                   value={selectedAudienceId}
                   onChange={(e) => setSelectedAudienceId(e.target.value)}
-                  className="w-full rounded-lg border border-surface-border bg-surface-raised px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-zinc-900/10 dark:focus:ring-white/10"
+                  className="input-base"
                 >
                   <option value="">Select Audience...</option>
                   {audiences.map((aud) => (
@@ -272,7 +272,7 @@ export default function BroadcastsPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">
+                <label className="block text-[11px] font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">
                   From Address
                 </label>
                 <input
@@ -281,12 +281,12 @@ export default function BroadcastsPage() {
                   onChange={(e) => setFrom(e.target.value)}
                   placeholder="Company <news@yourdomain.com>"
                   required
-                  className="w-full rounded-lg border border-surface-border bg-surface-raised px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-zinc-900/10 dark:focus:ring-white/10"
+                  className="input-base font-mono"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">
+                <label className="block text-[11px] font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">
                   Subject Line
                 </label>
                 <input
@@ -295,19 +295,19 @@ export default function BroadcastsPage() {
                   onChange={(e) => setSubject(e.target.value)}
                   placeholder="Announcing Version 2.0!"
                   required
-                  className="w-full rounded-lg border border-surface-border bg-surface-raised px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-zinc-900/10 dark:focus:ring-white/10"
+                  className="input-base"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">
+                <label className="block text-[11px] font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">
                   HTML Content
                 </label>
                 <textarea
                   value={html}
                   onChange={(e) => setHtml(e.target.value)}
                   rows={6}
-                  className="w-full rounded-lg border border-surface-border bg-surface-raised px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-zinc-900/10 dark:focus:ring-white/10"
+                  className="input-base font-mono text-xs p-3 leading-relaxed"
                 />
               </div>
 

@@ -141,7 +141,7 @@ export default function EventsPage() {
       {/* Trigger Event Modal */}
       {isOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
-          <div className="relative flex flex-col w-full max-w-md rounded-xl border border-surface-border bg-surface p-6 shadow-2xl space-y-4">
+          <div className="relative flex flex-col w-full max-w-md rounded-xl border border-surface-border bg-surface p-6 shadow-2xl space-y-4 animate-slide-up">
             <div className="flex items-center gap-2">
               <Zap className="h-4 w-4 text-purple-500" />
               <h2 className="text-sm font-semibold text-zinc-900 dark:text-white">Trigger Custom Event</h2>
@@ -150,9 +150,9 @@ export default function EventsPage() {
               Emit an event to the backend. Matching automations will be triggered immediately.
             </p>
 
-            <form onSubmit={handleTrigger} className="space-y-3">
+            <form onSubmit={handleTrigger} className="space-y-4">
               <div>
-                <label className="block text-[11px] font-medium text-zinc-600 dark:text-zinc-300 mb-1">
+                <label className="block text-[11px] font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">
                   Event Name
                 </label>
                 <input
@@ -161,12 +161,12 @@ export default function EventsPage() {
                   onChange={(e) => setName(e.target.value)}
                   placeholder="e.g. order.completed, user.signup"
                   required
-                  className="w-full rounded-md border border-surface-border bg-surface-raised px-3 py-1.5 text-xs text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-600 focus:outline-none font-mono"
+                  className="input-base font-mono"
                 />
               </div>
 
               <div>
-                <label className="block text-[11px] font-medium text-zinc-600 dark:text-zinc-300 mb-1">
+                <label className="block text-[11px] font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">
                   Contact Email
                 </label>
                 <input
@@ -175,34 +175,34 @@ export default function EventsPage() {
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="customer@example.com"
                   required
-                  className="w-full rounded-md border border-surface-border bg-surface-raised px-3 py-1.5 text-xs text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-600 focus:outline-none font-mono"
+                  className="input-base font-mono"
                 />
               </div>
 
               <div>
-                <label className="block text-[11px] font-medium text-zinc-600 dark:text-zinc-300 mb-1">
+                <label className="block text-[11px] font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">
                   Data Payload (JSON)
                 </label>
                 <textarea
                   value={jsonData}
                   onChange={(e) => setJsonData(e.target.value)}
                   rows={5}
-                  className="w-full rounded-md border border-surface-border bg-surface-raised p-3 font-mono text-xs text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-600 focus:outline-none"
+                  className="input-base font-mono text-xs p-3 leading-relaxed"
                 />
               </div>
 
-              <div className="flex justify-end gap-2 pt-2">
+              <div className="flex justify-end gap-2 pt-3 border-t border-surface-border">
                 <button
                   type="button"
                   onClick={() => setIsOpen(false)}
-                  className="rounded-md border border-surface-border px-3 py-1.5 text-xs font-medium text-zinc-600 hover:bg-surface-raised dark:text-zinc-400 dark:hover:text-white transition-colors"
+                  className="btn-secondary"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="rounded-md bg-zinc-900 px-4 py-1.5 text-xs font-medium text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200 transition-colors disabled:opacity-50"
+                  className="btn-primary"
                 >
                   {isSubmitting ? "Triggering..." : "Fire Event"}
                 </button>

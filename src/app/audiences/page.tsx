@@ -511,18 +511,18 @@ export default function AudiencesPage() {
                         </td>
                         <td className="px-4 py-3">
                           {c.unsubscribed ? (
-                            <span className="inline-flex items-center gap-1 rounded-full bg-red-50 border border-red-200 px-2 py-0.5 text-[11px] text-red-700 dark:bg-red-950/60 dark:border-red-800/40 dark:text-red-400">
-                              <UserX className="h-2.5 w-2.5" />
+                            <span className="badge badge-error">
+                              <UserX className="h-3 w-3" />
                               Unsubscribed
                             </span>
                           ) : (
-                            <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 border border-emerald-200 px-2 py-0.5 text-[11px] text-emerald-700 dark:bg-emerald-950/60 dark:border-emerald-800/40 dark:text-emerald-400">
-                              <UserCheck className="h-2.5 w-2.5" />
+                            <span className="badge badge-success">
+                              <UserCheck className="h-3 w-3" />
                               Subscribed
                             </span>
                           )}
                         </td>
-                        <td className="px-4 py-3 text-zinc-500 dark:text-zinc-400">
+                        <td className="px-4 py-3 text-zinc-500 dark:text-zinc-400 font-mono text-[11px]">
                           {new Date(c.created_at).toLocaleDateString()}
                         </td>
                         <td className="px-4 py-3 text-right">
@@ -531,9 +531,9 @@ export default function AudiencesPage() {
                               e.stopPropagation();
                               handleDeleteContact(c.id);
                             }}
-                            className="rounded p-1 text-zinc-400 hover:text-red-500 dark:text-zinc-500 dark:hover:text-red-400 transition-colors"
+                            className="btn-danger p-1.5"
                           >
-                            <Trash2 className="h-4 w-4" />
+                            <Trash2 className="h-3.5 w-3.5" />
                           </button>
                         </td>
                       </tr>
@@ -580,7 +580,7 @@ export default function AudiencesPage() {
                         View Enrolled Contacts <ChevronRight className="h-3.5 w-3.5" />
                       </span>
                     </td>
-                    <td className="px-4 py-3 text-zinc-500 dark:text-zinc-400">
+                    <td className="px-4 py-3 text-zinc-500 dark:text-zinc-400 font-mono text-[11px]">
                       {new Date(seg.created_at).toLocaleDateString()}
                     </td>
                     <td className="px-4 py-3 text-right">
@@ -589,16 +589,16 @@ export default function AudiencesPage() {
                           e.stopPropagation();
                           handleDeleteSegment(seg.id);
                         }}
-                        className="rounded p-1 text-zinc-400 hover:text-red-500 dark:hover:text-red-400 transition-colors"
+                        className="btn-danger p-1.5"
                       >
-                        <Trash2 className="h-4 w-4" />
+                        <Trash2 className="h-3.5 w-3.5" />
                       </button>
                     </td>
                   </tr>
                 ))
               ) : (
                 <tr>
-                  <td colSpan={3} className="py-12 text-center text-sm text-zinc-500 dark:text-zinc-400">
+                  <td colSpan={3} className="py-12 text-center text-xs text-zinc-500 dark:text-zinc-400">
                     No segments defined yet. Click "New Segment" to create a dynamic contact group.
                   </td>
                 </tr>
@@ -632,16 +632,16 @@ export default function AudiencesPage() {
                       {top.description || "—"}
                     </td>
                     <td className="px-5 py-3 font-sans">
-                      <span className="rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-950/60 dark:border-emerald-800/40 px-2 py-0.5 text-[10px] dark:text-emerald-400">
+                      <span className="badge badge-success">
                         Subscribed
                       </span>
                     </td>
                     <td className="px-5 py-3 text-right">
                       <button
                         onClick={() => handleDeleteTopic(top.id)}
-                        className="rounded p-1 text-zinc-400 hover:text-red-500 dark:hover:text-red-400 transition-colors"
+                        className="btn-danger p-1.5"
                       >
-                        <Trash2 className="h-4 w-4" />
+                        <Trash2 className="h-3.5 w-3.5" />
                       </button>
                     </td>
                   </tr>

@@ -211,7 +211,7 @@ export default function TemplatesPage() {
                     <h2 className="text-base font-semibold text-zinc-900 dark:text-white">
                       {selectedTemplate.name}
                     </h2>
-                    <span className="rounded-full px-2 py-0.5 text-[10px] font-medium border border-surface-border bg-surface-raised text-zinc-600 dark:text-zinc-300">
+                    <span className={`badge ${selectedTemplate.status === "published" ? "badge-success" : "badge-neutral"}`}>
                       {selectedTemplate.status}
                     </span>
                   </div>
@@ -232,7 +232,7 @@ export default function TemplatesPage() {
                   )}
                   <button
                     onClick={() => handleDelete(selectedTemplate.id)}
-                    className="flex h-8 w-8 items-center justify-center rounded-lg border border-surface-border text-zinc-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 transition-colors"
+                    className="btn-danger p-1.5"
                     title="Delete template"
                   >
                     <Trash2 className="h-4 w-4" />
@@ -331,11 +331,11 @@ await resend.emails.send({
       {/* New Template Modal */}
       {isOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
-          <div className="relative flex flex-col w-full max-w-lg rounded-xl border border-surface-border bg-surface p-6 shadow-2xl space-y-4">
+          <div className="relative flex flex-col w-full max-w-lg rounded-xl border border-surface-border bg-surface p-6 shadow-2xl space-y-4 animate-slide-up">
             <h2 className="text-sm font-semibold text-zinc-900 dark:text-white">New Email Template</h2>
-            <form onSubmit={handleCreate} className="space-y-3">
+            <form onSubmit={handleCreate} className="space-y-4">
               <div>
-                <label className="block text-[11px] font-medium text-zinc-600 dark:text-zinc-300 mb-1">
+                <label className="block text-[11px] font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">
                   Template Name
                 </label>
                 <input
@@ -344,12 +344,12 @@ await resend.emails.send({
                   onChange={(e) => setName(e.target.value)}
                   placeholder="Welcome Email"
                   required
-                  className="w-full rounded-md border border-surface-border bg-surface-raised px-3 py-1.5 text-xs text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-600 focus:outline-none"
+                  className="input-base"
                 />
               </div>
 
               <div>
-                <label className="block text-[11px] font-medium text-zinc-600 dark:text-zinc-300 mb-1">
+                <label className="block text-[11px] font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">
                   Alias (Unique API identifier)
                 </label>
                 <input
@@ -357,12 +357,12 @@ await resend.emails.send({
                   value={alias}
                   onChange={(e) => setAlias(e.target.value)}
                   placeholder="welcome-email"
-                  className="w-full rounded-md border border-surface-border bg-surface-raised px-3 py-1.5 text-xs text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-600 focus:outline-none font-mono"
+                  className="input-base font-mono"
                 />
               </div>
 
               <div>
-                <label className="block text-[11px] font-medium text-zinc-600 dark:text-zinc-300 mb-1">
+                <label className="block text-[11px] font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">
                   Subject Line
                 </label>
                 <input
@@ -371,19 +371,19 @@ await resend.emails.send({
                   onChange={(e) => setSubject(e.target.value)}
                   placeholder="Welcome to Acme, {{name}}!"
                   required
-                  className="w-full rounded-md border border-surface-border bg-surface-raised px-3 py-1.5 text-xs text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-600 focus:outline-none"
+                  className="input-base"
                 />
               </div>
 
               <div>
-                <label className="block text-[11px] font-medium text-zinc-600 dark:text-zinc-300 mb-1">
+                <label className="block text-[11px] font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">
                   HTML Body
                 </label>
                 <textarea
                   value={html}
                   onChange={(e) => setHtml(e.target.value)}
                   rows={6}
-                  className="w-full rounded-md border border-surface-border bg-surface-raised p-3 font-mono text-xs text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-600 focus:outline-none"
+                  className="input-base font-mono text-xs p-3 leading-relaxed"
                 />
               </div>
 

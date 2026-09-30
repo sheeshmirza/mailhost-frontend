@@ -150,7 +150,7 @@ export default function LogsHealthPage() {
                     Day {ip.warmup_day} · Quota: {ip.daily_quota} emails/day · Sent Today: {ip.sent_today}
                   </span>
                 </div>
-                <span className="rounded-full bg-amber-50 text-amber-800 border border-amber-200 dark:bg-amber-950/60 dark:border-amber-800/40 px-2 py-0.5 text-[10px] dark:text-amber-400">
+                <span className="badge badge-warning">
                   {ip.status}
                 </span>
               </div>

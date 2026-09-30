@@ -137,94 +137,112 @@ export default function OverviewPage() {
         </div>
       </div>
 
-      {/* KPI Cards Grid */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+      {/* KPI Cards Grid - Balanced 6-metric grid */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3.5">
         {/* Sent */}
-        <div className="rounded-xl border border-surface-border bg-surface p-5 space-y-3 shadow-sm">
+        <div className="rounded-xl border border-surface-border bg-surface p-4 space-y-2.5 shadow-sm transition-colors hover:border-zinc-300 dark:hover:border-zinc-700">
           <div className="flex items-center justify-between">
-            <span className="text-xs text-zinc-500 uppercase tracking-wider font-medium">Sent</span>
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-zinc-100 dark:bg-zinc-800">
-              <Send className="h-4 w-4 text-zinc-600 dark:text-zinc-400" />
+            <span className="text-[11px] text-zinc-500 uppercase tracking-wider font-medium">Sent</span>
+            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-zinc-100 dark:bg-zinc-800">
+              <Send className="h-3.5 w-3.5 text-zinc-600 dark:text-zinc-400" />
             </div>
           </div>
           <div>
             <div className="text-2xl font-semibold text-zinc-900 dark:text-white tracking-tight">
               {totals.sent.toLocaleString()}
             </div>
-            <div className="text-[11px] text-zinc-400 mt-1">
-              All outbound messages
+            <div className="text-[10px] text-zinc-400 mt-1">
+              All messages
             </div>
           </div>
         </div>
 
         {/* Delivered */}
-        <div className="rounded-xl border border-surface-border bg-surface p-5 space-y-3 shadow-sm">
+        <div className="rounded-xl border border-surface-border bg-surface p-4 space-y-2.5 shadow-sm transition-colors hover:border-emerald-300 dark:hover:border-emerald-700">
           <div className="flex items-center justify-between">
-            <span className="text-xs text-zinc-500 uppercase tracking-wider font-medium">Delivered</span>
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-emerald-50 dark:bg-emerald-500/10">
-              <CheckCircle2 className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+            <span className="text-[11px] text-zinc-500 uppercase tracking-wider font-medium">Delivered</span>
+            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-emerald-50 dark:bg-emerald-500/10">
+              <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
             </div>
           </div>
           <div>
             <div className="text-2xl font-semibold text-zinc-900 dark:text-white tracking-tight">
               {totals.delivered.toLocaleString()}
             </div>
-            <div className="text-[11px] text-emerald-600 dark:text-emerald-400 font-medium mt-1">
+            <div className="text-[10px] text-emerald-600 dark:text-emerald-400 font-medium mt-1">
               {(rates.delivery_rate * 100).toFixed(1)}% rate
             </div>
           </div>
         </div>
 
         {/* Opened */}
-        <div className="rounded-xl border border-surface-border bg-surface p-5 space-y-3 shadow-sm">
+        <div className="rounded-xl border border-surface-border bg-surface p-4 space-y-2.5 shadow-sm transition-colors hover:border-sky-300 dark:hover:border-sky-700">
           <div className="flex items-center justify-between">
-            <span className="text-xs text-zinc-500 uppercase tracking-wider font-medium">Opened</span>
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-sky-50 dark:bg-sky-500/10">
-              <Eye className="h-4 w-4 text-sky-600 dark:text-sky-400" />
+            <span className="text-[11px] text-zinc-500 uppercase tracking-wider font-medium">Opened</span>
+            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-sky-50 dark:bg-sky-500/10">
+              <Eye className="h-3.5 w-3.5 text-sky-600 dark:text-sky-400" />
             </div>
           </div>
           <div>
             <div className="text-2xl font-semibold text-zinc-900 dark:text-white tracking-tight">
               {totals.opened.toLocaleString()}
             </div>
-            <div className="text-[11px] text-sky-600 dark:text-sky-400 font-medium mt-1">
+            <div className="text-[10px] text-sky-600 dark:text-sky-400 font-medium mt-1">
               {(rates.open_rate * 100).toFixed(1)}% rate
             </div>
           </div>
         </div>
 
         {/* Clicked */}
-        <div className="rounded-xl border border-surface-border bg-surface p-5 space-y-3 shadow-sm">
+        <div className="rounded-xl border border-surface-border bg-surface p-4 space-y-2.5 shadow-sm transition-colors hover:border-purple-300 dark:hover:border-purple-700">
           <div className="flex items-center justify-between">
-            <span className="text-xs text-zinc-500 uppercase tracking-wider font-medium">Clicked</span>
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-purple-50 dark:bg-purple-500/10">
-              <MousePointer className="h-4 w-4 text-purple-600 dark:text-purple-400" />
+            <span className="text-[11px] text-zinc-500 uppercase tracking-wider font-medium">Clicked</span>
+            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-purple-50 dark:bg-purple-500/10">
+              <MousePointer className="h-3.5 w-3.5 text-purple-600 dark:text-purple-400" />
             </div>
           </div>
           <div>
             <div className="text-2xl font-semibold text-zinc-900 dark:text-white tracking-tight">
               {totals.clicked.toLocaleString()}
             </div>
-            <div className="text-[11px] text-purple-600 dark:text-purple-400 font-medium mt-1">
+            <div className="text-[10px] text-purple-600 dark:text-purple-400 font-medium mt-1">
               {(rates.click_rate * 100).toFixed(1)}% rate
             </div>
           </div>
         </div>
 
-        {/* Bounced / Failed */}
-        <div className="rounded-xl border border-surface-border bg-surface p-5 space-y-3 shadow-sm col-span-2 sm:col-span-1">
+        {/* Bounced */}
+        <div className="rounded-xl border border-surface-border bg-surface p-4 space-y-2.5 shadow-sm transition-colors hover:border-amber-300 dark:hover:border-amber-700">
           <div className="flex items-center justify-between">
-            <span className="text-xs text-zinc-500 uppercase tracking-wider font-medium">Bounced</span>
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-red-50 dark:bg-red-500/10">
-              <AlertTriangle className="h-4 w-4 text-red-600 dark:text-red-400" />
+            <span className="text-[11px] text-zinc-500 uppercase tracking-wider font-medium">Bounced</span>
+            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-amber-50 dark:bg-amber-500/10">
+              <AlertTriangle className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400" />
             </div>
           </div>
           <div>
             <div className="text-2xl font-semibold text-zinc-900 dark:text-white tracking-tight">
               {totals.bounced.toLocaleString()}
             </div>
-            <div className="text-[11px] text-red-600 dark:text-red-400 font-medium mt-1">
+            <div className="text-[10px] text-amber-600 dark:text-amber-400 font-medium mt-1">
               {(rates.bounce_rate * 100).toFixed(1)}% rate
+            </div>
+          </div>
+        </div>
+
+        {/* Failed */}
+        <div className="rounded-xl border border-surface-border bg-surface p-4 space-y-2.5 shadow-sm transition-colors hover:border-red-300 dark:hover:border-red-700">
+          <div className="flex items-center justify-between">
+            <span className="text-[11px] text-zinc-500 uppercase tracking-wider font-medium">Failed</span>
+            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-red-50 dark:bg-red-500/10">
+              <AlertTriangle className="h-3.5 w-3.5 text-red-600 dark:text-red-400" />
+            </div>
+          </div>
+          <div>
+            <div className="text-2xl font-semibold text-zinc-900 dark:text-white tracking-tight">
+              {totals.failed.toLocaleString()}
+            </div>
+            <div className="text-[10px] text-red-600 dark:text-red-400 font-medium mt-1">
+              {(rates.failure_rate * 100).toFixed(1)}% rate
             </div>
           </div>
         </div>
@@ -232,10 +250,10 @@ export default function OverviewPage() {
 
       {/* Activity Timeline Chart */}
       <div className="rounded-xl border border-surface-border bg-surface p-5 space-y-4 shadow-sm">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
           <div>
             <h2 className="text-sm font-semibold text-zinc-900 dark:text-white">Email Volume</h2>
-            <p className="text-xs text-zinc-500 dark:text-zinc-400">
+            <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">
               Aggregated deliveries grouped by {interval}
             </p>
           </div>
@@ -292,6 +310,29 @@ export default function OverviewPage() {
             </div>
           )}
         </div>
+
+        {analytics?.series && analytics.series.length > 1 && (
+          <div className="flex items-center justify-between text-[10px] text-zinc-400 dark:text-zinc-500 font-mono px-1">
+            <span>
+              {new Date(analytics.series[0].bucket).toLocaleDateString(undefined, {
+                month: "short",
+                day: "numeric",
+              })}
+            </span>
+            <span>
+              {new Date(analytics.series[Math.floor(analytics.series.length / 2)].bucket).toLocaleDateString(undefined, {
+                month: "short",
+                day: "numeric",
+              })}
+            </span>
+            <span>
+              {new Date(analytics.series[analytics.series.length - 1].bucket).toLocaleDateString(undefined, {
+                month: "short",
+                day: "numeric",
+              })}
+            </span>
+          </div>
+        )}
       </div>
 
       {/* Two Column Grid: Recent Activity & Quick SDK Integration */}

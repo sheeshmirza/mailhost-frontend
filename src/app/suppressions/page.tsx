@@ -93,29 +93,29 @@ export default function SuppressionsPage() {
             {suppressions.length > 0 ? (
               suppressions.map((s) => (
                 <tr key={s.address} className="hover:bg-surface-raised/50 transition-colors">
-                  <td className="px-4 py-3 text-sm font-mono text-zinc-900 dark:text-white font-medium">{s.address}</td>
-                  <td className="px-4 py-3 text-sm">
-                    <span className="inline-flex items-center rounded-full bg-red-50 text-red-700 dark:bg-red-950/30 dark:text-red-400 px-2 py-0.5 text-[11px] font-medium">
+                  <td className="px-4 py-3 text-xs font-mono text-zinc-900 dark:text-white font-medium">{s.address}</td>
+                  <td className="px-4 py-3 text-xs">
+                    <span className="badge badge-error">
                       {s.reason || "Hard Bounce"}
                     </span>
                   </td>
-                  <td className="px-4 py-3 text-sm font-mono text-zinc-500 dark:text-zinc-400">
+                  <td className="px-4 py-3 text-xs font-mono text-zinc-500 dark:text-zinc-400">
                     {new Date(s.created_at).toLocaleString()}
                   </td>
                   <td className="px-4 py-3 text-right">
                     <button
                       onClick={() => handleRemove(s.address)}
                       title="Remove suppression"
-                      className="rounded-lg p-1.5 text-zinc-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 transition-colors"
+                      className="btn-danger p-1.5"
                     >
-                      <Trash2 className="h-4 w-4" />
+                      <Trash2 className="h-3.5 w-3.5" />
                     </button>
                   </td>
                 </tr>
               ))
             ) : (
               <tr>
-                <td colSpan={4} className="py-16 text-center text-sm text-zinc-500">
+                <td colSpan={4} className="py-16 text-center text-xs text-zinc-500 dark:text-zinc-400">
                   {isLoading
                     ? "Loading suppressions..."
                     : "No addresses currently suppressed. Your sender reputation is clean!"}

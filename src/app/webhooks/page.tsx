@@ -163,10 +163,10 @@ export default function WebhooksPage() {
                   </td>
                   <td className="px-4 py-3 text-sm font-sans">
                     <span
-                      className={`inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium ${
+                      className={`badge ${
                         wh.status === "active"
-                          ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-400"
-                          : "bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300"
+                          ? "badge-success"
+                          : "badge-neutral"
                       }`}
                     >
                       {wh.status}
@@ -193,17 +193,17 @@ export default function WebhooksPage() {
                   <td className="px-4 py-3 text-right">
                     <button
                       onClick={() => handleDelete(wh.id)}
-                      className="rounded-lg p-1.5 text-zinc-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 transition-colors"
+                      className="btn-danger p-1.5"
                       title="Delete webhook"
                     >
-                      <Trash2 className="h-4 w-4" />
+                      <Trash2 className="h-3.5 w-3.5" />
                     </button>
                   </td>
                 </tr>
               ))
             ) : (
               <tr>
-                <td colSpan={5} className="py-16 text-center text-sm text-zinc-500">
+                <td colSpan={5} className="py-16 text-center text-xs text-zinc-500 dark:text-zinc-400">
                   {isLoading
                     ? "Loading webhooks..."
                     : "No webhook endpoints registered yet."}
@@ -216,15 +216,15 @@ export default function WebhooksPage() {
 
       {/* Add Webhook Modal */}
       {isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-fade-in">
-          <div className="relative flex flex-col w-full max-w-lg rounded-xl border border-surface-border bg-surface p-6 shadow-2xl space-y-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-fade-in">
+          <div className="relative flex flex-col w-full max-w-lg rounded-xl border border-surface-border bg-surface p-6 shadow-2xl space-y-4 animate-slide-up">
             <div>
-              <h2 className="text-lg font-semibold text-zinc-900 dark:text-white">Add Webhook Endpoint</h2>
-              <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-1">Configure a new webhook URL to receive events.</p>
+              <h2 className="text-sm font-semibold text-zinc-900 dark:text-white">Add Webhook Endpoint</h2>
+              <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">Configure a new webhook URL to receive events.</p>
             </div>
             <form onSubmit={handleCreate} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">
+                <label className="block text-[11px] font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">
                   Endpoint URL (must be HTTPS)
                 </label>
                 <input
@@ -233,25 +233,25 @@ export default function WebhooksPage() {
                   onChange={(e) => setUrl(e.target.value)}
                   placeholder="https://api.yourdomain.com/webhooks/resend"
                   required
-                  className="w-full rounded-lg border border-surface-border bg-surface-raised px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-zinc-900/10 font-mono text-zinc-700 dark:text-zinc-300 placeholder-zinc-400 dark:placeholder-zinc-600"
+                  className="input-base font-mono"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">
+                <label className="block text-[11px] font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">
                   Select Events to Subscribe
                 </label>
                 <div className="grid grid-cols-2 gap-2">
                   {availableEvents.map((ev) => (
                     <label
                       key={ev.id}
-                      className="flex items-center gap-2 rounded-lg border border-surface-border bg-surface-raised p-2 text-sm text-zinc-700 dark:text-zinc-300 cursor-pointer hover:border-zinc-400 dark:hover:border-zinc-600 transition-colors"
+                      className="flex items-center gap-2 rounded-lg border border-surface-border bg-surface-raised/40 p-2 text-xs text-zinc-700 dark:text-zinc-300 cursor-pointer hover:border-zinc-400 dark:hover:border-zinc-600 transition-colors"
                     >
                       <input
                         type="checkbox"
                         checked={selectedEvents.includes(ev.id)}
                         onChange={() => toggleEvent(ev.id)}
-                        className="rounded border-surface-border bg-surface text-zinc-900 dark:text-white focus:ring-0"
+                        className="rounded border-surface-border text-zinc-900 dark:text-white focus:ring-0"
                       />
                       <span>{ev.label}</span>
                     </label>
