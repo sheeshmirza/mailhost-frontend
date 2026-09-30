@@ -23,7 +23,6 @@ import {
   Play,
 } from "lucide-react";
 import { useToast } from "@/lib/toast-context";
-import { useAuth } from "@/lib/auth-context";
 
 type CodeLang = "nodejs" | "python" | "go" | "ruby" | "php" | "rust" | "curl";
 
@@ -144,9 +143,6 @@ async fn main() {
 
 export default function HomePage() {
   const { toast } = useToast();
-  const { token, user } = useAuth();
-  const isAuthenticated = Boolean(token && user);
-
   const [selectedLang, setSelectedLang] = useState<CodeLang>("nodejs");
   const [copied, setCopied] = useState(false);
 
@@ -212,10 +208,10 @@ export default function HomePage() {
         {/* Hero CTAs */}
         <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
           <Link
-            href={isAuthenticated ? "/overview" : "/login"}
-            className="w-full sm:w-auto flex items-center justify-center gap-2 rounded-lg bg-zinc-900 px-6 py-2.5 text-sm font-semibold text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200 transition-all shadow-md active:scale-95"
+            href="/overview"
+            className="w-full sm:w-auto flex items-center justify-center gap-2 rounded-md bg-zinc-900 px-6 py-2.5 text-sm font-semibold text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200 transition-all shadow-md active:scale-95"
           >
-            <span>{isAuthenticated ? "Open Dashboard" : "Get Started"}</span>
+            <span>Get Started</span>
             <ArrowRight className="h-4 w-4" />
           </Link>
           <a
@@ -656,20 +652,18 @@ export default function HomePage() {
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
             <Link
-              href={isAuthenticated ? "/overview" : "/login"}
-              className="w-full sm:w-auto flex items-center justify-center gap-2 rounded-lg bg-zinc-900 px-6 py-2.5 text-sm font-semibold text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200 transition-all shadow-md active:scale-95"
+              href="/overview"
+              className="w-full sm:w-auto flex items-center justify-center gap-2 rounded-md bg-zinc-900 px-6 py-2.5 text-sm font-semibold text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200 transition-all shadow-md active:scale-95"
             >
-              <span>{isAuthenticated ? "Open Dashboard" : "Get Started"}</span>
+              <span>Explore Dashboard</span>
               <ArrowRight className="h-4 w-4" />
             </Link>
-            {!isAuthenticated && (
-              <Link
-                href="/login"
-                className="w-full sm:w-auto flex items-center justify-center gap-2 rounded-lg border border-surface-border bg-surface px-5 py-2.5 text-sm font-medium text-zinc-700 hover:bg-surface-raised hover:text-zinc-900 dark:text-zinc-300 dark:hover:text-white transition-colors"
-              >
-                <span>Sign In</span>
-              </Link>
-            )}
+            <Link
+              href="/login"
+              className="w-full sm:w-auto flex items-center justify-center gap-2 rounded-md border border-surface-border bg-surface px-5 py-2.5 text-sm font-medium text-zinc-700 hover:bg-surface-raised hover:text-zinc-900 dark:text-zinc-300 dark:hover:text-white transition-colors"
+            >
+              <span>Create Account</span>
+            </Link>
           </div>
         </div>
       </section>

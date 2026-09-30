@@ -250,16 +250,16 @@ export default function AutomationsPage() {
                         {a.name}
                       </span>
                       <span
-                        className={`badge ${
+                        className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium border ${
                           a.status === "active"
-                            ? "badge-success"
-                            : "badge-neutral"
+                            ? "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/60 dark:text-emerald-400 dark:border-emerald-800/40"
+                            : "bg-zinc-100 text-zinc-600 border-zinc-200 dark:bg-zinc-800 dark:text-zinc-400 dark:border-zinc-700"
                         }`}
                       >
                         {a.status === "active" ? (
-                          <Play className="h-2.5 w-2.5" />
+                          <Play className="h-2 w-2" />
                         ) : (
-                          <Pause className="h-2.5 w-2.5" />
+                          <Pause className="h-2 w-2" />
                         )}
                         {a.status}
                       </span>
@@ -312,7 +312,7 @@ export default function AutomationsPage() {
                   <div className="flex items-center gap-2">
                     <button
                       onClick={() => handleToggleStatus(selectedAuto)}
-                      className="btn-secondary"
+                      className="flex items-center gap-1.5 rounded-md border border-surface-border bg-surface-raised px-3 py-1.5 text-xs text-zinc-700 dark:text-zinc-200 hover:text-zinc-900 dark:hover:text-white transition-colors"
                     >
                       {selectedAuto.status === "active" ? (
                         <>
@@ -328,7 +328,7 @@ export default function AutomationsPage() {
                     </button>
                     <button
                       onClick={() => handleDelete(selectedAuto.id)}
-                      className="btn-danger p-1.5"
+                      className="rounded border border-surface-border p-1.5 text-zinc-400 hover:text-red-500 transition-colors"
                     >
                       <Trash2 className="h-4 w-4" />
                     </button>
@@ -461,11 +461,11 @@ export default function AutomationsPage() {
       {/* New Automation Modal */}
       {isOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
-          <div className="relative flex flex-col w-full max-w-lg rounded-xl border border-surface-border bg-surface p-6 shadow-2xl space-y-4 animate-slide-up">
+          <div className="relative flex flex-col w-full max-w-lg rounded-xl border border-surface-border bg-surface p-6 shadow-2xl space-y-4">
             <h2 className="text-sm font-semibold text-zinc-900 dark:text-white">Create Automated Drip Journey</h2>
-            <form onSubmit={handleCreate} className="space-y-4">
+            <form onSubmit={handleCreate} className="space-y-3">
               <div>
-                <label className="block text-[11px] font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">
+                <label className="block text-[11px] font-medium text-zinc-600 dark:text-zinc-300 mb-1">
                   Automation Name
                 </label>
                 <input
@@ -474,19 +474,19 @@ export default function AutomationsPage() {
                   onChange={(e) => setName(e.target.value)}
                   placeholder="e.g. User Onboarding Series"
                   required
-                  className="input-base"
+                  className="w-full rounded-md border border-surface-border bg-surface-raised px-3 py-1.5 text-xs text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-600 focus:outline-none"
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className="block text-[11px] font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">
+                  <label className="block text-[11px] font-medium text-zinc-600 dark:text-zinc-300 mb-1">
                     Trigger Event
                   </label>
                   <select
                     value={triggerType}
                     onChange={(e) => setTriggerType(e.target.value)}
-                    className="input-base"
+                    className="w-full rounded-md border border-surface-border bg-surface-raised px-3 py-1.5 text-xs text-zinc-900 dark:text-white focus:outline-none"
                   >
                     <option value="contact.created">Contact Created</option>
                     <option value="event">Custom Event Triggered</option>
@@ -497,7 +497,7 @@ export default function AutomationsPage() {
 
                 {triggerType === "event" && (
                   <div>
-                    <label className="block text-[11px] font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">
+                    <label className="block text-[11px] font-medium text-zinc-600 dark:text-zinc-300 mb-1">
                       Event Name
                     </label>
                     <input
@@ -505,15 +505,15 @@ export default function AutomationsPage() {
                       value={eventName}
                       onChange={(e) => setEventName(e.target.value)}
                       placeholder="user.signup"
-                      className="input-base font-mono"
+                      className="w-full rounded-md border border-surface-border bg-surface-raised px-3 py-1.5 text-xs text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-600 focus:outline-none font-mono"
                     />
                   </div>
                 )}
               </div>
 
               {/* Initial Email Configuration */}
-              <div className="pt-3 border-t border-surface-border space-y-2.5">
-                <span className="text-[11px] font-semibold text-zinc-700 dark:text-zinc-300 uppercase tracking-wider block">
+              <div className="pt-2 border-t border-surface-border space-y-2">
+                <span className="text-[11px] font-semibold text-zinc-600 dark:text-zinc-300 uppercase tracking-wider block">
                   Step 1: Immediate Email
                 </span>
                 <input
@@ -522,19 +522,19 @@ export default function AutomationsPage() {
                   onChange={(e) => setEmailSubject(e.target.value)}
                   placeholder="Subject line"
                   required
-                  className="input-base"
+                  className="w-full rounded-md border border-surface-border bg-surface-raised px-3 py-1.5 text-xs text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-600 focus:outline-none"
                 />
                 <textarea
                   value={emailHtml}
                   onChange={(e) => setEmailHtml(e.target.value)}
                   rows={4}
-                  className="input-base font-mono text-xs p-3 leading-relaxed"
+                  className="w-full rounded-md border border-surface-border bg-surface-raised p-3 font-mono text-xs text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-600 focus:outline-none"
                 />
               </div>
 
               {/* Delay Configuration */}
-              <div className="pt-3 border-t border-surface-border">
-                <label className="block text-[11px] font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">
+              <div className="pt-2 border-t border-surface-border">
+                <label className="block text-[11px] font-medium text-zinc-600 dark:text-zinc-300 mb-1">
                   Step 2: Wait Delay Before Follow-up (Hours)
                 </label>
                 <input
@@ -543,21 +543,21 @@ export default function AutomationsPage() {
                   onChange={(e) => setDelayHours(Number(e.target.value))}
                   min={1}
                   max={720}
-                  className="input-base"
+                  className="w-full rounded-md border border-surface-border bg-surface-raised px-3 py-1.5 text-xs text-zinc-900 dark:text-white focus:outline-none"
                 />
               </div>
 
-              <div className="flex justify-end gap-2 pt-3 border-t border-surface-border">
+              <div className="flex justify-end gap-2 pt-2">
                 <button
                   type="button"
                   onClick={() => setIsOpen(false)}
-                  className="btn-secondary"
+                  className="rounded-md border border-surface-border px-3 py-1.5 text-xs font-medium text-zinc-600 hover:bg-surface-raised dark:text-zinc-400 dark:hover:text-white transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="btn-primary"
+                  className="rounded-md bg-zinc-900 px-4 py-1.5 text-xs font-medium text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200 transition-colors"
                 >
                   Deploy Automation
                 </button>

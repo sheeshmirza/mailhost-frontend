@@ -182,10 +182,10 @@ export default function SMTPPage() {
                   <td className="px-5 py-3 text-right">
                     <button
                       onClick={() => handleDelete(cred.id)}
-                      className="btn-danger p-1.5"
+                      className="rounded p-1 text-zinc-400 hover:text-red-500 transition-colors"
                       title="Revoke credential"
                     >
-                      <Trash2 className="h-3.5 w-3.5" />
+                      <Trash2 className="h-4 w-4" />
                     </button>
                   </td>
                 </tr>
@@ -279,7 +279,7 @@ await transporter.sendMail({
                       setIsOpen(false);
                       setGeneratedCreds(null);
                     }}
-                    className="btn-primary"
+                    className="rounded-md bg-zinc-900 px-4 py-1.5 text-xs font-medium text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200 transition-colors"
                   >
                     Done
                   </button>
@@ -288,7 +288,7 @@ await transporter.sendMail({
             ) : (
               <form onSubmit={handleCreate} className="space-y-4">
                 <div>
-                  <label className="block text-[11px] font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">
+                  <label className="block text-[11px] font-medium text-zinc-600 dark:text-zinc-300 mb-1">
                     Sender Email Address (Must belong to verified domain)
                   </label>
                   <input
@@ -297,12 +297,12 @@ await transporter.sendMail({
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="support@yourdomain.com"
                     required
-                    className="input-base font-mono"
+                    className="w-full rounded-md border border-surface-border bg-surface-raised px-3 py-1.5 text-xs text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-600 focus:outline-none font-mono"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-[11px] font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">
+                  <label className="block text-[11px] font-medium text-zinc-600 dark:text-zinc-300 mb-1">
                     Credential Name (Optional)
                   </label>
                   <input
@@ -310,7 +310,7 @@ await transporter.sendMail({
                     value={credName}
                     onChange={(e) => setCredName(e.target.value)}
                     placeholder="e.g. WordPress Mailer, Discourse Forum"
-                    className="input-base"
+                    className="w-full rounded-md border border-surface-border bg-surface-raised px-3 py-1.5 text-xs text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-600 focus:outline-none"
                   />
                 </div>
 
