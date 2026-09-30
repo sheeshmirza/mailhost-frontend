@@ -1,12 +1,6 @@
-import type { Config } from "tailwindcss";
-import path from "path";
-
-const config: Config = {
-  content: [
-    path.join(__dirname, "src/components/**/*.{js,ts,jsx,tsx,mdx}"),
-    path.join(__dirname, "src/app/**/*.{js,ts,jsx,tsx,mdx}"),
-  ],
-  darkMode: "class",
+module.exports = {
+  // Specify where Tailwind should look for class names
+  content: ["./src/**/*.{js,ts,jsx,tsx}"],
   theme: {
     extend: {
       colors: {
@@ -76,7 +70,6 @@ const config: Config = {
       },
     },
   },
+  // Add Tailwind CSS plugins here (e.g., typography, forms)
   plugins: [],
 };
-
-export default config;

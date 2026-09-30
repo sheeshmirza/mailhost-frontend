@@ -2,6 +2,7 @@
   "name": "mailhost-frontend",
   "version": "1.0.0",
   "private": true,
+  "type": "module",
   "scripts": {
     "build": "next build",
     "start": "next dev -p 3000"
