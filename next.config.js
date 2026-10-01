@@ -16,7 +16,7 @@ const nextConfig = {
   trailingSlash: true,
   // Custom Webpack alias for simpler imports using "@"
   webpack: (config) => {
-    config.resolve.alias["@"] = path.resolve(process.cwd());
+    config.resolve.alias["@"] = path.resolve(process.cwd(), "src");
     return config;
   }
 };
