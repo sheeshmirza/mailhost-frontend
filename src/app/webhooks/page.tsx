@@ -20,7 +20,8 @@ const availableEvents = [
   { id: "email.opened", label: "Email Opened" },
   { id: "email.clicked", label: "Email Clicked" },
   { id: "email.bounced", label: "Email Bounced" },
-  { id: "email.complained", label: "Email Complained" },
+  { id: "contact.created", label: "Contact Created" },
+  { id: "contact.updated", label: "Contact Updated" },
 ];
 
 export default function WebhooksPage() {
