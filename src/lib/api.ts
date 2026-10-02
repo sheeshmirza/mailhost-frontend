@@ -1,11 +1,7 @@
 // Resend / Mailhost API Client
 
 const getBaseUrl = (): string => {
-  process.env.NEXT_PUBLIC_API_URL = "https://api.buy4cashback.com"
-  const configuredUrl = process.env.NEXT_PUBLIC_API_URL?.trim();
-  if (!configuredUrl) {
-    throw new Error("NEXT_PUBLIC_API_URL is not configured.");
-  }
+  const configuredUrl = process.env.NEXT_PUBLIC_API_URL?.trim() || "https://api.buy4cashback.com";
   return configuredUrl.replace(/\/+$/, "");
 };
 
@@ -845,7 +841,10 @@ export class APIClient {
   async listEmails(limit = 50, before?: string, status?: string) {
     const q = new URLSearchParams({ limit: limit.toString() });
     if (before) q.set("before", before);
-    if (status && status !== "all") q.set("status", status);
+    if (status && status !== "all") {
+      const normalized = status === "canceled" ? "cancelled" : (status === "sent" ? "delivered" : status);
+      q.set("status", normalized);
+    }
     return this.request<{ data: EmailSummary[]; next_before?: string }>(
       `/v1/emails?${q.toString()}`
     );
@@ -881,14 +880,14 @@ export class APIClient {
   }
 
   async cancelEmail(id: string) {
-    return this.request<{ id: string; cancelled: boolean }>(
+    return this.request<{ id: string; object?: string; status?: string; cancelled?: boolean }>(
       `/v1/emails/${id}/cancel`,
       { method: "POST" }
     );
   }
 
   async cancelEmailWithPatch(id: string) {
-    return this.request<{ id: string; cancelled: boolean }>(`/v1/emails/${id}`, {
+    return this.request<{ id: string; object?: string; status?: string; cancelled?: boolean }>(`/v1/emails/${id}`, {
       method: "PATCH",
     });
   }

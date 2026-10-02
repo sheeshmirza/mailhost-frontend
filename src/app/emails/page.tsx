@@ -261,7 +261,8 @@ function EmailsPageContent() {
     const matchesStatus =
       statusFilter === "all" ||
       itemStatus === statusFilter.toLowerCase() ||
-      (statusFilter === "canceled" && itemStatus === "cancelled");
+      (statusFilter === "canceled" && itemStatus === "cancelled") ||
+      (statusFilter === "sent" && itemStatus === "delivered");
     return matchesSearch && matchesStatus;
   });
 
@@ -341,7 +342,8 @@ function EmailsPageContent() {
                 : emails.filter(
                     (e) =>
                       (e.status || "queued").toLowerCase() === tab.key ||
-                      (tab.key === "canceled" && (e.status || "").toLowerCase() === "cancelled")
+                      (tab.key === "canceled" && (e.status || "").toLowerCase() === "cancelled") ||
+                      (tab.key === "sent" && (e.status || "").toLowerCase() === "delivered")
                   ).length;
             const active = statusFilter === tab.key;
             return (

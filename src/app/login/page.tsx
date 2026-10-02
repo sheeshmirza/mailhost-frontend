@@ -44,9 +44,18 @@ export default function LoginPage() {
 
     try {
       if (mode === "login") {
-        await login(email, password);
+        await login(email.trim(), password);
       } else if (mode === "register") {
-        await register(email, password, name, orgName);
+        if (password.length < 8 || password.length > 72) {
+          throw new Error("Password must be between 8 and 72 characters.");
+        }
+        if (name.trim().length > 100) {
+          throw new Error("Full name must be at most 100 characters.");
+        }
+        if (orgName.trim().length > 200) {
+          throw new Error("Organization name must be at most 200 characters.");
+        }
+        await register(email.trim(), password, name.trim(), orgName.trim());
       } else {
         await connectWithKey(apiKey);
       }
@@ -69,6 +78,9 @@ export default function LoginPage() {
         const result = await api.forgotPassword(email.trim());
         setRecoveryMessage(result.message);
       } else if (recoveryMode === "reset") {
+        if (recoveryPassword.length < 8 || recoveryPassword.length > 72) {
+          throw new Error("New password must be between 8 and 72 characters.");
+        }
         const result = await api.resetPassword(recoveryToken.trim(), recoveryPassword);
         setRecoveryMessage(result.message);
         setRecoveryPassword("");
