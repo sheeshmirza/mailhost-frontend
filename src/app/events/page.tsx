@@ -207,6 +207,33 @@ export default function EventsPage() {
             <p className="text-xs text-zinc-500 dark:text-zinc-400">
               Emit an event to the backend. Matching automations will be triggered immediately.
             </p>
+            {/* Quick Automation Presets */}
+            <div className="space-y-1.5">
+              <span className="text-[10px] uppercase font-bold text-zinc-500 block">
+                Quick Automation Triggers
+              </span>
+              <div className="flex flex-wrap gap-1.5">
+                {[
+                  { name: "cart.abandoned", email: "shopper@example.com", data: { cart_total: 125, items_count: 3 } },
+                  { name: "user.signup", email: "newuser@example.com", data: { plan: "pro", tier: "vip" } },
+                  { name: "demo.requested", email: "enterprise@company.com", data: { team_size: "100+", urgency: "high" } },
+                  { name: "user.inactive", email: "dormant@example.com", data: { days_inactive: 45, opened_recent: false } },
+                ].map((preset) => (
+                  <button
+                    key={preset.name}
+                    type="button"
+                    onClick={() => {
+                      setName(preset.name);
+                      setEmail(preset.email);
+                      setJsonData(JSON.stringify(preset.data, null, 2));
+                    }}
+                    className="rounded border border-surface-border bg-surface-raised px-2 py-0.5 text-[10px] font-mono hover:border-teal-500 hover:text-teal-600 dark:hover:text-teal-400 transition-colors"
+                  >
+                    ⚡ {preset.name}
+                  </button>
+                ))}
+              </div>
+            </div>
 
             <form onSubmit={handleTrigger} className="space-y-3">
               <div>

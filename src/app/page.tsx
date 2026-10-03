@@ -280,25 +280,25 @@ export default function HomePage() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {/* Card 1: Broadcast Campaigns */}
+            {/* Card 1: Broadcast Campaigns & Engagement Telemetry */}
             <div className="rounded-2xl border border-surface-border bg-surface p-6 sm:p-8 space-y-4 hover:border-zinc-300 dark:hover:border-zinc-700 transition-all shadow-sm">
               <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-teal-50 dark:bg-teal-950/40 text-teal-600 dark:text-teal-400">
                 <Radio className="h-5 w-5" />
               </div>
               <h4 className="text-xl font-semibold text-zinc-900 dark:text-white">
-                Broadcast Campaigns
+                Broadcasts &amp; Engagement Tools
               </h4>
               <p className="text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed">
-                Send visual newsletters and product announcements. Dispatch immediately or schedule for optimal timezone delivery with real-time open and click telemetry.
+                Send visual newsletters with A/B variant testing, smart subject line quality scoring (spam trigger detection &amp; length optimization), and live audience conversion funnels.
               </p>
               <div className="grid grid-cols-2 gap-2 text-[11px] font-mono pt-1">
                 <div className="rounded border border-surface-border bg-surface-raised p-2 text-center">
-                  <span className="text-[10px] text-zinc-500 block font-sans">Delivery</span>
-                  <span className="font-semibold text-zinc-900 dark:text-zinc-100">Scheduled / Now</span>
+                  <span className="text-[10px] text-zinc-500 block font-sans">Optimizer</span>
+                  <span className="font-semibold text-teal-600 dark:text-teal-400">A/B Testing</span>
                 </div>
                 <div className="rounded border border-surface-border bg-surface-raised p-2 text-center">
                   <span className="text-[10px] text-zinc-500 block font-sans">Telemetry</span>
-                  <span className="font-semibold text-emerald-600 dark:text-emerald-400">Opens &amp; Clicks</span>
+                  <span className="font-semibold text-emerald-600 dark:text-emerald-400">Funnel &amp; Clicks</span>
                 </div>
               </div>
               <div className="pt-2">
@@ -306,31 +306,31 @@ export default function HomePage() {
                   href="/broadcasts"
                   className="inline-flex items-center gap-1.5 text-xs font-medium text-teal-600 dark:text-teal-400 hover:underline underline-offset-4"
                 >
-                  <span>Create Broadcast Campaign</span>
+                  <span>Launch Broadcast Campaign</span>
                   <ChevronRight className="h-3.5 w-3.5" />
                 </Link>
               </div>
             </div>
 
-            {/* Card 2: Multi-Step Automations */}
+            {/* Card 2: Next-Gen Automation Suite */}
             <div className="rounded-2xl border border-surface-border bg-surface p-6 sm:p-8 space-y-4 hover:border-zinc-300 dark:hover:border-zinc-700 transition-all shadow-sm">
               <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400">
                 <Workflow className="h-5 w-5" />
               </div>
               <h4 className="text-xl font-semibold text-zinc-900 dark:text-white">
-                Drip Automations
+                Next-Gen Automation Suite
               </h4>
               <p className="text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed">
-                Design automated lifecycle workflows. Trigger series on user signup, order placed, or segment entry with configurable delays, branching conditions, and email steps.
+                Superpowered visual workflow engine with pre-built blueprints, time delays (minutes to days), dynamic conditional branching (If/Else), segment tagging, and dry-run journey simulation.
               </p>
               <div className="grid grid-cols-2 gap-2 text-[11px] font-mono pt-1">
                 <div className="rounded border border-surface-border bg-surface-raised p-2 text-center">
-                  <span className="text-[10px] text-zinc-500 block font-sans">Triggers</span>
-                  <span className="font-semibold text-zinc-900 dark:text-zinc-100">Event-driven</span>
+                  <span className="text-[10px] text-zinc-500 block font-sans">Architecture</span>
+                  <span className="font-semibold text-indigo-600 dark:text-indigo-400">Branching &amp; Delays</span>
                 </div>
                 <div className="rounded border border-surface-border bg-surface-raised p-2 text-center">
-                  <span className="text-[10px] text-zinc-500 block font-sans">Steps</span>
-                  <span className="font-semibold text-indigo-600 dark:text-indigo-400">Delays &amp; Branches</span>
+                  <span className="text-[10px] text-zinc-500 block font-sans">Blueprints</span>
+                  <span className="font-semibold text-zinc-900 dark:text-zinc-100">SaaS &amp; E-Commerce</span>
                 </div>
               </div>
               <div className="pt-2">

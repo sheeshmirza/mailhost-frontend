@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import {
   api,
   AudienceView,
@@ -21,6 +21,9 @@ import {
   X,
   ChevronRight,
   Pencil,
+  Sparkles,
+  TrendingUp,
+  BarChart3,
 } from "lucide-react";
 import { useToast } from "@/lib/toast-context";
 import { ErrorState } from "@/components/ui/ErrorState";
@@ -40,6 +43,7 @@ export default function AudiencesPage() {
   const [contacts, setContacts] = useState<ContactView[]>([]);
   const [segments, setSegments] = useState<SegmentView[]>([]);
   const [topics, setTopics] = useState<TopicView[]>([]);
+  const [contactFilter, setContactFilter] = useState<"all" | "subscribed" | "unsubscribed" | "traits">("all");
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [contactsError, setContactsError] = useState<string | null>(null);
@@ -642,11 +646,55 @@ export default function AudiencesPage() {
 
           {/* Right: Contacts Table */}
           <div className="lg:col-span-3 space-y-4">
-            <div className="flex items-center justify-between text-xs text-zinc-500 dark:text-zinc-400">
-              <span>
-                {selectedAudience ? selectedAudience.name : "All Contacts"} (
-                {contacts.length})
+            {/* Audience Health & Growth Bar */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+              <div className="rounded-xl border border-surface-border bg-surface p-3">
+                <span className="text-[10px] uppercase font-sans text-zinc-500 block">Total Audience</span>
+                <span className="text-base font-bold text-zinc-900 dark:text-white font-mono">{contacts.length}</span>
+              </div>
+              <div className="rounded-xl border border-surface-border bg-surface p-3">
+                <span className="text-[10px] uppercase font-sans text-zinc-500 block">Deliverable</span>
+                <span className="text-base font-bold text-emerald-600 dark:text-emerald-400 font-mono">
+                  {contacts.length > 0 ? `${Math.round((contacts.filter(c => !c.unsubscribed).length / contacts.length) * 100)}%` : "100%"}
+                </span>
+              </div>
+              <div className="rounded-xl border border-surface-border bg-surface p-3">
+                <span className="text-[10px] uppercase font-sans text-zinc-500 block">Suppressed</span>
+                <span className="text-base font-bold text-amber-600 dark:text-amber-400 font-mono">
+                  {contacts.filter(c => c.unsubscribed).length}
+                </span>
+              </div>
+              <div className="rounded-xl border border-surface-border bg-surface p-3">
+                <span className="text-[10px] uppercase font-sans text-zinc-500 block">Dynamic Segments</span>
+                <span className="text-base font-bold text-teal-600 dark:text-teal-400 font-mono">{segments.length}</span>
+              </div>
+            </div>
+
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs text-zinc-500 dark:text-zinc-400">
+              <span className="font-semibold text-zinc-900 dark:text-white">
+                {selectedAudience ? selectedAudience.name : "All Contacts"} ({contacts.filter((c) => {
+                  if (contactFilter === "subscribed") return !c.unsubscribed;
+                  if (contactFilter === "unsubscribed") return c.unsubscribed;
+                  if (contactFilter === "traits") return c.traits && Object.keys(c.traits).length > 0;
+                  return true;
+                }).length})
               </span>
+              <div className="flex items-center gap-1.5 flex-wrap">
+                {(["all", "subscribed", "unsubscribed", "traits"] as const).map((filterKey) => (
+                  <button
+                    key={filterKey}
+                    type="button"
+                    onClick={() => setContactFilter(filterKey)}
+                    className={`rounded-md px-2 py-1 text-[11px] font-medium transition-colors ${
+                      contactFilter === filterKey
+                        ? "bg-teal-50 text-teal-800 dark:bg-teal-950/50 dark:text-teal-300 font-bold border border-teal-500/30"
+                        : "hover:bg-surface-raised text-zinc-500 dark:text-zinc-400"
+                    }`}
+                  >
+                    {filterKey === "all" ? "All Contacts" : filterKey === "traits" ? "Has Custom Traits" : filterKey.charAt(0).toUpperCase() + filterKey.slice(1)}
+                  </button>
+                ))}
+              </div>
             </div>
 
             {isContactsLoading && contacts.length === 0 ? (
@@ -659,14 +707,24 @@ export default function AudiencesPage() {
                     <th className="px-4 py-3 font-medium">Email</th>
                     <th className="px-4 py-3 font-medium">First Name</th>
                     <th className="px-4 py-3 font-medium">Last Name</th>
-                    <th className="px-4 py-3 font-medium">Status</th>
+                    <th className="px-4 py-3 font-medium">Status &amp; Tier</th>
                     <th className="px-4 py-3 font-medium">Added</th>
                     <th className="px-4 py-3 font-medium text-right">Delete</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-surface-border">
-                  {contacts.length > 0 ? (
-                    contacts.map((c) => (
+                  {contacts.filter((c) => {
+                    if (contactFilter === "subscribed") return !c.unsubscribed;
+                    if (contactFilter === "unsubscribed") return c.unsubscribed;
+                    if (contactFilter === "traits") return c.traits && Object.keys(c.traits).length > 0;
+                    return true;
+                  }).length > 0 ? (
+                    contacts.filter((c) => {
+                      if (contactFilter === "subscribed") return !c.unsubscribed;
+                      if (contactFilter === "unsubscribed") return c.unsubscribed;
+                      if (contactFilter === "traits") return c.traits && Object.keys(c.traits).length > 0;
+                      return true;
+                    }).map((c) => (
                       <tr
                         key={c.id}
                         onClick={() => openContactDetail(c)}
@@ -682,17 +740,25 @@ export default function AudiencesPage() {
                           {c.last_name || "—"}
                         </td>
                         <td className="px-4 py-3">
-                          {c.unsubscribed ? (
-                            <span className="inline-flex items-center gap-1 rounded-full bg-red-50 border border-red-200 px-2 py-0.5 text-[11px] text-red-700 dark:bg-red-950/60 dark:border-red-800/40 dark:text-red-400">
-                              <UserX className="h-2.5 w-2.5" />
-                              Unsubscribed
-                            </span>
-                          ) : (
-                            <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 border border-emerald-200 px-2 py-0.5 text-[11px] text-emerald-700 dark:bg-emerald-950/60 dark:border-emerald-800/40 dark:text-emerald-400">
-                              <UserCheck className="h-2.5 w-2.5" />
-                              Subscribed
-                            </span>
-                          )}
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            {c.unsubscribed ? (
+                              <span className="inline-flex items-center gap-1 rounded-full bg-red-50 border border-red-200 px-2 py-0.5 text-[11px] text-red-700 dark:bg-red-950/60 dark:border-red-800/40 dark:text-red-400">
+                                <UserX className="h-2.5 w-2.5" />
+                                Unsubscribed
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 border border-emerald-200 px-2 py-0.5 text-[11px] text-emerald-700 dark:bg-emerald-950/60 dark:border-emerald-800/40 dark:text-emerald-400">
+                                <UserCheck className="h-2.5 w-2.5" />
+                                Subscribed
+                              </span>
+                            )}
+                            {c.traits && Object.keys(c.traits).length > 0 && (
+                              <span className="inline-flex items-center gap-1 rounded-full bg-teal-50 border border-teal-200 px-2 py-0.5 text-[10px] text-teal-800 dark:bg-teal-950/60 dark:border-teal-800/40 dark:text-teal-300 font-mono">
+                                <Sparkles className="h-2.5 w-2.5" />
+                                {Object.keys(c.traits).length} traits
+                              </span>
+                            )}
+                          </div>
                         </td>
                         <td className="px-4 py-3 text-zinc-500 dark:text-zinc-400">
                           {new Date(c.created_at).toLocaleDateString()}
@@ -713,7 +779,7 @@ export default function AudiencesPage() {
                   ) : (
                     <tr>
                       <td colSpan={6} className="py-12 text-center text-xs text-zinc-500 dark:text-zinc-400 font-sans">
-                        No contacts found in this list. Click "Add Contact" to import.
+                        No contacts found matching the selected filter. Click "Add Contact" to import.
                       </td>
                     </tr>
                   )}

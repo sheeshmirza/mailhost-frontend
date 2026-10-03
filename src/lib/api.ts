@@ -217,6 +217,8 @@ export interface BroadcastView {
   preview_text?: string;
   html?: string;
   text?: string;
+  recipients_count?: number;
+  sent_count?: number;
   scheduled_at?: string;
   sent_at?: string;
   created_at: string;
