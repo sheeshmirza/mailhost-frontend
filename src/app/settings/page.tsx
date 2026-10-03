@@ -272,7 +272,7 @@ export default function SettingsPage() {
             Settings & Team
           </h1>
           <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
-            Manage your user account, organizations, teammates, and remote AI MCP server.
+            Manage your account, team members, security, and AI assistant connections.
           </p>
         </div>
         <button
@@ -328,7 +328,7 @@ export default function SettingsPage() {
           }`}
         >
           <Bot className="h-4 w-4" />
-          <span>AI MCP</span>
+          <span>AI Assistant</span>
         </button>
       </div>
 
@@ -361,7 +361,7 @@ export default function SettingsPage() {
                   className="w-full rounded-lg border border-surface-border bg-surface-raised/50 px-3 py-2 text-sm text-zinc-500 dark:text-zinc-400 focus:outline-none cursor-not-allowed"
                 />
                 <span className="text-xs text-zinc-500 mt-1.5 block">
-                  Email is verified with primary account credentials.
+                  This is the email address linked to your account.
                 </span>
               </div>
 
@@ -559,10 +559,10 @@ export default function SettingsPage() {
           <div role="status" className="flex flex-col items-start gap-3 rounded-lg border border-surface-border bg-surface p-5">
             <div className="flex items-center gap-2 text-sm font-semibold text-zinc-900 dark:text-white">
               <Key className="h-4 w-4 text-teal-700 dark:text-teal-300" />
-              User sessions are unavailable for API-key access
+              Device sessions are not available when signed in with an API key
             </div>
             <p className="max-w-2xl text-xs leading-relaxed text-zinc-600 dark:text-zinc-400">
-              Sign in with your email and password to change your password or manage active browser sessions.
+              Sign in with your email and password to change your password or view logged-in devices.
             </p>
             <button onClick={logout} className="btn-secondary">Sign out</button>
           </div>
@@ -620,7 +620,7 @@ export default function SettingsPage() {
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <h2 className="text-sm font-semibold text-zinc-900 dark:text-white">Active Sessions</h2>
-                <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">Review signed-in devices and revoke access you no longer recognize.</p>
+                <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">See devices logged into your account and sign out of any you don&apos;t recognize.</p>
               </div>
               <button
                 onClick={handleRevokeOtherSessions}
@@ -697,7 +697,7 @@ export default function SettingsPage() {
                         disabled={revokingSessionId !== null}
                         className="btn-danger min-h-8 px-2 py-1"
                       >
-                        {revokingSessionId === session.id ? "Revoking..." : session.is_current ? "Sign out" : "Revoke"}
+                        {revokingSessionId === session.id ? "Signing out..." : "Sign out"}
                       </button>
                     </div>
                   </article>
@@ -715,16 +715,16 @@ export default function SettingsPage() {
           <div className="rounded-xl border border-surface-border bg-surface p-6 space-y-4">
             <div className="flex items-center gap-2">
               <Bot className="h-5 w-5 text-teal-600 dark:text-teal-300" />
-              <h2 className="text-base font-semibold text-zinc-900 dark:text-white">Remote Model Context Protocol (MCP)</h2>
+              <h2 className="text-base font-semibold text-zinc-900 dark:text-white">Connect AI Assistants (MCP)</h2>
             </div>
             <p className="text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed">
-              Configure the MCP endpoint using your API base URL: <code className="text-zinc-900 dark:text-white font-mono bg-surface-raised px-1 py-0.5 rounded border border-surface-border">{mcpEndpoint}</code>. Connected clients can use the actions enabled for the supplied credential.
+              Connect Mailhost to AI apps like Claude Desktop or Cursor so they can send emails and check delivery stats for you using your API key. Endpoint URL: <code className="text-zinc-900 dark:text-white font-mono bg-surface-raised px-1 py-0.5 rounded border border-surface-border">{mcpEndpoint}</code>.
             </p>
 
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-semibold uppercase font-mono text-zinc-500 dark:text-zinc-400">
-                  Claude Desktop Configuration (claude_desktop_config.json)
+                  Claude Desktop Setup (claude_desktop_config.json)
                 </span>
                 <button
                   onClick={copyMcpConfig}

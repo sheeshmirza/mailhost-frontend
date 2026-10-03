@@ -225,9 +225,9 @@ export default function SendEmailModal({
           <div className="flex flex-col items-center justify-center p-10 text-center space-y-4">
             <CheckCircle2 className="h-12 w-12 text-emerald-500 animate-bounce" />
             <div className="space-y-1">
-              <h3 className="text-base font-semibold text-zinc-900 dark:text-white">Email Enqueued Successfully!</h3>
+              <h3 className="text-base font-semibold text-zinc-900 dark:text-white">Email Sent Successfully!</h3>
               <p className="text-xs text-zinc-500 dark:text-zinc-400">
-                The delivery worker is processing your message.
+                Your email is on its way to the recipient.
               </p>
             </div>
             <div className="rounded-lg border border-surface-border bg-surface-raised px-4 py-2 text-xs font-mono text-zinc-800 dark:text-zinc-200">
@@ -425,7 +425,7 @@ export default function SendEmailModal({
                   value={textContent}
                   onChange={(e) => setTextContent(e.target.value)}
                   rows={8}
-                  placeholder="Optional plain text fallback for email clients that do not render HTML..."
+                  placeholder="Optional plain-text version for email apps that do not display formatted HTML..."
                   className="w-full rounded-md border border-surface-border bg-surface-raised p-3 font-mono text-xs text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-600 focus:border-zinc-500 focus:outline-none leading-relaxed"
                 />
               )}
@@ -451,7 +451,7 @@ export default function SendEmailModal({
                 onClick={() => setShowAdvanced(!showAdvanced)}
                 className="text-[11px] text-zinc-500 hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-200 underline"
               >
-                {showAdvanced ? "Hide advanced options" : "+ Add scheduling, templates, tags & attachments"}
+                {showAdvanced ? "Hide advanced options" : "+ Schedule send, use template, tags & attachments"}
               </button>
 
               {showAdvanced && (

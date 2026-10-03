@@ -6,8 +6,8 @@ import { ToastProvider } from "@/lib/toast-context";
 import AppShell from "@/components/layout/AppShell";
 
 export const metadata: Metadata = {
-  title: "Mailhost | One destination for powerful emailing. All in one suite.",
-  description: "One destination for powerful emailing: marketing campaigns, visual drip journeys, transactional delivery, and complete mailbox infrastructure.",
+  title: "Mailhost | Simple and powerful email all in one place",
+  description: "Everything you need for email: marketing newsletters, automated flows, fast delivery, and business mailboxes.",
 };
 
 export default function RootLayout({

@@ -61,7 +61,7 @@ export default function LoginPage() {
       }
       router.push("/overview");
     } catch (err: any) {
-      setError(err.message || "Authentication failed. Please verify credentials.");
+      setError(err.message || "Sign-in failed. Please check your email and password and try again.");
     } finally {
       setLoading(false);
     }
@@ -119,7 +119,7 @@ export default function LoginPage() {
           <p className="text-xs text-zinc-500 dark:text-zinc-400">
             {mode === "apikey"
               ? "Enter your secret API key to access this dashboard."
-              : "One destination for powerful emailing. All in one suite."}
+              : "One simple home for all your business and marketing emails."}
           </p>
         </div>
 
@@ -320,7 +320,7 @@ export default function LoginPage() {
               className="btn-primary w-full"
             >
               {loading && <Loader2 className="h-4 w-4 animate-spin" />}
-              <span>{loading ? "Authenticating..." : mode === "login" ? "Sign In" : mode === "register" ? "Create Account" : "Connect"}</span>
+              <span>{loading ? "Signing in..." : mode === "login" ? "Sign In" : mode === "register" ? "Create Account" : "Connect"}</span>
               {!loading && <ArrowRight className="h-4 w-4" />}
             </button>
           </form>
@@ -329,7 +329,7 @@ export default function LoginPage() {
               <button type="button" onClick={() => { setRecoveryMode("forgot"); setRecoveryMessage(null); }} className="text-content-muted hover:text-content-primary">Forgot password?</button>
               <button type="button" onClick={() => { setRecoveryMode("resend"); setRecoveryMessage(null); }} className="text-content-muted hover:text-content-primary">Resend verification</button>
               <button type="button" onClick={() => { setRecoveryMode("verify"); setRecoveryMessage(null); }} className="text-content-muted hover:text-content-primary">Verify email</button>
-              <button type="button" onClick={() => { setRecoveryMode("reset"); setRecoveryMessage(null); }} className="text-content-muted hover:text-content-primary">Reset with token</button>
+              <button type="button" onClick={() => { setRecoveryMode("reset"); setRecoveryMessage(null); }} className="text-content-muted hover:text-content-primary">Reset with code</button>
             </div>
           )}
           </>

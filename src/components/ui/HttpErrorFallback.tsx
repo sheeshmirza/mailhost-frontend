@@ -29,45 +29,45 @@ export function HttpErrorFallback({
     switch (status) {
       case 400:
         return {
-          title: "Bad Request",
-          defaultMsg: "The request could not be processed due to invalid parameters or formatting.",
+          title: "Invalid Request",
+          defaultMsg: "Something in this request was incomplete or incorrectly formatted. Please check your inputs and try again.",
           icon: <AlertTriangle className="h-8 w-8 text-amber-500" />,
         };
       case 401:
         return {
-          title: "Authentication Required",
-          defaultMsg: "Your session may have expired. Please sign in to continue accessing Mailhost.",
+          title: "Please Sign In",
+          defaultMsg: "Your session has expired. Please sign in again to continue.",
           icon: <ShieldAlert className="h-8 w-8 text-amber-600" />,
         };
       case 403:
         return {
-          title: "Access Restricted",
-          defaultMsg: "You do not have administrative permissions to view or modify this resource.",
+          title: "Access Denied",
+          defaultMsg: "You do not have permission to view or edit this section.",
           icon: <ShieldAlert className="h-8 w-8 text-red-500" />,
         };
       case 404:
         return {
-          title: "Resource Not Found",
-          defaultMsg: "The mailbox record, campaign, or resource you requested could not be located.",
+          title: "Page or Item Not Found",
+          defaultMsg: "The item or page you are looking for does not exist or has been moved.",
           icon: <FileQuestion className="h-8 w-8 text-zinc-400" />,
         };
       case 429:
         return {
-          title: "Rate Limit Exceeded",
-          defaultMsg: "Too many requests dispatched. Please wait a few moments before retrying.",
+          title: "Too Many Requests",
+          defaultMsg: "You have made too many requests in a short time. Please wait a moment and try again.",
           icon: <Clock className="h-8 w-8 text-amber-500" />,
         };
       case 504:
         return {
-          title: "Gateway Timeout",
-          defaultMsg: "The backend MTA service took too long to respond. The request has timed out.",
+          title: "Connection Timed Out",
+          defaultMsg: "The server took too long to respond. Please check your internet connection or try again shortly.",
           icon: <Clock className="h-8 w-8 text-red-500" />,
         };
       case 500:
       default:
         return {
-          title: "Internal Service Error",
-          defaultMsg: "The backend server encountered an unexpected error. Our systems have logged this.",
+          title: "Something Went Wrong",
+          defaultMsg: "Our servers ran into an unexpected problem. Please try again in a few moments.",
           icon: <ServerCrash className="h-8 w-8 text-red-500" />,
         };
     }
@@ -103,7 +103,7 @@ export function HttpErrorFallback({
             className="flex items-center gap-1.5 rounded-lg border border-surface-border bg-surface-raised px-4 py-2 text-xs font-medium text-zinc-800 hover:bg-surface dark:text-zinc-200 dark:hover:text-white transition-colors"
           >
             <RefreshCw className="h-3.5 w-3.5" />
-            <span>Retry Action</span>
+            <span>Try Again</span>
           </button>
         )}
         {showHomeLink && (
@@ -112,7 +112,7 @@ export function HttpErrorFallback({
             className="flex items-center gap-1.5 rounded-lg bg-zinc-900 px-4 py-2 text-xs font-medium text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200 transition-colors"
           >
             <ArrowLeft className="h-3.5 w-3.5" />
-            <span>Return to Overview</span>
+            <span>Back to Overview</span>
           </Link>
         )}
       </div>

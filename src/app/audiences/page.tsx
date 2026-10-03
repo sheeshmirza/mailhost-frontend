@@ -505,10 +505,10 @@ export default function AudiencesPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-surface-border pb-6">
         <div>
           <h1 className="text-xl font-semibold tracking-tight text-zinc-900 dark:text-white">
-            Audiences & Contacts
+            Audiences &amp; Contacts
           </h1>
           <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
-            Segment your subscribers, manage topics, and maintain your customer lists.
+            Organize your subscribers, group contacts by interests, and grow your email lists.
           </p>
         </div>
 
@@ -697,23 +697,23 @@ export default function AudiencesPage() {
             {/* Audience Health & Growth Bar */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
               <div className="rounded-xl border border-surface-border bg-surface p-3">
-                <span className="text-[10px] uppercase font-sans text-zinc-500 block">Total Audience</span>
+                <span className="text-[10px] uppercase font-sans text-zinc-500 block">Total Contacts</span>
                 <span className="text-base font-bold text-zinc-900 dark:text-white font-mono">{contacts.length}</span>
               </div>
               <div className="rounded-xl border border-surface-border bg-surface p-3">
-                <span className="text-[10px] uppercase font-sans text-zinc-500 block">Deliverable</span>
+                <span className="text-[10px] uppercase font-sans text-zinc-500 block">Active Subscribers</span>
                 <span className="text-base font-bold text-emerald-600 dark:text-emerald-400 font-mono">
                   {contacts.length > 0 ? `${Math.round((contacts.filter(c => !c.unsubscribed).length / contacts.length) * 100)}%` : "100%"}
                 </span>
               </div>
               <div className="rounded-xl border border-surface-border bg-surface p-3">
-                <span className="text-[10px] uppercase font-sans text-zinc-500 block">Suppressed</span>
+                <span className="text-[10px] uppercase font-sans text-zinc-500 block">Unsubscribed</span>
                 <span className="text-base font-bold text-amber-600 dark:text-amber-400 font-mono">
                   {contacts.filter(c => c.unsubscribed).length}
                 </span>
               </div>
               <div className="rounded-xl border border-surface-border bg-surface p-3">
-                <span className="text-[10px] uppercase font-sans text-zinc-500 block">Dynamic Segments</span>
+                <span className="text-[10px] uppercase font-sans text-zinc-500 block">Target Groups (Segments)</span>
                 <span className="text-base font-bold text-teal-600 dark:text-teal-400 font-mono">{segments.length}</span>
               </div>
             </div>
@@ -739,7 +739,7 @@ export default function AudiencesPage() {
                         : "hover:bg-surface-raised text-zinc-500 dark:text-zinc-400"
                     }`}
                   >
-                    {filterKey === "all" ? "All Contacts" : filterKey === "traits" ? "Has Custom Traits" : filterKey.charAt(0).toUpperCase() + filterKey.slice(1)}
+                    {filterKey === "all" ? "All Contacts" : filterKey === "traits" ? "Has Custom Details" : filterKey.charAt(0).toUpperCase() + filterKey.slice(1)}
                   </button>
                 ))}
               </div>
@@ -902,7 +902,7 @@ export default function AudiencesPage() {
               ) : (
                 <tr>
                   <td colSpan={3} className="py-12 text-center text-sm text-zinc-500 dark:text-zinc-400">
-                    No segments defined yet. Click &quot;New Segment&quot; to create a dynamic contact group.
+                    No segments created yet. Click &quot;New Segment&quot; to create a targeted group of contacts.
                   </td>
                 </tr>
               )}
@@ -969,7 +969,7 @@ export default function AudiencesPage() {
               ) : (
                 <tr>
                   <td colSpan={4} className="py-12 text-center text-xs text-zinc-500 dark:text-zinc-400 font-sans">
-                    No subscription topics created yet. Add topics to allow granular opt-ins.
+                    No subscription topics created yet. Add topics so contacts can choose what kinds of emails they want to receive.
                   </td>
                 </tr>
               )}

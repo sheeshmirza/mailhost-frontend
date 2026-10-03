@@ -131,14 +131,14 @@ export default function DeliverabilityPage() {
         <div>
           <div className="flex items-center gap-2">
             <h1 className="text-xl font-semibold tracking-tight text-zinc-900 dark:text-white">
-              Deliverability &amp; Inbox Pre-Flight Hub
+              Email Delivery &amp; Spam Checker
             </h1>
             <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
-              <ShieldCheck className="w-3 h-3" /> 100% Inbox Placement Engine
+              <ShieldCheck className="w-3 h-3" /> Inbox Placement Checker
             </span>
           </div>
           <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1 max-w-2xl">
-            Simulate mailbox provider algorithms, verify SPF, DKIM, and DMARC alignment, and audit email content against spam filters before launching campaigns.
+            Check your email for spam trigger words, test your domain security settings, and make sure your messages land directly in recipient inboxes before sending.
           </p>
         </div>
 
@@ -152,13 +152,13 @@ export default function DeliverabilityPage() {
           ) : (
             <Sparkles className="h-3.5 w-3.5" />
           )}
-          <span>{isAuditing ? "Auditing Payload..." : "Run Pre-Flight Audit"}</span>
+          <span>{isAuditing ? "Checking Email..." : "Check Email Quality"}</span>
         </button>
       </div>
 
       {errorMessage && (
         <ErrorState
-          title="Deliverability Audit Error"
+          title="Email Check Error"
           message={errorMessage}
           onRetry={() => void runAudit()}
         />
@@ -171,7 +171,7 @@ export default function DeliverabilityPage() {
           <div className="flex items-center justify-between border-b border-surface-border pb-3">
             <div className="flex items-center gap-2 text-xs font-semibold text-zinc-900 dark:text-white">
               <Mail className="h-4 w-4 text-teal-600 dark:text-teal-400" />
-              <span>Outbound Payload Inspector</span>
+              <span>Email Content to Check</span>
             </div>
             {/* Quick Samples */}
             <div className="flex items-center gap-1.5 text-[10px]">
@@ -303,7 +303,7 @@ export default function DeliverabilityPage() {
                   onChange={(e) => setIncludeUnsubHeader(e.target.checked)}
                   className="rounded border-surface-border text-teal-600 focus:ring-teal-500"
                 />
-                <span>Include RFC 8058 One-Click <code className="font-mono text-teal-600 dark:text-teal-400">List-Unsubscribe</code> header</span>
+                <span>Include One-Click Unsubscribe link (recommended for newsletters)</span>
               </label>
             </div>
 
@@ -313,7 +313,7 @@ export default function DeliverabilityPage() {
               disabled={isAuditing}
               className="btn-primary w-full py-2.5 text-xs shadow"
             >
-              {isAuditing ? "Analyzing..." : "Audit Payload & Placement"}
+              {isAuditing ? "Checking..." : "Check Email Quality"}
             </button>
           </div>
         </div>
@@ -332,7 +332,7 @@ export default function DeliverabilityPage() {
                     <div>
                       <div className="flex items-center gap-2">
                         <span className="text-base font-semibold text-zinc-900 dark:text-white">
-                          Deliverability Score: {auditResult.score}/100
+                          Delivery Quality Score: {auditResult.score}/100
                         </span>
                         <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${getScoreColor(auditResult.score)}`}>
                           {auditResult.verdict}
@@ -341,8 +341,8 @@ export default function DeliverabilityPage() {
                       <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
                         Domain: <span className="font-mono font-medium text-zinc-700 dark:text-zinc-300">{auditResult.domain || "N/A"}</span>
                         {" · "}
-                        RFC 8058: {auditResult.rfc8058_compliant ? (
-                          <span className="text-emerald-600 dark:text-emerald-400 font-medium">Compliant ✓</span>
+                        One-Click Unsubscribe: {auditResult.rfc8058_compliant ? (
+                          <span className="text-emerald-600 dark:text-emerald-400 font-medium">Included ✓</span>
                         ) : (
                           <span className="text-amber-600 dark:text-amber-400 font-medium">Missing ⚠</span>
                         )}
@@ -356,14 +356,14 @@ export default function DeliverabilityPage() {
                     className="inline-flex items-center gap-1.5 text-xs font-medium text-teal-600 dark:text-teal-400 hover:underline"
                   >
                     <RefreshCw className={`h-3 w-3 ${isAuditing ? "animate-spin" : ""}`} />
-                    <span>Re-evaluate</span>
+                    <span>Check again</span>
                   </button>
                 </div>
 
                 {/* Inbox Placement Predictions */}
                 <div className="mt-6 pt-5 border-t border-surface-border">
                   <span className="text-[11px] font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 block mb-3">
-                    Predictive Inbox Placement by Mailbox Provider
+                    Expected Inbox Placement by Email Provider
                   </span>
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                     {Object.entries(auditResult.placement_forecast || {}).map(([provider, forecast]) => {
@@ -400,10 +400,10 @@ export default function DeliverabilityPage() {
                   <div className="flex items-center gap-2">
                     <Server className="h-4 w-4 text-teal-600 dark:text-teal-400" />
                     <h3 className="text-xs font-semibold uppercase tracking-wider text-zinc-900 dark:text-white">
-                      DNS Authentication &amp; Protocol Verification
+                      Domain Security &amp; Verification (SPF, DKIM, DMARC)
                     </h3>
                   </div>
-                  <span className="text-[11px] text-zinc-400">RFC 7208 / 6376 / 7489</span>
+                  <span className="text-[11px] text-zinc-400">Security Standards</span>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -466,11 +466,11 @@ export default function DeliverabilityPage() {
                   <div className="flex items-center gap-2">
                     <Layers className="h-4 w-4 text-teal-600 dark:text-teal-400" />
                     <h3 className="text-xs font-semibold uppercase tracking-wider text-zinc-900 dark:text-white">
-                      Content Quality &amp; Spam Trigger Findings
+                      Spam Words &amp; Content Warnings
                     </h3>
                   </div>
                   <span className="text-[11px] text-zinc-400">
-                    {auditResult.spam_audit.length} issues detected
+                    {auditResult.spam_audit.length} warnings found
                   </span>
                 </div>
 
@@ -478,9 +478,9 @@ export default function DeliverabilityPage() {
                   <div className="flex items-center gap-3 rounded-xl border border-emerald-500/20 bg-emerald-500/10 p-4 text-emerald-800 dark:text-emerald-300">
                     <CheckCircle2 className="h-5 w-5 text-emerald-600 dark:text-emerald-400 shrink-0" />
                     <div>
-                      <p className="text-xs font-semibold">Pristine Content Health</p>
+                      <p className="text-xs font-semibold">Great Email Quality</p>
                       <p className="text-[11px] opacity-90 mt-0.5">
-                        Zero spam trigger keywords, healthy text-to-HTML ratio, and secure HTTPS protocol links.
+                        No spam trigger words found, good balance of text and formatting, and safe website links.
                       </p>
                     </div>
                   </div>

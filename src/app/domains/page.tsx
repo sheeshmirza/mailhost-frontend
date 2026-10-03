@@ -158,7 +158,7 @@ export default function DomainsPage() {
             Domains
           </h1>
           <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
-            Configure DKIM, SPF, MX, and verify your sending identities.
+            Connect your custom domain and verify DNS records so your emails are trusted and land in inboxes.
           </p>
         </div>
 
@@ -310,10 +310,10 @@ export default function DomainsPage() {
               <div className="rounded-lg border border-zinc-200 bg-zinc-50/50 p-4 text-sm text-zinc-600 dark:border-zinc-800 dark:bg-zinc-900/50 dark:text-zinc-300 space-y-1.5 shadow-sm">
                 <div className="font-semibold text-zinc-900 dark:text-white flex items-center gap-2">
                   <ShieldCheck className="h-4 w-4 text-emerald-500" />
-                  <span>Required DNS Records for Deliverability</span>
+                  <span>DNS Records to Add to Your Domain Provider</span>
                 </div>
                 <p className="text-zinc-500 dark:text-zinc-400 text-xs">
-                  Add the following records to your DNS provider (Cloudflare, AWS Route 53, Namecheap, etc.) to authenticate your domain with DKIM and SPF.
+                  Add these records in your domain registrar (GoDaddy, Namecheap, Cloudflare, Route 53, etc.) to verify ownership and ensure emails land in primary inboxes.
                 </p>
               </div>
 
@@ -378,7 +378,7 @@ export default function DomainsPage() {
               {/* Domain Delivery & Tracking Settings */}
               <div className="space-y-4 pt-6 border-t border-zinc-200 dark:border-zinc-800">
                 <h3 className="text-sm font-semibold text-zinc-900 dark:text-white">
-                  Deliverability & Tracking Configuration
+                  Email Tracking &amp; Security Settings
                 </h3>
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -386,7 +386,7 @@ export default function DomainsPage() {
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-lg border border-zinc-200 bg-zinc-50/50 p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900/50 transition-colors">
                     <div>
                       <span className="text-sm font-medium text-zinc-900 dark:text-white block mb-0.5">Open Tracking</span>
-                      <span className="text-xs text-zinc-500 dark:text-zinc-400 block">Inject 1x1 transparent tracking pixel</span>
+                      <span className="text-xs text-zinc-500 dark:text-zinc-400 block">Track when recipients open your emails</span>
                     </div>
                     <button
                       onClick={() =>
@@ -412,7 +412,7 @@ export default function DomainsPage() {
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-lg border border-zinc-200 bg-zinc-50/50 p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900/50 transition-colors">
                     <div>
                       <span className="text-sm font-medium text-zinc-900 dark:text-white block mb-0.5">Click Tracking</span>
-                      <span className="text-xs text-zinc-500 dark:text-zinc-400 block">Rewrite links to track CTR</span>
+                      <span className="text-xs text-zinc-500 dark:text-zinc-400 block">Track which links recipients click in your emails</span>
                     </div>
                     <button
                       onClick={() =>
@@ -437,8 +437,8 @@ export default function DomainsPage() {
                   {/* TLS Mode */}
                   <div className="flex flex-col gap-2 rounded-lg border border-zinc-200 bg-zinc-50/50 p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900/50 transition-colors">
                     <div>
-                      <span className="text-sm font-medium text-zinc-900 dark:text-white block mb-0.5">TLS Mode</span>
-                      <span className="text-xs text-zinc-500 dark:text-zinc-400 block">Outbound encryption</span>
+                      <span className="text-sm font-medium text-zinc-900 dark:text-white block mb-0.5">Encryption Mode</span>
+                      <span className="text-xs text-zinc-500 dark:text-zinc-400 block">Outgoing TLS security</span>
                     </div>
                     <div className="relative mt-auto">
                       <select

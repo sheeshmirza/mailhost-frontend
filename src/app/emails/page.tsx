@@ -178,7 +178,7 @@ function EmailsPageContent() {
       const result = await api.sendBatch(parsed);
       setLastBatchId(result.batch_id);
       setBatchStatus(null);
-      toast.success("Batch enqueued successfully");
+      toast.success("Batch sent successfully");
       setIsBatchOpen(false);
       fetchEmails();
     } catch (err: any) {
@@ -224,7 +224,7 @@ function EmailsPageContent() {
       setLastBatchId(result.batch_id);
       setBatchStatus(null);
       setIsBulkOpen(false);
-      toast.success("Personalized bulk send queued", `${result.count} messages queued.`);
+      toast.success("Bulk emails queued successfully", `${result.count} messages sent to delivery queue.`);
       await fetchEmails();
     } catch (err) {
       toast.error("Bulk send failed: " + (err instanceof Error ? err.message : "Invalid recipient data"));
@@ -317,21 +317,21 @@ function EmailsPageContent() {
             Emails
           </h1>
           <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
-            Browse, inspect delivery events, and manage sent transactional messages.
+            Browse sent emails, check delivery status, and send new messages.
           </p>
         </div>
 
         <div className="flex items-center gap-2">
           <button onClick={() => setIsBulkOpen(true)} className="btn-secondary">
             <Users className="h-3.5 w-3.5" />
-            <span>Personalized Bulk</span>
+            <span>Bulk Send</span>
           </button>
           <button
             onClick={() => setIsBatchOpen(true)}
             className="btn-secondary"
           >
             <Layers className="h-3.5 w-3.5" />
-            <span>Batch Send</span>
+            <span>Send in Batches</span>
           </button>
 
           <button
@@ -347,7 +347,7 @@ function EmailsPageContent() {
       {lastBatchId && (
         <section aria-label="Latest email batch" className="flex flex-col gap-3 rounded-lg border border-surface-border bg-surface p-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="min-w-0">
-            <p className="text-[13px] font-semibold text-content-primary">Latest batch</p>
+            <p className="text-[13px] font-semibold text-content-primary">Recent Batch</p>
             <p className="mt-0.5 truncate font-mono text-[11px] text-content-muted">{lastBatchId}</p>
             {batchStatus && (
               <div className="mt-2 flex flex-wrap gap-2 text-[11px]">
@@ -573,7 +573,7 @@ function EmailsPageContent() {
             {/* Deliveries list */}
             <div className="space-y-4">
               <h3 className="text-[11px] font-semibold text-zinc-900 dark:text-white uppercase tracking-wider">
-                Recipients & Deliveries
+                Recipients & Delivery Status
               </h3>
               <div className="rounded-xl border border-surface-border divide-y divide-surface-border bg-surface-raised/30 overflow-hidden">
                 {selectedEmail.deliveries && selectedEmail.deliveries.length > 0 ? (
@@ -601,7 +601,7 @@ function EmailsPageContent() {
                   ))
                 ) : (
                   <div className="p-6 text-center text-xs text-zinc-500 dark:text-zinc-400">
-                    No recipient delivery records.
+                    No recipient delivery records found.
                   </div>
                 )}
               </div>
@@ -610,7 +610,7 @@ function EmailsPageContent() {
             {/* Event Timeline */}
             <div className="space-y-4 flex-1">
               <h3 className="text-[11px] font-semibold text-zinc-900 dark:text-white uppercase tracking-wider">
-                Event Activity
+                Activity History
               </h3>
               <div className="relative space-y-6 border-l-2 border-surface-border pl-5 ml-2.5 pb-4">
                 {selectedEmail.events && selectedEmail.events.length > 0 ? (
@@ -637,7 +637,7 @@ function EmailsPageContent() {
                 ) : (
                   <div className="text-xs text-zinc-500 dark:text-zinc-400 relative">
                     <span className="absolute -left-[27px] top-1 h-2.5 w-2.5 rounded-full bg-surface-border ring-4 ring-surface" />
-                    No webhook or delivery events recorded yet.
+                    No delivery updates recorded yet.
                   </div>
                 )}
               </div>
@@ -650,7 +650,7 @@ function EmailsPageContent() {
                 className="flex items-center justify-center gap-2 w-full sm:w-auto rounded-lg border border-red-200/50 bg-red-50/50 text-red-700 px-4 py-2.5 text-sm font-medium hover:bg-red-50 dark:border-red-900/30 dark:bg-red-950/20 dark:text-red-400 dark:hover:bg-red-900/30 transition-colors"
               >
                 <Ban className="h-4 w-4" />
-                <span>Cancel Scheduled Send</span>
+                <span>Cancel Scheduled Email</span>
               </button>
             </div>
           </div>
@@ -672,7 +672,7 @@ function EmailsPageContent() {
             </div>
 
             <p className="text-xs text-zinc-500 dark:text-zinc-400">
-              Provide an array of email objects (up to 100 messages) to send in a single high-throughput API batch.
+              Paste a list of email objects (up to 100 emails in JSON format) to send them together at once.
             </p>
 
             <form onSubmit={handleSendBatch} className="space-y-4">
@@ -695,7 +695,7 @@ function EmailsPageContent() {
                   disabled={batchSending}
                   className="btn-primary px-4 py-1.5 text-xs"
                 >
-                  {batchSending ? "Sending..." : "Enqueue Batch"}
+                  {batchSending ? "Sending..." : "Send Batch"}
                 </button>
               </div>
             </form>
@@ -707,8 +707,8 @@ function EmailsPageContent() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm animate-fade-in">
           <div className="relative flex max-h-[90vh] w-full max-w-2xl flex-col space-y-4 overflow-y-auto rounded-lg border border-surface-border bg-surface p-5 shadow-2xl sm:p-6">
             <div>
-              <h2 className="text-sm font-semibold text-content-primary">Personalized bulk send</h2>
-              <p className="mt-1 text-xs text-content-muted">One shared message template, with variables rendered individually for each recipient.</p>
+              <h2 className="text-sm font-semibold text-content-primary">Send Bulk Emails</h2>
+              <p className="mt-1 text-xs text-content-muted">Write one message with placeholder fields, and send customized copies to multiple recipients at once.</p>
             </div>
             <form onSubmit={handleSendBulk} className="space-y-3">
               {verifiedDomains.length === 0 ? (
@@ -720,7 +720,7 @@ function EmailsPageContent() {
                 <div>
                   <div className="flex items-center justify-between mb-1">
                     <label className="block text-xs font-medium text-content-secondary">
-                      From address (Verified Domain)
+                      From (Sender Address)
                     </label>
                     <button
                       type="button"
@@ -774,7 +774,7 @@ function EmailsPageContent() {
                 <input value={bulkSubject} onChange={(event) => setBulkSubject(event.target.value)} required className="input-base mt-1" placeholder="Welcome, {{first_name}}" />
               </label>
               <label className="block text-xs font-medium text-content-secondary">
-                HTML body
+                Email body (HTML)
                 <textarea value={bulkHtml} onChange={(event) => setBulkHtml(event.target.value)} rows={5} className="input-base mt-1 font-mono" />
               </label>
               <label className="block text-xs font-medium text-content-secondary">
@@ -782,16 +782,16 @@ function EmailsPageContent() {
                 <textarea value={bulkText} onChange={(event) => setBulkText(event.target.value)} rows={3} className="input-base mt-1 font-mono" />
               </label>
               <label className="block text-xs font-medium text-content-secondary">
-                Recipients and variables (JSON)
+                Recipients & personalization details (JSON)
                 <textarea value={bulkRecipientsJson} onChange={(event) => setBulkRecipientsJson(event.target.value)} required rows={7} className="input-base mt-1 font-mono" />
               </label>
               <details className="rounded-md border border-surface-border bg-surface-raised px-3 py-2">
-                <summary className="cursor-pointer text-xs font-medium text-content-secondary">Advanced headers, reply-to, attachments</summary>
+                <summary className="cursor-pointer text-xs font-medium text-content-secondary">More options (reply-to, custom headers, attachments)</summary>
                 <div className="mt-3 space-y-3">
                   <label className="block text-xs font-medium text-content-secondary">Reply-to addresses (JSON array)
                     <textarea value={bulkReplyToJson} onChange={(event) => setBulkReplyToJson(event.target.value)} rows={2} className="input-base mt-1 font-mono" />
                   </label>
-                  <label className="block text-xs font-medium text-content-secondary">Headers (JSON object)
+                  <label className="block text-xs font-medium text-content-secondary">Custom headers (JSON object)
                     <textarea value={bulkHeadersJson} onChange={(event) => setBulkHeadersJson(event.target.value)} rows={2} className="input-base mt-1 font-mono" />
                   </label>
                   <label className="block text-xs font-medium text-content-secondary">Attachments (base64 JSON array)
@@ -802,7 +802,7 @@ function EmailsPageContent() {
               <div className="flex justify-end gap-2 border-t border-surface-border pt-3">
                 <button type="button" onClick={() => setIsBulkOpen(false)} className="btn-secondary">Cancel</button>
                 <button type="submit" disabled={bulkSending} className="btn-primary">
-                  {bulkSending ? "Queueing..." : "Queue personalized send"}
+                  {bulkSending ? "Sending..." : "Send Emails"}
                 </button>
               </div>
             </form>

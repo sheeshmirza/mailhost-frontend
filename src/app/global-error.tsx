@@ -19,8 +19,8 @@ export default function GlobalError({
 			<body className="min-h-screen bg-background text-foreground font-sans antialiased">
 				<main className="page-container flex min-h-screen items-center justify-center">
 					<ErrorState
-						title="The application encountered an error"
-						message="The application could not be displayed. Try loading it again."
+						title="Something went wrong"
+						message="We could not display the page right now. Please refresh or try again in a moment."
 						onRetry={reset}
 					/>
 				</main>

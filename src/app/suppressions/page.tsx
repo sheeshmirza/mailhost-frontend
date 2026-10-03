@@ -104,14 +104,14 @@ export default function SuppressionsPage() {
         <div>
           <div className="flex items-center gap-2">
             <h1 className="text-xl font-semibold tracking-tight text-zinc-900 dark:text-white">
-              Suppressions &amp; Bounce Registry
+              Blocked &amp; Bounced Emails
             </h1>
             <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20">
-              <UserX className="w-2.5 h-2.5" /> Reputation Shield
+              <UserX className="w-2.5 h-2.5" /> Do-Not-Send List
             </span>
           </div>
           <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
-            Recipients automatically or manually blocked from receiving further emails to protect sender score and direct MX domain reputation.
+            Emails that bounced or unsubscribed. Mailhost automatically stops sending to these addresses so your emails stay out of spam.
           </p>
         </div>
 
@@ -121,12 +121,12 @@ export default function SuppressionsPage() {
             className="btn-primary inline-flex items-center gap-1.5 text-xs px-3.5 py-1.5"
           >
             <Plus className="h-3.5 w-3.5" />
-            <span>Add Suppression</span>
+            <span>Block an Email</span>
           </button>
           <button
             onClick={fetchSuppressions}
             className="flex h-8 w-8 items-center justify-center rounded-lg border border-surface-border bg-surface text-zinc-500 hover:bg-surface-raised hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white transition-colors"
-            title="Refresh suppressions"
+            title="Refresh list"
           >
             <RefreshCw className={`h-3.5 w-3.5 ${isLoading ? "animate-spin" : ""}`} />
           </button>
@@ -162,9 +162,9 @@ export default function SuppressionsPage() {
           <table className="w-full min-w-[640px] text-left">
             <thead className="bg-surface-raised border-b border-surface-border text-[11px] font-medium uppercase tracking-wider text-zinc-500">
               <tr>
-                <th className="px-4 py-3">Suppressed Email Address</th>
+                <th className="px-4 py-3">Blocked Email Address</th>
                 <th className="px-4 py-3">Reason</th>
-                <th className="px-4 py-3">Suppressed Since</th>
+                <th className="px-4 py-3">Date Blocked</th>
                 <th className="px-4 py-3 text-right">Action</th>
               </tr>
             </thead>
@@ -186,7 +186,7 @@ export default function SuppressionsPage() {
                     <td className="px-4 py-3 text-right">
                       <button
                         onClick={() => handleRemove(s.address)}
-                        title="Remove suppression"
+                        title="Remove from blocklist"
                         className="rounded-lg p-1.5 text-zinc-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 transition-colors"
                       >
                         <Trash2 className="h-4 w-4" />
@@ -198,8 +198,8 @@ export default function SuppressionsPage() {
                 <tr>
                   <td colSpan={4} className="py-16 text-center text-sm text-zinc-500">
                     {searchQuery
-                      ? "No matching suppressed addresses found."
-                      : "No addresses currently suppressed. Your sender reputation is clean!"}
+                      ? "No matching blocked addresses found."
+                      : "No blocked email addresses found. Your sending list is healthy!"}
                   </td>
                 </tr>
               )}
@@ -219,10 +219,10 @@ export default function SuppressionsPage() {
                 </div>
                 <div>
                   <h3 className="text-sm font-semibold text-zinc-900 dark:text-white">
-                    Add Email Suppression
+                    Add Email to Blocklist
                   </h3>
                   <p className="text-[11px] text-zinc-500">
-                    Block outgoing deliveries to specific addresses
+                    Stop sending messages to specific email addresses
                   </p>
                 </div>
               </div>
@@ -250,14 +250,14 @@ export default function SuppressionsPage() {
 
               <div>
                 <label className="block text-[11px] font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">
-                  Suppression Reason
+                  Reason for Blocking
                 </label>
                 <select
                   value={addReason}
                   onChange={(e) => setAddReason(e.target.value)}
                   className="w-full rounded-lg border border-surface-border bg-surface-raised px-3 py-2 text-xs text-zinc-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-teal-500"
                 >
-                  <option value="manual">Manual Suppression (User Request)</option>
+                  <option value="manual">Manual Block (Contact Request)</option>
                   <option value="bounced">Hard Bounce (Invalid Mailbox)</option>
                   <option value="complaint">Spam Complaint</option>
                   <option value="unsubscribed">Unsubscribed (Marketing Opt-Out)</option>

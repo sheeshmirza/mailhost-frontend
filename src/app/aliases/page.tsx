@@ -258,14 +258,14 @@ export default function AliasesPage() {
         <div>
           <div className="flex items-center gap-2">
             <h1 className="text-xl font-semibold tracking-tight text-zinc-900 dark:text-white">
-              Email Aliases & Routing
+              Email Forwarding &amp; Aliases
             </h1>
             <span className="inline-flex items-center rounded-full bg-teal-50 px-2 py-0.5 text-[10px] font-medium text-teal-700 dark:bg-teal-900/30 dark:text-teal-300">
-              Inbound MX
+              Email Forwarding
             </span>
           </div>
           <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
-            Create virtual addresses, forward inbound emails to external destinations, and set up catch-all wildcard routing.
+            Create friendly forwarding addresses (like support@ or sales@) that automatically send messages to your personal or team inboxes.
           </p>
         </div>
 
@@ -275,7 +275,7 @@ export default function AliasesPage() {
             className="flex items-center gap-1.5 rounded-lg border border-surface-border bg-surface px-3 py-1.5 text-xs font-medium text-zinc-700 hover:bg-surface-raised dark:text-zinc-300 transition-colors"
           >
             <Inbox className="h-3.5 w-3.5" />
-            <span>Inbound Log</span>
+            <span>Received Mail</span>
           </Link>
           <button
             onClick={openCreateModal}
@@ -283,7 +283,7 @@ export default function AliasesPage() {
             disabled={verifiedDomains.length === 0}
           >
             <Plus className="h-3.5 w-3.5" />
-            <span>Create Alias</span>
+            <span>Create Forwarding Address</span>
           </button>
         </div>
       </div>
@@ -297,45 +297,45 @@ export default function AliasesPage() {
         <div className="rounded-xl border border-surface-border bg-surface p-4 shadow-sm">
           <div className="flex items-center justify-between">
             <span className="text-[11px] font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
-              Total Aliases
+              Total Forwarding Rules
             </span>
             <ArrowRightLeft className="h-4 w-4 text-teal-600 dark:text-teal-400" />
           </div>
           <p className="mt-2 text-2xl font-semibold text-zinc-900 dark:text-white">{stats.total}</p>
-          <p className="mt-0.5 text-[11px] text-zinc-500">Configured routing rules</p>
+          <p className="mt-0.5 text-[11px] text-zinc-500">Active forwarding rules</p>
         </div>
 
         <div className="rounded-xl border border-surface-border bg-surface p-4 shadow-sm">
           <div className="flex items-center justify-between">
             <span className="text-[11px] font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
-              Forwarding Targets
+              Destination Inboxes
             </span>
             <Forward className="h-4 w-4 text-blue-600 dark:text-blue-400" />
           </div>
           <p className="mt-2 text-2xl font-semibold text-zinc-900 dark:text-white">{stats.totalDestinations}</p>
-          <p className="mt-0.5 text-[11px] text-zinc-500">Connected destination inboxes</p>
+          <p className="mt-0.5 text-[11px] text-zinc-500">External inboxes receiving mail</p>
         </div>
 
         <div className="rounded-xl border border-surface-border bg-surface p-4 shadow-sm">
           <div className="flex items-center justify-between">
             <span className="text-[11px] font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
-              Catch-All Rules
+              Catch-All Addresses
             </span>
             <Sparkles className="h-4 w-4 text-amber-600 dark:text-amber-400" />
           </div>
           <p className="mt-2 text-2xl font-semibold text-zinc-900 dark:text-white">{stats.catchAllCount}</p>
-          <p className="mt-0.5 text-[11px] text-zinc-500">Wildcard (`*@domain`) routes</p>
+          <p className="mt-0.5 text-[11px] text-zinc-500">Catches any email to your domain</p>
         </div>
 
         <div className="rounded-xl border border-surface-border bg-surface p-4 shadow-sm">
           <div className="flex items-center justify-between">
             <span className="text-[11px] font-medium text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
-              Mailbox Stored
+              Saved in Inbox
             </span>
             <Inbox className="h-4 w-4 text-purple-600 dark:text-purple-400" />
           </div>
           <p className="mt-2 text-2xl font-semibold text-zinc-900 dark:text-white">{stats.storeCopyCount}</p>
-          <p className="mt-0.5 text-[11px] text-zinc-500">Retains IMAP/POP copy</p>
+          <p className="mt-0.5 text-[11px] text-zinc-500">Keeps a copy in this mailbox</p>
         </div>
       </div>
 
@@ -527,30 +527,30 @@ export default function AliasesPage() {
         <div className="rounded-xl border border-surface-border bg-surface p-4 space-y-2">
           <div className="flex items-center gap-2 text-xs font-semibold text-zinc-900 dark:text-white">
             <Forward className="h-4 w-4 text-blue-500" />
-            <span>Multi-Destination Forwarding</span>
+            <span>Forward to Multiple People</span>
           </div>
           <p className="text-[11px] text-zinc-500 leading-relaxed">
-            One alias address can forward to multiple external mailboxes simultaneously (e.g. personal Gmail, Outlook, or CRM).
+            One forwarding address can send to multiple personal or team inboxes at the same time (e.g. your team Gmail or Outlook).
           </p>
         </div>
 
         <div className="rounded-xl border border-surface-border bg-surface p-4 space-y-2">
           <div className="flex items-center gap-2 text-xs font-semibold text-zinc-900 dark:text-white">
             <Sparkles className="h-4 w-4 text-amber-500" />
-            <span>Wildcard Catch-All (`*`)</span>
+            <span>Catch-All Email (*)</span>
           </div>
           <p className="text-[11px] text-zinc-500 leading-relaxed">
-            Use `*` as the local part to catch any unconfigured address on your domain, ensuring zero missed inquiries.
+            Use `*` to catch any email sent to unconfigured addresses on your domain so you never miss an inquiry.
           </p>
         </div>
 
         <div className="rounded-xl border border-surface-border bg-surface p-4 space-y-2">
           <div className="flex items-center gap-2 text-xs font-semibold text-zinc-900 dark:text-white">
             <Inbox className="h-4 w-4 text-purple-500" />
-            <span>Mailbox Sync & Webhooks</span>
+            <span>Keep a Backup Copy</span>
           </div>
           <p className="text-[11px] text-zinc-500 leading-relaxed">
-            Enable `Store Copy` to access messages via IMAP/POP3 webmail or inspect raw MIME data in the Inbound log.
+            Turn on &quot;Keep a copy&quot; to read messages right here in your webmail inbox as well as forwarding them.
           </p>
         </div>
       </div>
@@ -561,7 +561,7 @@ export default function AliasesPage() {
           <div className="dialog-scroll relative flex flex-col w-full max-w-lg rounded-xl border border-surface-border bg-surface p-6 shadow-2xl space-y-4">
             <div className="flex items-center justify-between border-b border-surface-border pb-3">
               <h2 className="text-sm font-semibold text-zinc-900 dark:text-white">
-                {editingAlias ? "Edit Email Alias" : "Create Inbound Alias"}
+                {editingAlias ? "Edit Forwarding Address" : "Create Forwarding Address"}
               </h2>
               <button
                 onClick={() => setIsModalOpen(false)}
@@ -577,14 +577,14 @@ export default function AliasesPage() {
                 <div className="space-y-1.5">
                   <div className="flex items-center justify-between">
                     <label className="text-xs font-medium text-zinc-700 dark:text-zinc-300">
-                      Alias Address
+                      Forwarding Address
                     </label>
                     <button
                       type="button"
                       onClick={() => setAliasPrefix("*")}
                       className="text-[11px] text-teal-600 dark:text-teal-400 hover:underline"
                     >
-                      Use Catch-All Wildcard (`*`)
+                      Set as Catch-All (*)
                     </button>
                   </div>
                   <div className="flex items-center gap-1.5">

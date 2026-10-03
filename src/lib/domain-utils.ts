@@ -51,15 +51,13 @@ export function assertVerifiedSender(
 ): void {
   if (verifiedDomains.length === 0) {
     throw new Error(
-      "No verified domains found on your account. " +
-        "Please register and verify a domain before sending emails."
+      "No verified domains found. Please add and verify your domain before sending emails."
     );
   }
   const emailDomain = domainOfEmail(from);
   if (!emailDomain || !verifiedDomains.some((d) => d.name.toLowerCase() === emailDomain)) {
     throw new Error(
-      `Domain "${emailDomain || "unknown"}" is not a verified domain on your account. ` +
-        "Emails can only be sent through registered and verified domains."
+      `The domain "${emailDomain || "unknown"}" is not verified yet. Emails can only be sent from domains you have added and verified.`
     );
   }
 }
@@ -74,16 +72,14 @@ export function assertVerifiedSenders(
 ): void {
   if (verifiedDomains.length === 0) {
     throw new Error(
-      "No verified domains found on your account. " +
-        "Please register and verify a domain before sending emails."
+      "No verified domains found. Please add and verify your domain before sending emails."
     );
   }
   for (const { index, from } of froms) {
     const emailDomain = domainOfEmail(from);
     if (!emailDomain || !verifiedDomains.some((d) => d.name.toLowerCase() === emailDomain)) {
       throw new Error(
-        `Email #[${index + 1}] sender domain "${emailDomain || "unknown"}" ` +
-          "is not a verified domain on your account."
+        `Email #${index + 1} sender domain "${emailDomain || "unknown"}" is not verified yet.`
       );
     }
   }

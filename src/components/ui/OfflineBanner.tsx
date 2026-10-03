@@ -40,7 +40,7 @@ export function OfflineBanner() {
     return (
       <div className="bg-emerald-600 px-4 py-2 text-white text-xs font-medium flex items-center justify-center gap-2 animate-fade-in shadow-sm z-50">
         <CheckCircle2 className="h-3.5 w-3.5" />
-        <span>Connection restored. Synchronizing live telemetry...</span>
+        <span>You&apos;re back online! Syncing your data...</span>
       </div>
     );
   }
@@ -54,7 +54,7 @@ export function OfflineBanner() {
     >
       <div className="flex items-center gap-2">
         <WifiOff className="h-4 w-4 shrink-0" />
-        <span>You are currently offline. Mailhost is operating in cached mode. Actions will retry upon reconnection.</span>
+        <span>You&apos;re currently offline. You can still view cached pages, and changes will sync once you reconnect.</span>
       </div>
       <button
         type="button"

@@ -176,7 +176,7 @@ export default function HomePage() {
             </span>
           </h1>
           <p className="text-base sm:text-lg md:text-xl text-zinc-600 dark:text-zinc-400 max-w-3xl mx-auto leading-relaxed">
-            The complete email platform: Launch high-converting marketing broadcast campaigns, build automated multi-step customer drip journeys, deliver transactional emails with sub-second latency, and run full mailbox infrastructure over SMTP, IMAP, and POP3.
+            The complete email platform: Send marketing newsletters, create automated email sequences, deliver instant notifications, and connect your favorite mail apps like Apple Mail and Outlook.
           </p>
         </div>
 
@@ -196,7 +196,7 @@ export default function HomePage() {
             className="w-full sm:w-auto flex items-center justify-center gap-2 rounded-md border border-surface-border bg-surface px-5 py-2.5 text-sm font-medium text-zinc-700 hover:bg-surface-raised hover:text-zinc-900 dark:text-zinc-300 dark:hover:text-white transition-colors"
           >
             <Code2 className="h-4 w-4 text-zinc-400" />
-            <span>OpenAPI Documentation</span>
+            <span>API Documentation</span>
           </a>
         </div>
 
@@ -260,48 +260,48 @@ export default function HomePage() {
       <section id="features" className="max-w-6xl mx-auto px-4 sm:px-6 py-20 sm:py-24 space-y-16">
         <div className="text-center space-y-3 max-w-2xl mx-auto">
           <h2 className="text-xs font-semibold uppercase tracking-wider text-teal-600 dark:text-teal-400">
-            Unified Dual-Engine Platform
+            All-in-One Email Platform
           </h2>
           <p className="text-3xl sm:text-4xl font-bold tracking-tight text-zinc-900 dark:text-white">
-            Marketing Automation meets Complete Mailbox Suite
+            Marketing Campaigns Meet Everyday Mailboxes
           </p>
           <p className="text-sm text-zinc-600 dark:text-zinc-400">
-            A single infrastructure for sending marketing broadcasts, managing subscriber journeys, and hosting production email mailboxes over SMTP, IMAP, and POP3.
+            One simple platform to send newsletters, run automated campaigns, and manage custom domain email inboxes.
           </p>
         </div>
 
-        {/* Pillar 1: Marketing & Growth Engine */}
+        {/* Pillar 1: Marketing & Growth */}
         <div className="space-y-6">
           <div className="flex items-center gap-2.5">
             <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-teal-500/10 text-teal-600 dark:text-teal-400 font-semibold text-xs border border-teal-500/20">
               01
             </span>
             <h3 className="text-lg font-bold tracking-tight text-zinc-900 dark:text-white">
-              Marketing &amp; Growth Engine
+              Marketing &amp; Growth
             </h3>
-            <span className="text-xs text-zinc-500 dark:text-zinc-400">— Audiences, Broadcasts &amp; Automations</span>
+            <span className="text-xs text-zinc-500 dark:text-zinc-400">— Subscribers, Newsletters &amp; Automations</span>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {/* Card 1: Broadcast Campaigns & Engagement Telemetry */}
+            {/* Card 1: Broadcast Campaigns & Engagement */}
             <div className="rounded-2xl border border-surface-border bg-surface p-6 sm:p-8 space-y-4 hover:border-zinc-300 dark:hover:border-zinc-700 transition-all shadow-sm">
               <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-teal-50 dark:bg-teal-950/40 text-teal-600 dark:text-teal-400">
                 <Radio className="h-5 w-5" />
               </div>
               <h4 className="text-xl font-semibold text-zinc-900 dark:text-white">
-                Broadcasts &amp; Engagement Tools
+                Email Campaigns &amp; Newsletters
               </h4>
               <p className="text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed">
-                Send visual newsletters with A/B variant testing, smart subject line quality scoring (spam trigger detection &amp; length optimization), and live audience conversion funnels.
+                Send beautiful newsletters, test two versions to see which performs better, get tips to keep your subject lines out of spam, and track opens and clicks in real time.
               </p>
               <div className="grid grid-cols-2 gap-2 text-[11px] font-mono pt-1">
                 <div className="rounded border border-surface-border bg-surface-raised p-2 text-center">
-                  <span className="text-[10px] text-zinc-500 block font-sans">Optimizer</span>
-                  <span className="font-semibold text-teal-600 dark:text-teal-400">A/B Testing</span>
+                  <span className="text-[10px] text-zinc-500 block font-sans">Comparison</span>
+                  <span className="font-semibold text-teal-600 dark:text-teal-400">Test 2 Versions</span>
                 </div>
                 <div className="rounded border border-surface-border bg-surface-raised p-2 text-center">
-                  <span className="text-[10px] text-zinc-500 block font-sans">Telemetry</span>
-                  <span className="font-semibold text-emerald-600 dark:text-emerald-400">Funnel &amp; Clicks</span>
+                  <span className="text-[10px] text-zinc-500 block font-sans">Results</span>
+                  <span className="font-semibold text-emerald-600 dark:text-emerald-400">Opens &amp; Clicks</span>
                 </div>
               </div>
               <div className="pt-2">
@@ -309,31 +309,31 @@ export default function HomePage() {
                   href="/broadcasts"
                   className="inline-flex items-center gap-1.5 text-xs font-medium text-teal-600 dark:text-teal-400 hover:underline underline-offset-4"
                 >
-                  <span>Launch Broadcast Campaign</span>
+                  <span>Explore Campaigns</span>
                   <ChevronRight className="h-3.5 w-3.5" />
                 </Link>
               </div>
             </div>
 
-            {/* Card 2: Next-Gen Automation Suite */}
+            {/* Card 2: Automated Workflows */}
             <div className="rounded-2xl border border-surface-border bg-surface p-6 sm:p-8 space-y-4 hover:border-zinc-300 dark:hover:border-zinc-700 transition-all shadow-sm">
               <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400">
                 <Workflow className="h-5 w-5" />
               </div>
               <h4 className="text-xl font-semibold text-zinc-900 dark:text-white">
-                Next-Gen Automation Suite
+                Automated Workflows
               </h4>
               <p className="text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed">
-                Superpowered visual workflow engine with pre-built blueprints, time delays (minutes to days), dynamic conditional branching (If/Else), segment tagging, and dry-run journey simulation.
+                Create step-by-step automatic emails for welcome series, abandoned carts, or re-engaging inactive subscribers with easy delays and branching rules.
               </p>
               <div className="grid grid-cols-2 gap-2 text-[11px] font-mono pt-1">
                 <div className="rounded border border-surface-border bg-surface-raised p-2 text-center">
-                  <span className="text-[10px] text-zinc-500 block font-sans">Architecture</span>
-                  <span className="font-semibold text-indigo-600 dark:text-indigo-400">Branching &amp; Delays</span>
+                  <span className="text-[10px] text-zinc-500 block font-sans">Rules</span>
+                  <span className="font-semibold text-indigo-600 dark:text-indigo-400">Delays &amp; Conditions</span>
                 </div>
                 <div className="rounded border border-surface-border bg-surface-raised p-2 text-center">
-                  <span className="text-[10px] text-zinc-500 block font-sans">Blueprints</span>
-                  <span className="font-semibold text-zinc-900 dark:text-zinc-100">SaaS &amp; E-Commerce</span>
+                  <span className="text-[10px] text-zinc-500 block font-sans">Templates</span>
+                  <span className="font-semibold text-zinc-900 dark:text-zinc-100">Welcome &amp; Sales</span>
                 </div>
               </div>
               <div className="pt-2">
@@ -341,31 +341,31 @@ export default function HomePage() {
                   href="/automations"
                   className="inline-flex items-center gap-1.5 text-xs font-medium text-indigo-600 dark:text-indigo-400 hover:underline underline-offset-4"
                 >
-                  <span>Build Customer Journeys</span>
+                  <span>Explore Automations</span>
                   <ChevronRight className="h-3.5 w-3.5" />
                 </Link>
               </div>
             </div>
 
-            {/* Card 3: Audiences, Segments & Templates */}
+            {/* Card 3: Subscribers & Templates */}
             <div className="rounded-2xl border border-surface-border bg-surface p-6 sm:p-8 space-y-4 hover:border-zinc-300 dark:hover:border-zinc-700 transition-all shadow-sm">
               <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400">
                 <Users className="h-5 w-5" />
               </div>
               <h4 className="text-xl font-semibold text-zinc-900 dark:text-white">
-                Audiences &amp; Templates
+                Subscribers &amp; Templates
               </h4>
               <p className="text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed">
-                Sync contacts, record custom traits, build dynamic cohorts, and craft reusable templates with merge tags (<code className="font-mono text-zinc-700 dark:text-zinc-300">{"{{first_name}}"}</code>).
+                Manage your contacts, organize them into targeted groups, and design reusable email templates personalized with names and custom details.
               </p>
               <div className="grid grid-cols-2 gap-2 text-[11px] font-mono pt-1">
                 <div className="rounded border border-surface-border bg-surface-raised p-2 text-center">
-                  <span className="text-[10px] text-zinc-500 block font-sans">Audiences</span>
-                  <span className="font-semibold text-zinc-900 dark:text-zinc-100">Traits &amp; Topics</span>
+                  <span className="text-[10px] text-zinc-500 block font-sans">Contacts</span>
+                  <span className="font-semibold text-zinc-900 dark:text-zinc-100">Groups &amp; Tags</span>
                 </div>
                 <div className="rounded border border-surface-border bg-surface-raised p-2 text-center">
                   <span className="text-[10px] text-zinc-500 block font-sans">Templates</span>
-                  <span className="font-semibold text-emerald-600 dark:text-emerald-400">Dynamic Tags</span>
+                  <span className="font-semibold text-emerald-600 dark:text-emerald-400">Personalized Tags</span>
                 </div>
               </div>
               <div className="pt-2 flex items-center justify-between">
@@ -373,7 +373,7 @@ export default function HomePage() {
                   href="/audiences"
                   className="inline-flex items-center gap-1.5 text-xs font-medium text-emerald-600 dark:text-emerald-400 hover:underline underline-offset-4"
                 >
-                  <span>Audiences</span>
+                  <span>Contacts</span>
                   <ChevronRight className="h-3.5 w-3.5" />
                 </Link>
                 <Link
@@ -388,42 +388,42 @@ export default function HomePage() {
           </div>
         </div>
 
-        {/* Pillar 2: Complete Email Suite & Mail Protocols */}
+        {/* Pillar 2: Custom Inboxes & Mail Apps */}
         <div className="space-y-6">
           <div className="flex items-center gap-2.5">
             <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-sky-500/10 text-sky-600 dark:text-sky-400 font-semibold text-xs border border-sky-500/20">
               02
             </span>
             <h3 className="text-lg font-bold tracking-tight text-zinc-900 dark:text-white">
-              Complete Email Suite &amp; Protocols
+              Custom Inboxes &amp; Mail Apps
             </h3>
-            <span className="text-xs text-zinc-500 dark:text-zinc-400">— SMTP, IMAP, POP3, Inbound MTA &amp; Virtual Aliases</span>
+            <span className="text-xs text-zinc-500 dark:text-zinc-400">— Mail Apps, Email Forwarding &amp; Incoming Mail</span>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {/* Card 4: SMTP, IMAP & POP3 Protocols */}
+            {/* Card 4: Connect to Mail Apps */}
             <div className="rounded-2xl border border-surface-border bg-surface p-6 sm:p-8 space-y-4 hover:border-zinc-300 dark:hover:border-zinc-700 transition-all shadow-sm">
               <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-sky-50 dark:bg-sky-950/40 text-sky-600 dark:text-sky-400">
                 <Server className="h-5 w-5" />
               </div>
               <h4 className="text-xl font-semibold text-zinc-900 dark:text-white">
-                SMTP, IMAP &amp; POP3 Protocols
+                Connect to Mail Apps
               </h4>
               <p className="text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed">
-                Connect Apple Mail, Thunderbird, Outlook, or background scripts with full RFC support: SMTP (587/465) for submission, IMAP (993/143) for sync, and POP3 (995/110) for download.
+                Use your custom domain email with apps like Apple Mail, Outlook, or Thunderbird. Send, receive, and sync emails easily on all your devices.
               </p>
               <div className="grid grid-cols-3 gap-2 text-[11px] font-mono pt-1 text-center">
                 <div className="rounded border border-surface-border bg-surface-raised p-2">
-                  <span className="text-[10px] text-zinc-500 block font-sans">SMTP</span>
-                  <span className="font-semibold text-sky-600 dark:text-sky-400">587 / 465</span>
+                  <span className="text-[10px] text-zinc-500 block font-sans">Send</span>
+                  <span className="font-semibold text-sky-600 dark:text-sky-400">SMTP</span>
                 </div>
                 <div className="rounded border border-surface-border bg-surface-raised p-2">
-                  <span className="text-[10px] text-zinc-500 block font-sans">IMAP</span>
-                  <span className="font-semibold text-sky-600 dark:text-sky-400">993 / 143</span>
+                  <span className="text-[10px] text-zinc-500 block font-sans">Sync</span>
+                  <span className="font-semibold text-sky-600 dark:text-sky-400">IMAP</span>
                 </div>
                 <div className="rounded border border-surface-border bg-surface-raised p-2">
-                  <span className="text-[10px] text-zinc-500 block font-sans">POP3</span>
-                  <span className="font-semibold text-sky-600 dark:text-sky-400">995 / 110</span>
+                  <span className="text-[10px] text-zinc-500 block font-sans">Download</span>
+                  <span className="font-semibold text-sky-600 dark:text-sky-400">POP3</span>
                 </div>
               </div>
               <div className="pt-2">
@@ -431,31 +431,31 @@ export default function HomePage() {
                   href="/smtp"
                   className="inline-flex items-center gap-1.5 text-xs font-medium text-sky-600 dark:text-sky-400 hover:underline underline-offset-4"
                 >
-                  <span>Protocol Credentials &amp; Guide</span>
+                  <span>Mail App Setup Guide</span>
                   <ChevronRight className="h-3.5 w-3.5" />
                 </Link>
               </div>
             </div>
 
-            {/* Card 5: Virtual Aliases & Catch-All Routing */}
+            {/* Card 5: Email Forwarding & Aliases */}
             <div className="rounded-2xl border border-surface-border bg-surface p-6 sm:p-8 space-y-4 hover:border-zinc-300 dark:hover:border-zinc-700 transition-all shadow-sm">
               <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-purple-50 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400">
                 <AtSign className="h-5 w-5" />
               </div>
               <h4 className="text-xl font-semibold text-zinc-900 dark:text-white">
-                Virtual Aliases &amp; Catch-All
+                Email Forwarding &amp; Aliases
               </h4>
               <p className="text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed">
-                Configure unlimited virtual email aliases per domain. Forward inbound messages to multiple external addresses, enable wildcard catch-all (<code className="font-mono text-zinc-700 dark:text-zinc-300">*@domain.com</code>), and optionally preserve local mailbox copies.
+                Create extra email addresses for your domain that forward straight to your personal or team inbox, with catch-all support to receive mail sent to any address on your domain.
               </p>
               <div className="grid grid-cols-2 gap-2 text-[11px] font-mono pt-1 text-center">
                 <div className="rounded border border-surface-border bg-surface-raised p-2">
                   <span className="text-[10px] text-zinc-500 block font-sans">Catch-All</span>
-                  <span className="font-semibold text-purple-600 dark:text-purple-400">*@domain.com</span>
+                  <span className="font-semibold text-purple-600 dark:text-purple-400">*@yourdomain</span>
                 </div>
                 <div className="rounded border border-surface-border bg-surface-raised p-2">
                   <span className="text-[10px] text-zinc-500 block font-sans">Forwarding</span>
-                  <span className="font-semibold text-zinc-900 dark:text-zinc-100">Multi-Target</span>
+                  <span className="font-semibold text-zinc-900 dark:text-zinc-100">Multiple Inboxes</span>
                 </div>
               </div>
               <div className="pt-2">
@@ -463,31 +463,31 @@ export default function HomePage() {
                   href="/aliases"
                   className="inline-flex items-center gap-1.5 text-xs font-medium text-purple-600 dark:text-purple-400 hover:underline underline-offset-4"
                 >
-                  <span>Configure Email Aliases</span>
+                  <span>Manage Forwarding &amp; Aliases</span>
                   <ChevronRight className="h-3.5 w-3.5" />
                 </Link>
               </div>
             </div>
 
-            {/* Card 6: Inbound MTA & Raw MIME Parsing */}
+            {/* Card 6: Incoming Mail Viewer */}
             <div className="rounded-2xl border border-surface-border bg-surface p-6 sm:p-8 space-y-4 hover:border-zinc-300 dark:hover:border-zinc-700 transition-all shadow-sm">
               <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400">
                 <Inbox className="h-5 w-5" />
               </div>
               <h4 className="text-xl font-semibold text-zinc-900 dark:text-white">
-                Inbound MTA &amp; Raw MIME
+                Incoming Mail Viewer
               </h4>
               <p className="text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed">
-                Listen on Port 25 as a full Mail Transfer Agent. Parse multipart RFC-822 MIME mail, extract raw attachments, download original <code className="font-mono text-zinc-700 dark:text-zinc-300">.eml</code> files, and trigger downstream webhooks.
+                Receive incoming emails directly, read messages and attachments in your browser, download original email files, or send notifications to your own server.
               </p>
               <div className="grid grid-cols-2 gap-2 text-[11px] font-mono pt-1 text-center">
                 <div className="rounded border border-surface-border bg-surface-raised p-2">
-                  <span className="text-[10px] text-zinc-500 block font-sans">MTA Inbound</span>
-                  <span className="font-semibold text-zinc-900 dark:text-zinc-100">Port 25 Direct</span>
+                  <span className="text-[10px] text-zinc-500 block font-sans">Incoming Mail</span>
+                  <span className="font-semibold text-zinc-900 dark:text-zinc-100">Direct Inbound</span>
                 </div>
                 <div className="rounded border border-surface-border bg-surface-raised p-2">
-                  <span className="text-[10px] text-zinc-500 block font-sans">Raw Archive</span>
-                  <span className="font-semibold text-amber-600 dark:text-amber-400">.eml Download</span>
+                  <span className="text-[10px] text-zinc-500 block font-sans">Original File</span>
+                  <span className="font-semibold text-amber-600 dark:text-amber-400">Download .eml</span>
                 </div>
               </div>
               <div className="pt-2">
@@ -495,7 +495,7 @@ export default function HomePage() {
                   href="/inbound"
                   className="inline-flex items-center gap-1.5 text-xs font-medium text-amber-600 dark:text-amber-400 hover:underline underline-offset-4"
                 >
-                  <span>Inspect Inbound Messages</span>
+                  <span>View Incoming Mail</span>
                   <ChevronRight className="h-3.5 w-3.5" />
                 </Link>
               </div>
@@ -514,23 +514,23 @@ export default function HomePage() {
               <Shield className="h-5 w-5 text-emerald-500" />
             </div>
             <h4 className="text-xl font-semibold text-zinc-900 dark:text-white">
-              Direct MX Outbound &amp; Deliverability Protection
+              Email Delivery &amp; Spam Protection
             </h4>
             <p className="text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed max-w-xl">
-              Emails are sent strictly through registered, verified domains with automated 2048-bit DKIM key generation, SPF records, and DMARC compliance. Direct MX delivery connects directly to recipient mail servers with zero relay dependencies. Automatic suppression filters hard bounces and complaints in real-time.
+              Protect your sender reputation with built-in domain security (DKIM, SPF, and DMARC) so your messages land in the inbox instead of the spam folder. Automatically blocks invalid addresses and unsubscribed contacts.
             </p>
             <div className="grid grid-cols-1 gap-3 pt-2 text-xs font-mono sm:grid-cols-3">
               <div className="rounded-lg border border-surface-border bg-surface-raised p-3">
                 <span className="text-[10px] text-zinc-500 block uppercase font-sans">DKIM / SPF</span>
-                <span className="text-emerald-600 dark:text-emerald-400 font-semibold">2048-bit Verified</span>
+                <span className="text-emerald-600 dark:text-emerald-400 font-semibold">Security Verified</span>
               </div>
               <div className="rounded-lg border border-surface-border bg-surface-raised p-3">
-                <span className="text-[10px] text-zinc-500 block uppercase font-sans">Direct MX MTA</span>
-                <span className="text-emerald-600 dark:text-emerald-400 font-semibold">Zero-Relay Direct</span>
+                <span className="text-[10px] text-zinc-500 block uppercase font-sans">Fast Delivery</span>
+                <span className="text-emerald-600 dark:text-emerald-400 font-semibold">Direct to Inbox</span>
               </div>
               <div className="rounded-lg border border-surface-border bg-surface-raised p-3">
-                <span className="text-[10px] text-zinc-500 block uppercase font-sans">Auto-Suppression</span>
-                <span className="text-emerald-600 dark:text-emerald-400 font-semibold">Real-time Filter</span>
+                <span className="text-[10px] text-zinc-500 block uppercase font-sans">Bounce Protection</span>
+                <span className="text-emerald-600 dark:text-emerald-400 font-semibold">Automatic Filter</span>
               </div>
             </div>
             <div className="pt-2 flex items-center gap-4">
@@ -545,7 +545,7 @@ export default function HomePage() {
                 href="/suppressions"
                 className="inline-flex items-center gap-1.5 text-xs font-medium text-zinc-500 hover:text-zinc-900 dark:hover:text-white"
               >
-                <span>Suppression List</span>
+                <span>Blocked &amp; Bounced List</span>
                 <ChevronRight className="h-3.5 w-3.5" />
               </Link>
             </div>
@@ -557,19 +557,19 @@ export default function HomePage() {
               <Bot className="h-5 w-5" />
             </div>
             <h4 className="text-xl font-semibold text-zinc-900 dark:text-white">
-              Remote AI MCP Server
+              AI Assistant Integration
             </h4>
             <p className="text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed">
-              Native Model Context Protocol integration. AI agents (Claude Desktop, Cursor, Antigravity) can draft campaigns, inspect delivery telemetry, and triage inbound emails autonomously over stdio or SSE.
+              Connect Mailhost to AI tools like Claude or Cursor. Let your AI assistant draft campaigns, check delivery reports, and help reply to emails for you.
             </p>
             <div className="grid grid-cols-2 gap-2 text-[11px] font-mono pt-1 text-center">
               <div className="rounded border border-surface-border bg-surface-raised p-2">
                 <span className="text-[10px] text-zinc-500 block font-sans">Protocol</span>
-                <span className="font-semibold text-pink-600 dark:text-pink-400">MCP Standard</span>
+                <span className="font-semibold text-pink-600 dark:text-pink-400">Model Context Protocol</span>
               </div>
               <div className="rounded border border-surface-border bg-surface-raised p-2">
-                <span className="text-[10px] text-zinc-500 block font-sans">Transport</span>
-                <span className="font-semibold text-zinc-900 dark:text-zinc-100">stdio / SSE</span>
+                <span className="text-[10px] text-zinc-500 block font-sans">Compatible Apps</span>
+                <span className="font-semibold text-zinc-900 dark:text-zinc-100">Claude &amp; Cursor</span>
               </div>
             </div>
             <div className="pt-2">
@@ -577,7 +577,7 @@ export default function HomePage() {
                 href="/settings"
                 className="inline-flex items-center gap-1.5 text-xs font-medium text-pink-600 dark:text-pink-400 hover:underline underline-offset-4"
               >
-                <span>View MCP Integration</span>
+                <span>Set Up AI Assistant</span>
                 <ChevronRight className="h-3.5 w-3.5" />
               </Link>
             </div>
@@ -593,7 +593,7 @@ export default function HomePage() {
               One destination for powerful emailing.
             </h2>
             <p className="text-xs sm:text-sm text-zinc-600 dark:text-zinc-400">
-              Start sending transactional emails, automated drip journeys, and marketing broadcasts in under two minutes.
+              Start sending notifications, automated sequences, and marketing newsletters in under two minutes.
             </p>
           </div>
 
@@ -627,7 +627,7 @@ export default function HomePage() {
                 <span className="text-sm font-semibold text-zinc-900 dark:text-white">Mailhost</span>
               </div>
               <p className="text-zinc-500 max-w-sm">
-                One destination for powerful emailing. All in one suite: marketing automation, transactional delivery, and complete mailbox infrastructure.
+                One simple home for all your emails: marketing campaigns, fast delivery, and custom domain mailboxes.
               </p>
               <div className="flex items-center gap-2 text-zinc-500 font-mono text-[11px]">
                 <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
@@ -639,9 +639,9 @@ export default function HomePage() {
               <span className="font-semibold text-zinc-900 dark:text-white block">Email Suite</span>
               <ul className="space-y-1.5 text-zinc-500 dark:text-zinc-400">
                 <li><Link href="/overview" className="hover:text-zinc-900 dark:hover:text-white">Overview</Link></li>
-                <li><Link href="/emails" className="hover:text-zinc-900 dark:hover:text-white">Emails API</Link></li>
-                <li><Link href="/inbound" className="hover:text-zinc-900 dark:hover:text-white">Inbound MTA</Link></li>
-                <li><Link href="/aliases" className="hover:text-zinc-900 dark:hover:text-white">Email Aliases</Link></li>
+                <li><Link href="/emails" className="hover:text-zinc-900 dark:hover:text-white">Sent Emails</Link></li>
+                <li><Link href="/inbound" className="hover:text-zinc-900 dark:hover:text-white">Incoming Mail</Link></li>
+                <li><Link href="/aliases" className="hover:text-zinc-900 dark:hover:text-white">Email Forwarding</Link></li>
                 <li><Link href="/domains" className="hover:text-zinc-900 dark:hover:text-white">Domains</Link></li>
               </ul>
             </div>
@@ -649,22 +649,22 @@ export default function HomePage() {
             <div className="space-y-2">
               <span className="font-semibold text-zinc-900 dark:text-white block">Marketing</span>
               <ul className="space-y-1.5 text-zinc-500 dark:text-zinc-400">
-                <li><Link href="/broadcasts" className="hover:text-zinc-900 dark:hover:text-white">Broadcasts</Link></li>
-                <li><Link href="/audiences" className="hover:text-zinc-900 dark:hover:text-white">Audiences</Link></li>
+                <li><Link href="/broadcasts" className="hover:text-zinc-900 dark:hover:text-white">Campaigns</Link></li>
+                <li><Link href="/audiences" className="hover:text-zinc-900 dark:hover:text-white">Contacts</Link></li>
                 <li><Link href="/automations" className="hover:text-zinc-900 dark:hover:text-white">Automations</Link></li>
                 <li><Link href="/templates" className="hover:text-zinc-900 dark:hover:text-white">Templates</Link></li>
-                <li><Link href="/events" className="hover:text-zinc-900 dark:hover:text-white">Events</Link></li>
+                <li><Link href="/events" className="hover:text-zinc-900 dark:hover:text-white">Activity Events</Link></li>
               </ul>
             </div>
 
             <div className="space-y-2">
               <span className="font-semibold text-zinc-900 dark:text-white block">Protocols &amp; Dev</span>
               <ul className="space-y-1.5 text-zinc-500 dark:text-zinc-400">
-                <li><Link href="/smtp" className="hover:text-zinc-900 dark:hover:text-white">SMTP, IMAP &amp; POP3</Link></li>
+                <li><Link href="/smtp" className="hover:text-zinc-900 dark:hover:text-white">Mail Apps &amp; Setup</Link></li>
                 <li><Link href="/api-keys" className="hover:text-zinc-900 dark:hover:text-white">API Keys</Link></li>
                 <li><Link href="/webhooks" className="hover:text-zinc-900 dark:hover:text-white">Webhooks</Link></li>
-                <li><Link href="/logs" className="hover:text-zinc-900 dark:hover:text-white">System Health</Link></li>
-                <li><Link href="/settings" className="hover:text-zinc-900 dark:hover:text-white">MCP Server</Link></li>
+                <li><Link href="/logs" className="hover:text-zinc-900 dark:hover:text-white">System Status</Link></li>
+                <li><Link href="/settings" className="hover:text-zinc-900 dark:hover:text-white">AI Assistant</Link></li>
               </ul>
             </div>
           </div>
@@ -674,7 +674,7 @@ export default function HomePage() {
             <div className="flex items-center gap-4">
               <Link href="/overview" className="hover:text-zinc-900 dark:hover:text-white">Dashboard</Link>
               <Link href="/login" className="hover:text-zinc-900 dark:hover:text-white">Login</Link>
-              <a href="/backend/openapi.json" target="_blank" rel="noreferrer" className="hover:text-zinc-900 dark:hover:text-white">Docs</a>
+              <a href="/backend/openapi.json" target="_blank" rel="noreferrer" className="hover:text-zinc-900 dark:hover:text-white">API Documentation</a>
             </div>
           </div>
         </div>

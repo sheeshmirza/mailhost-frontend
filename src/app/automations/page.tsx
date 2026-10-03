@@ -822,14 +822,14 @@ export default function AutomationsPage() {
         <div>
           <div className="flex items-center gap-2">
             <h1 className="text-xl font-semibold tracking-tight text-zinc-900 dark:text-white">
-              Superpowered Automation Suite
+              Automated Workflows
             </h1>
             <span className="rounded-full bg-teal-50 dark:bg-teal-950/40 border border-teal-500/30 px-2 py-0.5 text-[10px] font-medium text-teal-800 dark:text-teal-300">
-              Next-Gen Engine
+              Visual Builder
             </span>
           </div>
           <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
-            Build multi-step customer journeys with time delays, conditional branching, segment tagging, and live simulation.
+            Send automatic welcome emails, customer follow-ups, and timed message series when triggers occur.
           </p>
         </div>
 
@@ -856,7 +856,7 @@ export default function AutomationsPage() {
               }`}
             >
               <Clock className="h-3.5 w-3.5" />
-              <span>Runs &amp; History ({runs.length})</span>
+              <span>Run History ({runs.length})</span>
             </button>
           </div>
 
@@ -868,7 +868,7 @@ export default function AutomationsPage() {
             className="btn-primary"
           >
             <Plus className="h-3.5 w-3.5" />
-            <span>New Automation</span>
+            <span>New Workflow</span>
           </button>
 
           <button
@@ -1299,7 +1299,7 @@ export default function AutomationsPage() {
                             onClick={() => loadRunDetail(r.id)}
                             className="text-teal-600 hover:underline dark:text-teal-400 text-xs font-medium"
                           >
-                            Inspect Run
+                            View Run Details
                           </button>
                         </td>
                       </tr>
@@ -1307,7 +1307,7 @@ export default function AutomationsPage() {
                   ) : (
                     <tr>
                       <td colSpan={5} className="py-12 text-center text-zinc-500 font-sans">
-                        No automation runs have occurred yet. Fire an event or trigger a contact subscription to begin.
+                        No automation runs have occurred yet. Once contacts trigger this workflow, activity will show here.
                       </td>
                     </tr>
                   )}
@@ -1325,7 +1325,7 @@ export default function AutomationsPage() {
             <div className="flex items-center justify-between border-b border-surface-border pb-3">
               <div>
                 <h3 className="text-sm font-bold text-zinc-900 dark:text-white">
-                  Run Telemetry: {selectedRun.id.slice(0, 10)}…
+                  Run Details: {selectedRun.id.slice(0, 10)}…
                 </h3>
                 <span className="text-[11px] text-zinc-500 font-mono">
                   Recipient: {selectedRun.contact_email || "System"}

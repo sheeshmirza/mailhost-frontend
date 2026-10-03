@@ -235,10 +235,10 @@ export default function InboundPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-surface-border pb-6">
         <div>
           <h1 className="text-xl font-semibold tracking-tight text-zinc-900 dark:text-white">
-            Inbound & Receiving
+            Incoming Mail
           </h1>
           <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
-            Capture incoming mail on Port 25, parse MIME messages, and set up forwarding aliases.
+            View emails sent to your domain, read customer replies, and set up automatic email forwarding.
           </p>
         </div>
 
@@ -265,7 +265,7 @@ export default function InboundPage() {
               }`}
             >
               <Forward className="h-3.5 w-3.5" />
-              <span>Aliases & Routing</span>
+              <span>Forwarding Addresses</span>
             </button>
           </div>
 
@@ -274,10 +274,10 @@ export default function InboundPage() {
               <Link
                 href="/aliases"
                 className="flex items-center gap-1.5 rounded-lg border border-surface-border bg-surface px-3 py-1.5 text-xs font-medium text-zinc-700 hover:bg-surface-raised dark:text-zinc-300 transition-colors"
-                title="Open full-screen Aliases Hub"
+                title="Open full-screen Forwarding Hub"
               >
                 <ArrowRightLeft className="h-3.5 w-3.5" />
-                <span>Full Aliases Hub</span>
+                <span>All Forwarding Rules</span>
               </Link>
               <button
                 onClick={() => {
@@ -290,7 +290,7 @@ export default function InboundPage() {
                 className="btn-primary"
               >
                 <Plus className="h-3.5 w-3.5" />
-                <span>Create Alias</span>
+                <span>Create Forwarding Address</span>
               </button>
             </>
           )}
@@ -357,7 +357,7 @@ export default function InboundPage() {
                   ) : (
                     <tr>
                       <td colSpan={6} className="py-12 text-center text-xs text-zinc-500 dark:text-zinc-400">
-                        No inbound emails received yet. Configure MX records pointing to port 25 to receive mail.
+                        No incoming emails received yet. Once your domain is set up, incoming emails will appear right here.
                       </td>
                     </tr>
                   )}
@@ -451,7 +451,7 @@ export default function InboundPage() {
             <div className="flex items-start justify-between border-b border-surface-border pb-4">
               <div className="space-y-1">
                 <span className="text-[10px] font-mono uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
-                  Inbound MIME Inspector
+                  Incoming Email Viewer
                 </span>
                 <h2 className="text-base font-semibold text-zinc-900 dark:text-white">
                   {selectedInbound.subject || "(no subject)"}
@@ -476,7 +476,7 @@ export default function InboundPage() {
               <div className="rounded-lg border border-surface-border bg-surface-raised p-3 col-span-2">
                 <span className="text-[10px] text-zinc-500 dark:text-zinc-400 block uppercase">To</span>
                 <span className="font-mono text-zinc-900 dark:text-white block truncate">
-                  {selectedInbound.rcpt_to?.join(", ")}
+                  {selectedInbound.rcpt_to?.join(", ") || "—"}
                 </span>
               </div>
               <div className="rounded-lg border border-surface-border bg-surface-raised p-3">
@@ -543,7 +543,7 @@ export default function InboundPage() {
                 className="flex items-center gap-1.5 rounded-md border border-surface-border bg-surface-raised px-3 py-1.5 text-xs text-zinc-700 hover:bg-surface hover:text-zinc-900 disabled:opacity-50 dark:text-zinc-300 dark:hover:text-white transition-colors"
               >
                 {isDownloadingRaw ? <RefreshCw className="h-3.5 w-3.5 animate-spin" /> : <FileDown className="h-3.5 w-3.5" />}
-                <span>{isDownloadingRaw ? "Downloading..." : "Download Raw RFC822 (.eml)"}</span>
+                <span>{isDownloadingRaw ? "Downloading..." : "Download Original Email (.eml)"}</span>
               </button>
               <button
                 onClick={() => setSelectedInbound(null)}
@@ -560,9 +560,9 @@ export default function InboundPage() {
       {isAliasOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
           <div className="dialog-scroll relative flex flex-col w-full max-w-md rounded-xl border border-surface-border bg-surface p-6 shadow-2xl space-y-4">
-            <h2 className="text-sm font-semibold text-zinc-900 dark:text-white">{editingAliasId ? "Edit Alias Routing" : "Create Inbound Alias"}</h2>
+            <h2 className="text-sm font-semibold text-zinc-900 dark:text-white">{editingAliasId ? "Edit Forwarding Address" : "Create Forwarding Address"}</h2>
             <p className="text-xs text-zinc-500 dark:text-zinc-400">
-              Forward all emails received at this alias to one or more destination mailboxes.
+              Forward all emails sent to this address to your personal or team inboxes.
             </p>
 
             <form onSubmit={handleCreateAlias} className="space-y-4">
@@ -616,7 +616,7 @@ export default function InboundPage() {
 
               <label className="flex items-center gap-2 text-xs text-zinc-700 dark:text-zinc-300">
                 <input type="checkbox" checked={storeAliasCopy} onChange={(event) => setStoreAliasCopy(event.target.checked)} />
-                Keep a copy in the inbound mailbox
+                Keep a copy in this inbox
               </label>
 
               <div className="flex justify-end gap-2.5 pt-4 border-t border-surface-border mt-4">
@@ -634,7 +634,7 @@ export default function InboundPage() {
                   type="submit"
                   className="btn-primary"
                 >
-                  {editingAliasId ? "Save Routing" : "Save Alias"}
+                  {editingAliasId ? "Save Forwarding Address" : "Save Address"}
                 </button>
               </div>
             </form>

@@ -160,14 +160,14 @@ export default function SMTPProtocolsPage() {
         <div>
           <div className="flex items-center gap-2">
             <h1 className="text-xl font-semibold tracking-tight text-zinc-900 dark:text-white">
-              Mail Protocols & SMTP
+              Mail Apps &amp; Setup
             </h1>
             <span className="inline-flex items-center rounded-full bg-teal-50 px-2 py-0.5 text-[10px] font-medium text-teal-700 dark:bg-teal-900/30 dark:text-teal-300">
-              RFC Standards
+              Standard Email Apps
             </span>
           </div>
           <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
-            Connect desktop clients, web servers, and automation bots via standard SMTP (Outbound), IMAP (Mailbox Sync), and POP3 (Download).
+            Connect your favorite email apps (Apple Mail, Outlook, Thunderbird, or mobile apps) to send and receive emails using your custom domain.
           </p>
         </div>
 
@@ -198,7 +198,7 @@ export default function SMTPProtocolsPage() {
           }`}
         >
           <Mail className="h-3.5 w-3.5" />
-          <span>SMTP (Outbound)</span>
+          <span>Send Mail (SMTP)</span>
         </button>
 
         <button
@@ -210,7 +210,7 @@ export default function SMTPProtocolsPage() {
           }`}
         >
           <FolderSync className="h-3.5 w-3.5" />
-          <span>IMAP (Mailbox Sync)</span>
+          <span>Sync Mailbox (IMAP)</span>
         </button>
 
         <button
@@ -222,7 +222,7 @@ export default function SMTPProtocolsPage() {
           }`}
         >
           <Inbox className="h-3.5 w-3.5" />
-          <span>POP3 (Download)</span>
+          <span>Download Mail (POP3)</span>
         </button>
 
         <button
@@ -246,7 +246,7 @@ export default function SMTPProtocolsPage() {
           }`}
         >
           <Layers className="h-3.5 w-3.5" />
-          <span>Protocol Matrix</span>
+          <span>Setup Guide &amp; Ports</span>
         </button>
       </div>
 
@@ -258,9 +258,9 @@ export default function SMTPProtocolsPage() {
             <div className="flex items-center justify-between">
               <h2 className="text-xs font-semibold text-zinc-900 dark:text-white uppercase tracking-wider flex items-center gap-1.5">
                 <Mail className="h-3.5 w-3.5 text-teal-600 dark:text-teal-400" />
-                <span>SMTP Outbound Submission Settings</span>
+                <span>Sending Settings (SMTP)</span>
               </h2>
-              <span className="text-[11px] text-zinc-500">RFC 6409 / RFC 5321</span>
+              <span className="text-[11px] text-zinc-500">Standard Outgoing Mail</span>
             </div>
 
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 text-xs font-mono">
@@ -275,29 +275,29 @@ export default function SMTPProtocolsPage() {
               </div>
 
               <div className="rounded-lg border border-surface-border bg-surface-raised p-3">
-                <span className="text-[10px] text-zinc-500 uppercase font-sans">Submission Port</span>
+                <span className="text-[10px] text-zinc-500 uppercase font-sans">Standard Port</span>
                 <span className="text-zinc-900 dark:text-white font-semibold block mt-1">
-                  587 <span className="text-[10px] font-normal text-teal-600 dark:text-teal-400 font-sans">(STARTTLS - Recommended)</span>
+                  587 <span className="text-[10px] font-normal text-teal-600 dark:text-teal-400 font-sans">(Recommended)</span>
                 </span>
               </div>
 
               <div className="rounded-lg border border-surface-border bg-surface-raised p-3">
-                <span className="text-[10px] text-zinc-500 uppercase font-sans">Direct SSL Port</span>
+                <span className="text-[10px] text-zinc-500 uppercase font-sans">Secure SSL Port</span>
                 <span className="text-zinc-900 dark:text-white font-semibold block mt-1">
-                  465 <span className="text-[10px] font-normal text-zinc-500 font-sans">(Implicit SMTPS)</span>
+                  465 <span className="text-[10px] font-normal text-zinc-500 font-sans">(Encrypted SSL)</span>
                 </span>
               </div>
 
               <div className="rounded-lg border border-surface-border bg-surface-raised p-3">
-                <span className="text-[10px] text-zinc-500 uppercase font-sans">Auth Methods</span>
-                <span className="text-zinc-900 dark:text-white font-semibold block mt-1">AUTH PLAIN / LOGIN</span>
+                <span className="text-[10px] text-zinc-500 uppercase font-sans">Login Method</span>
+                <span className="text-zinc-900 dark:text-white font-semibold block mt-1">Email &amp; App Password</span>
               </div>
             </div>
 
             <div className="rounded-lg bg-teal-50/60 dark:bg-teal-950/20 border border-teal-200/50 dark:border-teal-800/30 p-3 text-xs text-teal-900 dark:text-teal-200 flex items-start gap-2">
               <ShieldCheck className="h-4 w-4 text-teal-600 dark:text-teal-400 mt-0.5 shrink-0" />
               <div>
-                <strong className="font-semibold">Strict Domain Verification Enforced:</strong> Outbound submission only accepts sender addresses (`MAIL FROM` &amp; `From:`) belonging to verified domains on your account. Every email sent via SMTP is automatically DKIM-signed.
+                <strong className="font-semibold">Verified Sender Protection:</strong> You can only send emails from domains you have verified in your account. Every email is automatically signed to prevent being flagged as spam.
               </div>
             </div>
           </div>
@@ -307,7 +307,7 @@ export default function SMTPProtocolsPage() {
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <h3 className="text-xs font-semibold text-zinc-900 dark:text-white uppercase tracking-wider flex items-center gap-1.5">
                 <Code2 className="h-3.5 w-3.5 text-blue-500" />
-                <span>Outbound Code Integration Examples</span>
+                <span>Sending Code Examples</span>
               </h3>
 
               <div className="flex items-center gap-1 bg-surface-raised p-1 rounded-lg border border-surface-border text-xs">
@@ -537,9 +537,9 @@ mail.logout()`}
             <div className="flex items-center justify-between">
               <h2 className="text-xs font-semibold text-zinc-900 dark:text-white uppercase tracking-wider flex items-center gap-1.5">
                 <Inbox className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400" />
-                <span>POP3 Inbound Download Settings</span>
+                <span>Download Settings (POP3)</span>
               </h2>
-              <span className="text-[11px] text-zinc-500">RFC 1939</span>
+              <span className="text-[11px] text-zinc-500">Standard Mail Download</span>
             </div>
 
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 text-xs font-mono">
@@ -604,7 +604,7 @@ server.quit()`}
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <h2 className="text-xs font-semibold text-zinc-900 dark:text-white uppercase tracking-wider">
-              Generated Application Passwords
+              Saved App Passwords
             </h2>
             <button
               onClick={() => {
@@ -614,7 +614,7 @@ server.quit()`}
               className="btn-primary"
             >
               <Plus className="h-3.5 w-3.5" />
-              <span>New Credential</span>
+              <span>Generate App Password</span>
             </button>
           </div>
 
@@ -768,7 +768,7 @@ server.quit()`}
           <div className="rounded-xl border border-surface-border bg-surface p-5 space-y-4 shadow-sm">
             <h3 className="text-xs font-semibold text-zinc-900 dark:text-white uppercase tracking-wider flex items-center gap-1.5">
               <Terminal className="h-3.5 w-3.5 text-emerald-500" />
-              <span>Network &amp; DNS Diagnostic Commands</span>
+              <span>Quick Connection Test Commands</span>
             </h3>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs font-mono">
@@ -816,22 +816,22 @@ server.quit()`}
       {isOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
           <div className="dialog-scroll relative flex flex-col w-full max-w-md rounded-xl border border-surface-border bg-surface p-6 shadow-2xl space-y-4">
-            <h2 className="text-sm font-semibold text-zinc-900 dark:text-white">Generate Application Credential</h2>
+            <h2 className="text-sm font-semibold text-zinc-900 dark:text-white">Generate App Password</h2>
             <p className="text-xs text-zinc-500 dark:text-zinc-400">
-              Create an authentication credential for SMTP sending or IMAP/POP3 mailbox access scoped to a verified domain.
+              Create a secure password to use in your email app (Apple Mail, Outlook, Thunderbird, etc.) or sending script.
             </p>
 
             {!generatedCreds ? (
               <form onSubmit={handleCreate} className="space-y-4">
                 <div>
                   <label className="block text-[11px] text-zinc-600 dark:text-zinc-400 mb-1 font-medium">
-                    Credential Label / Description (Optional)
+                    App Name / Description (Optional)
                   </label>
                   <input
                     type="text"
                     value={credName}
                     onChange={(e) => setCredName(e.target.value)}
-                    placeholder="e.g. Production Web App, Thunderbird"
+                    placeholder="e.g. Apple Mail, Outlook, Website Bot"
                     className="w-full rounded-md border border-surface-border bg-surface-raised px-3 py-1.5 text-xs text-zinc-900 dark:text-white placeholder-zinc-400 focus:outline-none focus:border-teal-500"
                   />
                 </div>
@@ -839,7 +839,7 @@ server.quit()`}
                 <div>
                   <div className="flex items-center justify-between mb-1">
                     <label className="text-[11px] text-zinc-600 dark:text-zinc-400 font-medium">
-                      Sender Address / Username
+                      Email Address / Username
                     </label>
                     <button
                       type="button"

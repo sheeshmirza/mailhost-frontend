@@ -350,7 +350,7 @@ export default function BroadcastsPage() {
                       <div className="flex items-center justify-end gap-1">
                         <button
                           onClick={() => setSelectedEngagementBroadcast(b)}
-                          title="Campaign Engagement & Deliverability Telemetry"
+                          title="Campaign results and delivery details"
                           className="rounded p-1 text-teal-600 hover:text-teal-700 dark:text-teal-400 hover:bg-surface-raised"
                         >
                           <BarChart3 className="h-4 w-4" />
@@ -557,25 +557,25 @@ export default function BroadcastsPage() {
                         <div className="flex items-center gap-1.5">
                           <Sparkles className="h-3.5 w-3.5 text-teal-600 dark:text-teal-400" />
                           <span className="font-semibold text-zinc-900 dark:text-white">
-                            Engagement Score: {m.score}/100
+                            Subject Quality Score: {m.score}/100
                           </span>
                         </div>
                         <span className={`text-[11px] font-mono font-medium ${
                           m.isOptimalLength ? "text-emerald-600 dark:text-emerald-400" : "text-amber-600 dark:text-amber-400"
                         }`}>
-                          {m.len} chars {m.isOptimalLength ? "(Ideal Length)" : "(Target: 30-55)"}
+                          {m.len} characters {m.isOptimalLength ? "(Ideal length)" : "(Recommended: 30–55)"}
                         </span>
                       </div>
 
                       <div className="flex flex-wrap gap-2 text-[11px]">
                         {m.hasPersonalization && (
                           <span className="inline-flex items-center gap-1 rounded bg-teal-50 px-2 py-0.5 text-teal-800 dark:bg-teal-950/40 dark:text-teal-300 font-medium">
-                            <Check className="h-3 w-3" /> Personalized tag detected
+                            <Check className="h-3 w-3" /> Personalized tag found (e.g. name)
                           </span>
                         )}
                         {m.detectedSpam.length > 0 && (
                           <span className="inline-flex items-center gap-1 rounded bg-red-50 px-2 py-0.5 text-red-700 dark:bg-red-950/40 dark:text-red-400 font-medium">
-                            ⚠️ Spam trigger words: {m.detectedSpam.join(", ")}
+                            ⚠️ Possible spam words: {m.detectedSpam.join(", ")}
                           </span>
                         )}
                       </div>
@@ -591,16 +591,16 @@ export default function BroadcastsPage() {
                     className="flex items-center gap-1.5 text-teal-600 hover:underline dark:text-teal-400 font-medium"
                   >
                     <Sliders className="h-3 w-3" />
-                    <span>{enableAbTest ? "Hide Subject A/B Optimizer" : "Compare with Challenger Subject (A/B Test)"}</span>
+                    <span>{enableAbTest ? "Hide alternative subject line" : "Compare with alternative subject line (A/B test)"}</span>
                   </button>
                 </div>
 
                 {enableAbTest && (
                   <div className="mt-2 rounded-lg border border-dashed border-teal-500/40 bg-teal-50/20 dark:bg-teal-950/20 p-3 space-y-3">
                     <div className="flex items-center justify-between text-xs font-semibold text-teal-800 dark:text-teal-300">
-                      <span>Challenger Subject Line (Variant B)</span>
+                      <span>Alternative Subject Line (Option B)</span>
                       <span className="font-mono text-[10px] bg-teal-100 dark:bg-teal-900/60 px-1.5 py-0.5 rounded text-teal-700 dark:text-teal-300">
-                        Heuristic Optimizer
+                        Subject Line Assistant
                       </span>
                     </div>
                     <input
@@ -618,12 +618,12 @@ export default function BroadcastsPage() {
                         <div className="space-y-2 pt-1 border-t border-teal-500/20">
                           <div className="grid grid-cols-2 gap-2 text-xs">
                             <div className="rounded border border-surface-border bg-surface p-2 space-y-1">
-                              <span className="text-[10px] uppercase font-bold text-zinc-500">Variant A (Current)</span>
+                              <span className="text-[10px] uppercase font-bold text-zinc-500">Option A (Current)</span>
                               <div className="font-semibold text-zinc-900 dark:text-white">Score: {mA.score}/100</div>
                               <div className="text-[10px] text-zinc-500">{mA.len} chars</div>
                             </div>
                             <div className="rounded border border-teal-500/30 bg-teal-50/50 dark:bg-teal-950/40 p-2 space-y-1">
-                              <span className="text-[10px] uppercase font-bold text-teal-600 dark:text-teal-400">Variant B (Challenger)</span>
+                              <span className="text-[10px] uppercase font-bold text-teal-600 dark:text-teal-400">Option B (Alternative)</span>
                               <div className="font-semibold text-teal-800 dark:text-teal-200">Score: {mB.score}/100</div>
                               <div className="text-[10px] text-teal-600 dark:text-teal-400">{mB.len} chars</div>
                             </div>
@@ -631,17 +631,17 @@ export default function BroadcastsPage() {
 
                           <div className="flex items-center justify-between pt-1">
                             <span className="text-[11px] text-zinc-500 dark:text-zinc-400">
-                              {mB.score >= mA.score ? "Variant B scored higher!" : "Variant A currently scores higher."}
+                              {mB.score >= mA.score ? "Option B scored higher!" : "Option A currently scores higher."}
                             </span>
                             <button
                               type="button"
                               onClick={() => {
                                 setSubject(subjectVariantB);
-                                toast.success("Variant B applied as the campaign subject line!");
+                                toast.success("Option B applied as the campaign subject line!");
                               }}
                               className="btn-secondary text-[11px] py-1 px-2.5"
                             >
-                              Adopt Variant B as Subject
+                              Use Option B as Subject
                             </button>
                           </div>
                         </div>
@@ -675,7 +675,7 @@ export default function BroadcastsPage() {
                   className="inline-flex items-center gap-1.5 text-xs text-teal-600 dark:text-teal-400 hover:underline"
                 >
                   <ShieldCheck className="h-3.5 w-3.5" />
-                  <span>Pre-Flight Deliverability Audit</span>
+                  <span>Check Deliverability &amp; Spam Score</span>
                 </Link>
                 <div className="flex items-center gap-2">
                   <button
@@ -727,7 +727,7 @@ export default function BroadcastsPage() {
                 <BarChart3 className="h-5 w-5 text-teal-600 dark:text-teal-400" />
                 <div>
                   <h3 className="text-sm font-bold text-zinc-900 dark:text-white">
-                    Engagement &amp; Deliverability Telemetry
+                    Campaign Results &amp; Delivery Details
                   </h3>
                   <span className="text-[11px] text-zinc-500 font-mono">
                     {selectedEngagementBroadcast.name}
@@ -745,19 +745,19 @@ export default function BroadcastsPage() {
             {/* Campaign Summary Cards */}
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-center">
               <div className="rounded-xl border border-surface-border bg-surface-raised p-3">
-                <span className="text-[10px] uppercase font-sans text-zinc-500 block">Total Targeted</span>
+                <span className="text-[10px] uppercase font-sans text-zinc-500 block">Total Recipients</span>
                 <span className="text-base font-bold text-zinc-900 dark:text-white font-mono">
                   {selectedEngagementBroadcast.recipients_count != null ? selectedEngagementBroadcast.recipients_count.toLocaleString() : "—"}
                 </span>
               </div>
               <div className="rounded-xl border border-surface-border bg-surface-raised p-3">
-                <span className="text-[10px] uppercase font-sans text-zinc-500 block">Delivered Messages</span>
+                <span className="text-[10px] uppercase font-sans text-zinc-500 block">Delivered Emails</span>
                 <span className="text-base font-bold text-emerald-600 dark:text-emerald-400 font-mono">
                   {selectedEngagementBroadcast.sent_count != null ? selectedEngagementBroadcast.sent_count.toLocaleString() : (selectedEngagementBroadcast.status === "sent" ? "Completed" : "0")}
                 </span>
               </div>
               <div className="rounded-xl border border-surface-border bg-surface-raised p-3 col-span-2 sm:col-span-1">
-                <span className="text-[10px] uppercase font-sans text-zinc-500 block">Dispatch Status</span>
+                <span className="text-[10px] uppercase font-sans text-zinc-500 block">Delivery Status</span>
                 <span className="text-base font-bold capitalize text-teal-600 dark:text-teal-400 font-mono">
                   {selectedEngagementBroadcast.status}
                 </span>
@@ -767,11 +767,11 @@ export default function BroadcastsPage() {
             {/* Live Transmission Details */}
             <div className="space-y-2 rounded-xl border border-surface-border bg-surface-raised p-4 text-xs">
               <span className="text-xs font-bold text-zinc-900 dark:text-white block">
-                Transmission Details
+                Sending Details
               </span>
               <div className="space-y-2">
                 <div className="flex justify-between items-center py-1 border-b border-surface-border">
-                  <span className="text-zinc-600 dark:text-zinc-400">Sender Address</span>
+                  <span className="text-zinc-600 dark:text-zinc-400">From Address</span>
                   <span className="font-mono text-zinc-900 dark:text-white">{selectedEngagementBroadcast.from}</span>
                 </div>
                 <div className="flex justify-between items-center py-1 border-b border-surface-border">
@@ -779,9 +779,9 @@ export default function BroadcastsPage() {
                   <span className="font-mono text-zinc-900 dark:text-white">{new Date(selectedEngagementBroadcast.created_at).toLocaleString()}</span>
                 </div>
                 <div className="flex justify-between items-center py-1 border-b border-surface-border">
-                  <span className="text-zinc-600 dark:text-zinc-400">Dispatched At</span>
+                  <span className="text-zinc-600 dark:text-zinc-400">Sent At</span>
                   <span className="font-mono text-zinc-900 dark:text-white">
-                    {selectedEngagementBroadcast.sent_at ? new Date(selectedEngagementBroadcast.sent_at).toLocaleString() : "Not dispatched yet"}
+                    {selectedEngagementBroadcast.sent_at ? new Date(selectedEngagementBroadcast.sent_at).toLocaleString() : "Not sent yet"}
                   </span>
                 </div>
                 {selectedEngagementBroadcast.scheduled_at && (
@@ -791,7 +791,7 @@ export default function BroadcastsPage() {
                   </div>
                 )}
                 <div className="flex justify-between items-center py-1">
-                  <span className="text-zinc-600 dark:text-zinc-400">Delivery Telemetry Logs</span>
+                  <span className="text-zinc-600 dark:text-zinc-400">Activity Logs</span>
                   <Link href="/events" className="text-teal-600 hover:underline dark:text-teal-400 font-medium">
                     View webhook events →
                   </Link>
@@ -804,10 +804,10 @@ export default function BroadcastsPage() {
               <CheckCircle2 className="h-5 w-5 text-emerald-600 dark:text-emerald-400 shrink-0" />
               <div>
                 <span className="font-bold text-emerald-900 dark:text-emerald-200 block">
-                  DKIM 2048-Bit &amp; SPF Direct MX Verified
+                  Domain Verified for High Inbox Placement
                 </span>
                 <span className="text-zinc-500 text-[11px]">
-                  All messages sent strictly with authenticated signing and zero relay overhead.
+                  Sent directly from your verified domain so messages land in primary inboxes.
                 </span>
               </div>
             </div>
@@ -818,7 +818,7 @@ export default function BroadcastsPage() {
                 onClick={() => setSelectedEngagementBroadcast(null)}
                 className="btn-secondary"
               >
-                Close Telemetry
+                Close
               </button>
             </div>
           </div>

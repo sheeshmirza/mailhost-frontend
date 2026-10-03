@@ -11,7 +11,7 @@ interface ErrorStateProps {
 export function ErrorState({
 	message,
 	onRetry,
-	title = "Unable to load this view",
+	title = "Unable to load this section",
 }: ErrorStateProps) {
 	return (
 		<div

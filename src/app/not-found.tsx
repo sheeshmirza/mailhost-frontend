@@ -8,13 +8,13 @@ export default function NotFound() {
 				<FileQuestion className="h-7 w-7" />
 			</div>
 			<span className="text-xs font-mono font-semibold uppercase text-zinc-400">
-				404 Not Found
+				Page Not Found
 			</span>
 			<h1 className="mt-2 text-xl font-semibold text-zinc-900 dark:text-white">
-				Page does not exist
+				We couldn&apos;t find that page
 			</h1>
 			<p className="mt-2 max-w-sm text-xs text-zinc-500 dark:text-zinc-400">
-				The page may have moved, been removed, or never existed.
+				The page you are looking for may have moved, or the link might be incorrect.
 			</p>
 			<div className="mt-6 flex items-center gap-3">
 				<Link href="/overview" className="btn-primary">

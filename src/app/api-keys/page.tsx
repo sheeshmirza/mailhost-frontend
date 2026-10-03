@@ -85,14 +85,14 @@ export default function APIKeysPage() {
 
   const handleDelete = async (id: string) => {
     if (revokingId) return;
-    if (!confirm("Are you sure you want to revoke this API key? This action is irreversible.")) return;
+    if (!confirm("Are you sure you want to delete this API key? Any app or website using it will lose access immediately.")) return;
     setRevokingId(id);
     try {
       await api.deleteAPIKey(id);
-      toast.success("API key revoked successfully");
+      toast.success("API key deleted successfully");
       await fetchKeys();
     } catch (err) {
-      toast.error("Failed to revoke API key: " + (err instanceof Error ? err.message : "Unknown error"));
+      toast.error("Failed to delete API key: " + (err instanceof Error ? err.message : "Unknown error"));
     } finally {
       setRevokingId(null);
     }
@@ -122,7 +122,7 @@ export default function APIKeysPage() {
             API Keys
           </h1>
           <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
-            Manage authentication credentials for your servers, CLI, and SDK integrations.
+            Manage secret keys used by your apps, websites, or developers to connect with Mailhost.
           </p>
         </div>
 
@@ -167,10 +167,10 @@ export default function APIKeysPage() {
             <tr>
               <th className="px-5 py-3">Name</th>
               <th className="px-5 py-3">Key Preview</th>
-              <th className="px-5 py-3">Permission</th>
+              <th className="px-5 py-3">Access Level</th>
               <th className="px-5 py-3">Created</th>
               <th className="px-5 py-3">Last Used</th>
-              <th className="px-5 py-3 text-right">Revoke</th>
+              <th className="px-5 py-3 text-right">Delete</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-surface-border font-mono">
@@ -290,22 +290,22 @@ export default function APIKeysPage() {
 
                 <div>
                   <label className="block text-[11px] font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">
-                    Permission Scope
+                    Access Level
                   </label>
                   <select
                     value={permission}
                     onChange={(e) => setPermission(e.target.value as any)}
                     className="input-base"
                   >
-                    <option value="full_access">Full Access (Send & Manage)</option>
-                    <option value="sending_access">Sending Access Only</option>
+                    <option value="full_access">Full Access (Send emails and manage settings)</option>
+                    <option value="sending_access">Sending Only (Can only send emails)</option>
                   </select>
                 </div>
 
                 {permission === "sending_access" && (
                   <div>
                     <label className="block text-[11px] font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">
-                      Restrict to Domain (Optional)
+                      Limit to Specific Domain (Optional)
                     </label>
                     <select
                       value={selectedDomainId}
@@ -335,7 +335,7 @@ export default function APIKeysPage() {
                     className="btn-primary"
                     disabled={isCreating}
                   >
-                    {isCreating ? "Generating..." : "Generate API Key"}
+                    {isCreating ? "Creating..." : "Create API Key"}
                   </button>
                 </div>
               </form>

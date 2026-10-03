@@ -22,12 +22,12 @@ export function VerifiedDomainAlert({
       <ShieldAlert className="h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400 mt-0.5" />
       <div className="flex-1">
         <p className="font-semibold mb-0.5">
-          {!hasRegisteredDomains ? "No registered domains found" : "No verified domains found"}
+          {!hasRegisteredDomains ? "No domain added yet" : "Your domain is not verified yet"}
         </p>
         <p className="text-amber-700/90 dark:text-amber-300/90 mb-1.5 leading-relaxed">
           {!hasRegisteredDomains
-            ? "Emails can only be sent through verified domains registered on your account. Please add and verify a domain first."
-            : "You have registered domains, but none are verified yet. Emails can only be sent from registered and verified domains."}
+            ? "To send emails, you need to add your domain name and verify ownership. It only takes a couple of minutes."
+            : "Your domain is added, but hasn't completed verification yet. Please finish setting up your domain records so you can start sending emails."}
         </p>
         <Link
           href="/domains"
@@ -35,7 +35,7 @@ export function VerifiedDomainAlert({
           className="inline-flex items-center gap-1 font-semibold underline hover:text-amber-900 dark:hover:text-amber-100"
         >
           <Globe className="h-3 w-3" />
-          Manage Domains &rarr;
+          Go to Domains &rarr;
         </Link>
       </div>
     </div>

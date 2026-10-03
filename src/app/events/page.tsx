@@ -110,10 +110,10 @@ export default function EventsPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-surface-border pb-6">
         <div>
           <h1 className="text-xl font-semibold tracking-tight text-zinc-900 dark:text-white">
-            Custom Events & Telemetry
+            Activity Events
           </h1>
           <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
-            Emit custom events to trigger automated journeys, sync user traits, and track product milestones.
+            Track customer activities (like signups, purchases, or page views) that trigger automated emails.
           </p>
         </div>
 
@@ -123,7 +123,7 @@ export default function EventsPage() {
             className="btn-primary"
           >
             <Zap className="h-3.5 w-3.5" />
-            <span>Trigger Event</span>
+            <span>Send Test Event</span>
           </button>
           <button
             onClick={() => {
@@ -150,8 +150,8 @@ export default function EventsPage() {
             <tr>
               <th className="px-5 py-3">Event Name</th>
               <th className="px-5 py-3">Contact Email</th>
-              <th className="px-5 py-3">Payload Data</th>
-              <th className="px-5 py-3 text-right">Triggered At</th>
+              <th className="px-5 py-3">Event Details (Data)</th>
+              <th className="px-5 py-3 text-right">Date & Time</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-surface-border font-mono">
@@ -174,7 +174,7 @@ export default function EventsPage() {
             ) : (
               <tr>
                 <td colSpan={4} className="py-12 text-center text-xs text-zinc-500 dark:text-zinc-400 font-sans">
-                  No events recorded yet. Click &apos;Trigger Event&apos; to test.
+                  No events recorded yet. Click &apos;Send Test Event&apos; to test.
                 </td>
               </tr>
             )}
@@ -202,15 +202,15 @@ export default function EventsPage() {
           <div className="dialog-scroll relative flex flex-col w-full max-w-md rounded-xl border border-surface-border bg-surface p-6 shadow-2xl space-y-4">
             <div className="flex items-center gap-2">
               <Zap className="h-4 w-4 text-teal-600 dark:text-teal-300" />
-              <h2 className="text-sm font-semibold text-zinc-900 dark:text-white">Trigger Custom Event</h2>
+              <h2 className="text-sm font-semibold text-zinc-900 dark:text-white">Send Test Event</h2>
             </div>
             <p className="text-xs text-zinc-500 dark:text-zinc-400">
-              Emit an event to the backend. Matching automations will be triggered immediately.
+              Simulate an event to test if your automated workflows and emails trigger correctly.
             </p>
             {/* Quick Automation Presets */}
             <div className="space-y-1.5">
               <span className="text-[10px] uppercase font-bold text-zinc-500 block">
-                Quick Automation Triggers
+                Sample Events
               </span>
               <div className="flex flex-wrap gap-1.5">
                 {[
@@ -266,7 +266,7 @@ export default function EventsPage() {
 
               <div>
                 <label className="block text-[11px] font-medium text-zinc-600 dark:text-zinc-300 mb-1">
-                  Data Payload (JSON)
+                  Event Details (JSON)
                 </label>
                 <textarea
                   value={jsonData}
@@ -289,7 +289,7 @@ export default function EventsPage() {
                   disabled={isSubmitting}
                   className="btn-primary px-4 py-1.5 text-xs"
                 >
-                  {isSubmitting ? "Triggering..." : "Fire Event"}
+                  {isSubmitting ? "Sending..." : "Send Event"}
                 </button>
               </div>
             </form>

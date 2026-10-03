@@ -738,8 +738,8 @@ export class APIClient {
       if (!res.ok) {
         throw new APIError(
           serverMessage || (res.status === 401
-            ? "Session expired or unauthorized. Please sign in again."
-            : `HTTP error ${res.status}`),
+            ? "Your session has expired. Please sign in again."
+            : `Request failed (code ${res.status})`),
           res.status,
           data
         );
@@ -787,7 +787,7 @@ export class APIClient {
         throw new APIError("The request was cancelled.", 0, error);
       }
       if (error instanceof TypeError) {
-        const connErr = new APIError("Could not connect to the API. Check your connection and try again.", 0, error);
+        const connErr = new APIError("Could not connect to the server. Please check your internet connection and try again.", 0, error);
         telemetry.error("Network connection failure", connErr, { url });
         throw connErr;
       }

@@ -41,40 +41,40 @@ import { getConfiguredAPIBaseUrl } from "@/lib/api";
 
 const navGroups = [
   {
-    title: "Email Suite",
+    title: "Email Tools",
     items: [
       { label: "Overview", href: "/overview", icon: LayoutDashboard },
-      { label: "Emails", href: "/emails", icon: Mail },
-      { label: "Deliverability", href: "/deliverability", icon: ShieldCheck },
-      { label: "Inbound", href: "/inbound", icon: Inbox },
-      { label: "Aliases", href: "/aliases", icon: ArrowRightLeft },
+      { label: "Sent Emails", href: "/emails", icon: Mail },
+      { label: "Email Delivery & Spam", href: "/deliverability", icon: ShieldCheck },
+      { label: "Incoming Mail", href: "/inbound", icon: Inbox },
+      { label: "Email Forwarding", href: "/aliases", icon: ArrowRightLeft },
       { label: "Domains", href: "/domains", icon: Globe },
     ],
   },
   {
     title: "Marketing & Growth",
     items: [
-      { label: "Broadcasts", href: "/broadcasts", icon: Radio },
-      { label: "Audiences", href: "/audiences", icon: Users },
+      { label: "Campaigns", href: "/broadcasts", icon: Radio },
+      { label: "Contacts", href: "/audiences", icon: Users },
       { label: "Automations", href: "/automations", icon: GitBranch },
       { label: "Templates", href: "/templates", icon: FileText },
-      { label: "Events", href: "/events", icon: Zap },
+      { label: "Activity Events", href: "/events", icon: Zap },
     ],
   },
   {
-    title: "Protocols & Developer",
+    title: "Developer & Connect",
     items: [
-      { label: "SMTP & Protocols", href: "/smtp", icon: Server },
+      { label: "Mail Apps & Setup", href: "/smtp", icon: Server },
       { label: "API Keys", href: "/api-keys", icon: Key },
       { label: "Webhooks", href: "/webhooks", icon: Webhook },
     ],
   },
   {
-    title: "Account",
+    title: "Account & System",
     items: [
-      { label: "Suppressions", href: "/suppressions", icon: ShieldAlert },
+      { label: "Blocked & Bounced", href: "/suppressions", icon: ShieldAlert },
       { label: "Settings & Team", href: "/settings", icon: Settings },
-      { label: "Logs & Health", href: "/logs", icon: Activity },
+      { label: "System Status", href: "/logs", icon: Activity },
     ],
   },
 ];

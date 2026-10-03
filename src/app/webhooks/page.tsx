@@ -209,7 +209,7 @@ export default function WebhooksPage() {
             Webhooks
           </h1>
           <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
-            Receive real-time HTTP callbacks for email delivery, bounce, and engagement events.
+            Send instant notifications to your app or server whenever emails are delivered, opened, or bounced.
           </p>
         </div>
 
@@ -241,10 +241,10 @@ export default function WebhooksPage() {
         <table className="w-full min-w-[760px] text-left">
           <thead className="bg-surface-raised border-b border-surface-border text-[11px] font-medium uppercase tracking-wider text-zinc-500">
             <tr>
-              <th className="px-4 py-3">Endpoint URL</th>
-              <th className="px-4 py-3">Subscribed Events</th>
+              <th className="px-4 py-3">Destination URL</th>
+              <th className="px-4 py-3">Events to Send</th>
               <th className="px-4 py-3">Status</th>
-              <th className="px-4 py-3">Signing Secret</th>
+              <th className="px-4 py-3">Security Key (Secret)</th>
               <th className="px-4 py-3 text-right">Delete</th>
             </tr>
           </thead>
@@ -337,7 +337,7 @@ export default function WebhooksPage() {
             ) : (
               <tr>
                 <td colSpan={5} className="py-16 text-center text-sm text-zinc-500">
-                  No webhook endpoints registered yet.
+                  No webhook notifications set up yet. Click &quot;Add Webhook&quot; to connect your server.
                 </td>
               </tr>
             )}
@@ -350,8 +350,8 @@ export default function WebhooksPage() {
       {newSigningSecret && (
         <section role="status" className="space-y-3 rounded-lg border border-amber-300 bg-amber-50 p-4 dark:border-amber-900/60 dark:bg-amber-950/20">
           <div>
-            <h2 className="text-[13px] font-semibold text-amber-950 dark:text-amber-200">Save your webhook signing secret</h2>
-            <p className="mt-1 text-xs text-amber-800 dark:text-amber-300">It is only shown once. Store it securely and use it to verify webhook signatures.</p>
+            <h2 className="text-[13px] font-semibold text-amber-950 dark:text-amber-200">Save your webhook security key</h2>
+            <p className="mt-1 text-xs text-amber-800 dark:text-amber-300">This key is only shown once. Save it to verify notifications sent to your server.</p>
           </div>
           <div className="flex min-w-0 items-center gap-2 rounded-md border border-amber-200 bg-white px-3 py-2 dark:border-amber-900/50 dark:bg-black/20">
             <code className="min-w-0 flex-1 break-all font-mono text-xs text-zinc-900 dark:text-zinc-100">{newSigningSecret}</code>
@@ -370,27 +370,27 @@ export default function WebhooksPage() {
           <div className="dialog-scroll relative flex flex-col w-full max-w-lg rounded-xl border border-surface-border bg-surface p-6 shadow-2xl space-y-4">
             <div>
               <h2 className="text-lg font-semibold text-zinc-900 dark:text-white">
-                {editingWebhookId ? "Edit Webhook Endpoint" : "Add Webhook Endpoint"}
+                {editingWebhookId ? "Edit Webhook" : "Add Webhook"}
               </h2>
-              <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-1">Configure the URL and events this endpoint receives.</p>
+              <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-1">Configure the destination URL and email events to notify.</p>
             </div>
             <form onSubmit={handleCreate} className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">
-                  Endpoint URL (must be HTTPS)
+                  Destination URL (must begin with https://)
                 </label>
                 <input
                   type="url"
                   value={url}
                   onChange={(e) => setUrl(e.target.value)}
-                  placeholder="HTTPS endpoint URL"
+                  placeholder="https://yourdomain.com/api/webhooks"
                   required
                   className="w-full rounded-lg border border-surface-border bg-surface-raised px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-zinc-900/10 font-mono text-zinc-700 dark:text-zinc-300 placeholder-zinc-400 dark:placeholder-zinc-600"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">Endpoint status</label>
+                <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">Status</label>
                 <select
                   value={webhookStatus}
                   onChange={(event) => setWebhookStatus(event.target.value as "active" | "disabled")}
@@ -403,7 +403,7 @@ export default function WebhooksPage() {
 
               <div>
                 <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">
-                  Select Events to Subscribe
+                  Events to Notify
                 </label>
                 <div className="grid grid-cols-2 gap-2">
                   {availableEvents.map((ev) => (

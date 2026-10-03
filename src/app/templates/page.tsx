@@ -238,7 +238,7 @@ export default function TemplatesPage() {
             Templates
           </h1>
           <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
-            Build reusable HTML email templates with dynamic variable interpolation.
+            Create reusable email templates with personalized tags like recipient name or company.
           </p>
         </div>
 
@@ -499,7 +499,7 @@ await resend.emails.send({
 
               <div>
                 <label className="block text-[11px] font-medium text-zinc-600 dark:text-zinc-300 mb-1">
-                  Alias (Unique API identifier)
+                  Template ID (Short identifier)
                 </label>
                 <input
                   type="text"
@@ -518,7 +518,7 @@ await resend.emails.send({
                   type="text"
                   value={subject}
                   onChange={(e) => setSubject(e.target.value)}
-                  placeholder="Subject line with {{variables}}"
+                  placeholder="Subject line with {{name}} or other tags"
                   required
                   className="w-full rounded-md border border-surface-border bg-surface-raised px-3 py-1.5 text-xs text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-600 focus:outline-none"
                 />
@@ -542,7 +542,7 @@ await resend.emails.send({
               </div>
 
               <div>
-                <label className="block text-[11px] font-medium text-zinc-600 dark:text-zinc-300 mb-1">Variable definitions (JSON array)</label>
+                <label className="block text-[11px] font-medium text-zinc-600 dark:text-zinc-300 mb-1">Template tags and sample values (JSON array)</label>
                 <textarea value={variablesJson} onChange={(event) => setVariablesJson(event.target.value)} rows={4} spellCheck={false} className="w-full rounded-md border border-surface-border bg-surface-raised p-3 font-mono text-xs text-zinc-900 dark:text-white" />
               </div>
 
@@ -582,7 +582,7 @@ await resend.emails.send({
                 </div>
                 <div>
                   <h3 className="text-sm font-semibold text-zinc-900 dark:text-white">
-                    Live Template Playground &amp; Test Send
+                    Preview Template &amp; Send Test Email
                   </h3>
                   <p className="text-[11px] text-zinc-500">
                     Template: <strong className="text-zinc-700 dark:text-zinc-300">{selectedTemplate.name}</strong>
@@ -635,14 +635,14 @@ await resend.emails.send({
                 <div className="space-y-1.5">
                   <div className="flex items-center justify-between">
                     <label className="text-[11px] font-semibold uppercase tracking-wider text-zinc-500">
-                      Mock JSON Variables
+                      Sample Values for Tags (JSON)
                     </label>
                     <button
                       type="button"
                       onClick={() => void handleRunPreview(selectedTemplate.id)}
                       className="text-[10px] text-teal-600 dark:text-teal-400 hover:underline"
                     >
-                      Re-render
+                      Update Preview
                     </button>
                   </div>
                   <textarea
@@ -652,7 +652,7 @@ await resend.emails.send({
                     className="w-full rounded-lg border border-surface-border bg-surface-raised p-2.5 font-mono text-[11px] text-zinc-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-teal-500"
                   />
                   <p className="text-[10px] text-zinc-400">
-                    Interpolates <code className="font-mono text-teal-600">{"{{key}}"}</code> and <code className="font-mono text-teal-600">{"{{object.key}}"}</code> variables.
+                    Fills in tags like <code className="font-mono text-teal-600">{"{{name}}"}</code> or <code className="font-mono text-teal-600">{"{{company}}"}</code> in your email.
                   </p>
                 </div>
 
@@ -660,10 +660,10 @@ await resend.emails.send({
                 <div className="rounded-xl border border-surface-border bg-surface-raised p-4 space-y-3">
                   <div className="flex items-center gap-1.5 text-xs font-semibold text-zinc-900 dark:text-white">
                     <Send className="h-3.5 w-3.5 text-teal-600 dark:text-teal-400" />
-                    <span>Send Real Test to Inbox</span>
+                    <span>Send a Test Email to Your Inbox</span>
                   </div>
                   <p className="text-[11px] text-zinc-500">
-                    Dispatches a live test email with populated variables directly to your inbox via direct MX delivery.
+                    Sends a test email with your sample values filled in so you can see how it looks in your mail app.
                   </p>
                   <div>
                     <input
@@ -685,14 +685,14 @@ await resend.emails.send({
                     ) : (
                       <Send className="h-3.5 w-3.5" />
                     )}
-                    <span>{isSendingTest ? "Queuing Test Email..." : "Send Test Email"}</span>
+                    <span>{isSendingTest ? "Sending Test Email..." : "Send Test Email"}</span>
                   </button>
 
                   {playgroundResult && (
                     <div className="rounded-lg border border-emerald-500/20 bg-emerald-500/10 p-2.5 text-[11px] text-emerald-800 dark:text-emerald-300 space-y-1">
                       <div className="flex items-center gap-1 font-semibold">
                         <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" />
-                        <span>Dispatched to Delivery Queue</span>
+                        <span>Test Email Sent Successfully</span>
                       </div>
                       <p className="font-mono text-[10px] text-zinc-500 truncate">
                         ID: {playgroundResult.id} · Subject: {playgroundResult.subject}
@@ -706,7 +706,7 @@ await resend.emails.send({
               <div className="md:col-span-7 p-5 space-y-3 flex flex-col overflow-y-auto max-h-[70vh] bg-surface-raised/40">
                 <div className="space-y-1">
                   <span className="text-[10px] font-semibold uppercase tracking-wider text-zinc-500 block">
-                    Rendered Subject
+                    Preview Subject
                   </span>
                   <div className="rounded-md border border-surface-border bg-surface px-3 py-1.5 text-xs font-semibold text-zinc-900 dark:text-white">
                     {playgroundPreview?.subject || selectedTemplate.subject}
@@ -715,7 +715,7 @@ await resend.emails.send({
 
                 <div className="flex-1 flex flex-col space-y-1">
                   <span className="text-[10px] font-semibold uppercase tracking-wider text-zinc-500 block">
-                    Rendered HTML Output ({playgroundDevice})
+                    Email Preview ({playgroundDevice})
                   </span>
                   <div className="flex-1 flex justify-center items-start overflow-auto">
                     <div

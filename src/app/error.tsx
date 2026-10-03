@@ -17,8 +17,8 @@ export default function RouteError({
 	return (
 		<main className="page-container flex min-h-[60vh] items-center justify-center">
 			<ErrorState
-				title="This page encountered an error"
-				message="The page could not be displayed. Your data is unchanged; try loading it again."
+				title="Something went wrong loading this page"
+				message="We had trouble displaying this page. Your data is completely safe. Please try loading it again."
 				onRetry={reset}
 			/>
 		</main>

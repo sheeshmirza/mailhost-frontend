@@ -31,7 +31,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
           M
         </div>
         <p className="mt-3 text-xs text-zinc-500 dark:text-zinc-400 font-medium tracking-wide">
-          Verifying session...
+          Checking sign-in status...
         </p>
       </div>
     );

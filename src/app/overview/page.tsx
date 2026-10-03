@@ -133,7 +133,7 @@ export default function OverviewPage() {
             </span>
           </div>
           <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
-            One destination for powerful emailing: marketing campaigns, visual drip journeys, transactional delivery, and direct MX infrastructure.
+            One simple home for all your emails: send newsletters, automate customer journeys, and manage custom business mailboxes.
           </p>
         </div>
 
@@ -271,7 +271,7 @@ export default function OverviewPage() {
             <div>
               <h2 className="text-sm font-semibold text-zinc-900 dark:text-white">Email Volume</h2>
               <p className="text-xs text-zinc-500 dark:text-zinc-400">
-                Aggregated deliveries grouped by {interval}
+                Emails delivered grouped by {interval}
               </p>
             </div>
             <div className="flex items-center gap-4 text-xs">
@@ -334,9 +334,9 @@ export default function OverviewPage() {
       </div>
       </WidgetErrorBoundary>
 
-      {/* Platform Capabilities: Marketing Engine & Complete Email Suite */}
+      {/* Platform Capabilities: Marketing & Mailbox Suite */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Pillar 1: Marketing & Growth Engine */}
+        {/* Pillar 1: Marketing & Growth */}
         <div className="rounded-xl border border-surface-border bg-surface p-5 space-y-4 shadow-sm">
           <div className="flex items-center justify-between border-b border-surface-border pb-3">
             <div className="flex items-center gap-2">
@@ -344,8 +344,8 @@ export default function OverviewPage() {
                 <Sparkles className="h-4 w-4" />
               </div>
               <div>
-                <h2 className="text-sm font-semibold text-zinc-900 dark:text-white">Marketing & Growth Engine</h2>
-                <p className="text-[11px] text-zinc-500">Campaigns, audiences, drip workflows & templates</p>
+                <h2 className="text-sm font-semibold text-zinc-900 dark:text-white">Marketing & Campaigns</h2>
+                <p className="text-[11px] text-zinc-500">Send newsletters, manage contacts, automate series & build templates</p>
               </div>
             </div>
             <span className="badge badge-info text-[10px]">Marketing Suite</span>
@@ -360,7 +360,7 @@ export default function OverviewPage() {
                 <span className="font-semibold text-zinc-900 dark:text-white group-hover:text-teal-600 dark:group-hover:text-teal-400">Broadcasts</span>
                 <Radio className="h-3.5 w-3.5 text-teal-600 dark:text-teal-400" />
               </div>
-              <p className="text-[11px] text-zinc-500 mt-1">Mass newsletters & scheduled campaigns</p>
+              <p className="text-[11px] text-zinc-500 mt-1">Send newsletters & announcements</p>
               <span className="mt-2 text-[10px] text-teal-600 dark:text-teal-400 font-medium group-hover:underline">Launch Campaign →</span>
             </Link>
 
@@ -372,7 +372,7 @@ export default function OverviewPage() {
                 <span className="font-semibold text-zinc-900 dark:text-white group-hover:text-teal-600 dark:group-hover:text-teal-400">Audiences</span>
                 <Users className="h-3.5 w-3.5 text-teal-600 dark:text-teal-400" />
               </div>
-              <p className="text-[11px] text-zinc-500 mt-1">Subscriber lists, tags & custom traits</p>
+              <p className="text-[11px] text-zinc-500 mt-1">Subscriber lists, contact details & user groups</p>
               <span className="mt-2 text-[10px] text-teal-600 dark:text-teal-400 font-medium group-hover:underline">Manage Contacts →</span>
             </Link>
 
@@ -384,7 +384,7 @@ export default function OverviewPage() {
                 <span className="font-semibold text-zinc-900 dark:text-white group-hover:text-teal-600 dark:group-hover:text-teal-400">Automations</span>
                 <GitBranch className="h-3.5 w-3.5 text-teal-600 dark:text-teal-400" />
               </div>
-              <p className="text-[11px] text-zinc-500 mt-1">Drip sequences, onboarding & triggers</p>
+              <p className="text-[11px] text-zinc-500 mt-1">Welcome series, customer follow-ups & auto-replies</p>
               <span className="mt-2 text-[10px] text-teal-600 dark:text-teal-400 font-medium group-hover:underline">Build Workflow →</span>
             </Link>
 
@@ -396,13 +396,13 @@ export default function OverviewPage() {
                 <span className="font-semibold text-zinc-900 dark:text-white group-hover:text-teal-600 dark:group-hover:text-teal-400">Templates</span>
                 <FileText className="h-3.5 w-3.5 text-teal-600 dark:text-teal-400" />
               </div>
-              <p className="text-[11px] text-zinc-500 mt-1">Reusable HTML designs with versioning</p>
+              <p className="text-[11px] text-zinc-500 mt-1">Reusable email designs with easy editing</p>
               <span className="mt-2 text-[10px] text-teal-600 dark:text-teal-400 font-medium group-hover:underline">Design Template →</span>
             </Link>
           </div>
         </div>
 
-        {/* Pillar 2: Complete Email & Mailbox Suite */}
+        {/* Pillar 2: Complete Mailboxes & Setup */}
         <div className="rounded-xl border border-surface-border bg-surface p-5 space-y-4 shadow-sm">
           <div className="flex items-center justify-between border-b border-surface-border pb-3">
             <div className="flex items-center gap-2">
@@ -410,11 +410,11 @@ export default function OverviewPage() {
                 <Server className="h-4 w-4" />
               </div>
               <div>
-                <h2 className="text-sm font-semibold text-zinc-900 dark:text-white">Complete Email Suite</h2>
-                <p className="text-[11px] text-zinc-500">MTA delivery, mailbox protocols & custom routing</p>
+                <h2 className="text-sm font-semibold text-zinc-900 dark:text-white">Mailboxes & Email Apps</h2>
+                <p className="text-[11px] text-zinc-500">Mail app setup, incoming inbox & forwarding</p>
               </div>
             </div>
-            <span className="badge badge-success text-[10px]">Infrastructure</span>
+            <span className="badge badge-success text-[10px]">Mailbox Suite</span>
           </div>
 
           <div className="grid grid-cols-2 gap-3 text-xs">
@@ -423,11 +423,11 @@ export default function OverviewPage() {
               className="group rounded-lg border border-surface-border bg-surface-raised p-3 hover:border-blue-500/50 hover:bg-surface transition-all flex flex-col justify-between"
             >
               <div className="flex items-center justify-between">
-                <span className="font-semibold text-zinc-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400">SMTP, IMAP & POP3</span>
+                <span className="font-semibold text-zinc-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400">Mail Apps & Passwords</span>
                 <Server className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400" />
               </div>
-              <p className="text-[11px] text-zinc-500 mt-1">Port 587/465 send & 993/995 mailbox sync</p>
-              <span className="mt-2 text-[10px] text-blue-600 dark:text-blue-400 font-medium group-hover:underline">View Protocols →</span>
+              <p className="text-[11px] text-zinc-500 mt-1">Connect Apple Mail, Outlook, Thunderbird, or your phone</p>
+              <span className="mt-2 text-[10px] text-blue-600 dark:text-blue-400 font-medium group-hover:underline">View Setup Guide →</span>
             </Link>
 
             <Link
@@ -435,11 +435,11 @@ export default function OverviewPage() {
               className="group rounded-lg border border-surface-border bg-surface-raised p-3 hover:border-blue-500/50 hover:bg-surface transition-all flex flex-col justify-between"
             >
               <div className="flex items-center justify-between">
-                <span className="font-semibold text-zinc-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400">Inbound & Receiving</span>
+                <span className="font-semibold text-zinc-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400">Incoming Mail</span>
                 <Inbox className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400" />
               </div>
-              <p className="text-[11px] text-zinc-500 mt-1">Port 25 MTA receiving & raw .eml download</p>
-              <span className="mt-2 text-[10px] text-blue-600 dark:text-blue-400 font-medium group-hover:underline">Inspect Inbound →</span>
+              <p className="text-[11px] text-zinc-500 mt-1">Read incoming emails and customer replies</p>
+              <span className="mt-2 text-[10px] text-blue-600 dark:text-blue-400 font-medium group-hover:underline">Read Incoming Mail →</span>
             </Link>
 
             <Link
@@ -447,11 +447,11 @@ export default function OverviewPage() {
               className="group rounded-lg border border-surface-border bg-surface-raised p-3 hover:border-blue-500/50 hover:bg-surface transition-all flex flex-col justify-between"
             >
               <div className="flex items-center justify-between">
-                <span className="font-semibold text-zinc-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400">Aliases & Catch-All</span>
+                <span className="font-semibold text-zinc-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400">Forwarding Addresses</span>
                 <ArrowRightLeft className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400" />
               </div>
-              <p className="text-[11px] text-zinc-500 mt-1">Virtual addresses & forwarding</p>
-              <span className="mt-2 text-[10px] text-blue-600 dark:text-blue-400 font-medium group-hover:underline">Configure Aliases →</span>
+              <p className="text-[11px] text-zinc-500 mt-1">Forward emails to personal or team addresses</p>
+              <span className="mt-2 text-[10px] text-blue-600 dark:text-blue-400 font-medium group-hover:underline">Manage Forwarding →</span>
             </Link>
 
             <Link
@@ -459,10 +459,10 @@ export default function OverviewPage() {
               className="group rounded-lg border border-surface-border bg-surface-raised p-3 hover:border-blue-500/50 hover:bg-surface transition-all flex flex-col justify-between"
             >
               <div className="flex items-center justify-between">
-                <span className="font-semibold text-zinc-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400">Domains & DNS</span>
+                <span className="font-semibold text-zinc-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400">Domains & Verification</span>
                 <Globe className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400" />
               </div>
-              <p className="text-[11px] text-zinc-500 mt-1">DKIM, SPF & DMARC authentication</p>
+              <p className="text-[11px] text-zinc-500 mt-1">Verify your domain so emails land in inboxes, not spam</p>
               <span className="mt-2 text-[10px] text-blue-600 dark:text-blue-400 font-medium group-hover:underline">Verify Domains →</span>
             </Link>
           </div>

@@ -48,10 +48,10 @@ export class WidgetErrorBoundary extends Component<Props, State> {
           </div>
           <div className="space-y-1">
             <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
-              {this.props.fallbackTitle || "This widget encountered an issue"}
+              {this.props.fallbackTitle || "This section had trouble loading"}
             </h3>
             <p className="text-xs text-zinc-500 dark:text-zinc-400 max-w-sm">
-              {this.state.error?.message || "An unexpected error occurred while rendering this component."}
+              {this.state.error?.message || "Something went wrong while displaying this section. Please try again."}
             </p>
           </div>
           <button
