@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import Link from "next/link";
 import { api, DomainView } from "@/lib/api";
 import {
   Globe,
@@ -13,6 +14,7 @@ import {
   Trash2,
   ShieldCheck,
   ChevronDown,
+  ArrowRightLeft,
 } from "lucide-react";
 import { useToast } from "@/lib/toast-context";
 import { ErrorState } from "@/components/ui/ErrorState";
@@ -277,7 +279,15 @@ export default function DomainsPage() {
                   </p>
                 </div>
 
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2">
+                  <Link
+                    href={`/aliases?domain_id=${selectedDomain.id}`}
+                    className="flex items-center gap-1.5 rounded-md border border-zinc-200 bg-white px-3 py-2 text-sm font-medium text-zinc-900 hover:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900 dark:text-white dark:hover:bg-zinc-800 transition-colors shadow-sm"
+                    title="Manage email aliases & forwarding for this domain"
+                  >
+                    <ArrowRightLeft className="h-4 w-4 text-zinc-500 dark:text-zinc-400" />
+                    <span>Aliases</span>
+                  </Link>
                   <button
                     onClick={() => handleVerify(selectedDomain.id)}
                     disabled={isVerifying}

@@ -32,6 +32,7 @@ import {
   Settings,
   Activity,
   ArrowRight,
+  ArrowRightLeft,
 } from "lucide-react";
 import SendEmailModal from "../emails/SendEmailModal";
 import clsx from "clsx";
@@ -43,6 +44,8 @@ const navGroups = [
       { label: "Overview", href: "/overview", icon: LayoutDashboard },
       { label: "Emails", href: "/emails", icon: Mail },
       { label: "Domains", href: "/domains", icon: Globe },
+      { label: "Aliases", href: "/aliases", icon: ArrowRightLeft },
+      { label: "Inbound", href: "/inbound", icon: Inbox },
     ],
   },
   {
@@ -51,6 +54,7 @@ const navGroups = [
       { label: "Audiences", href: "/audiences", icon: Users },
       { label: "Broadcasts", href: "/broadcasts", icon: Radio },
       { label: "Automations", href: "/automations", icon: GitBranch },
+      { label: "Templates", href: "/templates", icon: FileText },
       { label: "Events", href: "/events", icon: Zap },
     ],
   },
@@ -58,10 +62,8 @@ const navGroups = [
     title: "Developer",
     items: [
       { label: "API Keys", href: "/api-keys", icon: Key },
-      { label: "Templates", href: "/templates", icon: FileText },
       { label: "Webhooks", href: "/webhooks", icon: Webhook },
-      { label: "SMTP", href: "/smtp", icon: Server },
-      { label: "Inbound", href: "/inbound", icon: Inbox },
+      { label: "SMTP & Protocols", href: "/smtp", icon: Server },
     ],
   },
   {

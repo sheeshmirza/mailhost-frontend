@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
+import Link from "next/link";
 import {
   api,
   InboundEmailSummary,
@@ -18,6 +19,7 @@ import {
   X,
   RefreshCw,
   ChevronRight,
+  ArrowRightLeft,
 } from "lucide-react";
 import { useToast } from "@/lib/toast-context";
 import { TableSkeleton } from "@/components/ui/LoadingState";
@@ -243,19 +245,29 @@ export default function InboundPage() {
           </div>
 
           {activeTab === "aliases" && (
-            <button
-              onClick={() => {
-                setEditingAliasId(null);
-                setAliasPrefix("");
-                setForwardTo("");
-                setStoreAliasCopy(true);
-                setIsAliasOpen(true);
-              }}
-              className="btn-primary"
-            >
-              <Plus className="h-3.5 w-3.5" />
-              <span>Create Alias</span>
-            </button>
+            <>
+              <Link
+                href="/aliases"
+                className="flex items-center gap-1.5 rounded-lg border border-surface-border bg-surface px-3 py-1.5 text-xs font-medium text-zinc-700 hover:bg-surface-raised dark:text-zinc-300 transition-colors"
+                title="Open full-screen Aliases Hub"
+              >
+                <ArrowRightLeft className="h-3.5 w-3.5" />
+                <span>Full Aliases Hub</span>
+              </Link>
+              <button
+                onClick={() => {
+                  setEditingAliasId(null);
+                  setAliasPrefix("");
+                  setForwardTo("");
+                  setStoreAliasCopy(true);
+                  setIsAliasOpen(true);
+                }}
+                className="btn-primary"
+              >
+                <Plus className="h-3.5 w-3.5" />
+                <span>Create Alias</span>
+              </button>
+            </>
           )}
 
           <button

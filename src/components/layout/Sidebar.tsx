@@ -21,6 +21,7 @@ import {
   Activity,
   Code2,
   ExternalLink,
+  ArrowRightLeft,
 } from "lucide-react";
 import clsx from "clsx";
 
@@ -31,6 +32,7 @@ const navGroups = [
       { label: "Overview", href: "/overview", icon: LayoutDashboard },
       { label: "Emails", href: "/emails", icon: Mail },
       { label: "Domains", href: "/domains", icon: Globe },
+      { label: "Aliases", href: "/aliases", icon: ArrowRightLeft },
     ],
   },
   {
@@ -48,7 +50,7 @@ const navGroups = [
       { label: "API Keys", href: "/api-keys", icon: Key },
       { label: "Templates", href: "/templates", icon: FileText },
       { label: "Webhooks", href: "/webhooks", icon: Webhook },
-      { label: "SMTP", href: "/smtp", icon: Server },
+      { label: "SMTP & Protocols", href: "/smtp", icon: Server },
       { label: "Inbound", href: "/inbound", icon: Inbox },
     ],
   },
