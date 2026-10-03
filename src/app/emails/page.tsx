@@ -29,6 +29,8 @@ import { useToast } from "@/lib/toast-context";
 import { ErrorState } from "@/components/ui/ErrorState";
 import { TableSkeleton } from "@/components/ui/LoadingState";
 import { CursorPagination } from "@/components/ui/CursorPagination";
+import { getVerifiedDomains, assertVerifiedSender, assertVerifiedSenders, buildSenderAddress } from "@/lib/domain-utils";
+import { VerifiedDomainAlert } from "@/components/common/VerifiedDomainAlert";
 
 function EmailsPageContent() {
   const toast = useToast();
@@ -68,7 +70,7 @@ function EmailsPageContent() {
   const emailListRevision = useRef(0);
   const emailDetailRevision = useRef(0);
 
-  const verifiedDomains = domains.filter((d) => d.status === "verified");
+  const verifiedDomains = getVerifiedDomains(domains);
 
   useEffect(() => {
     api.listDomains()
@@ -165,21 +167,14 @@ function EmailsPageContent() {
       if (!Array.isArray(parsed) || parsed.length === 0) {
         throw new Error("Batch must contain at least 1 email object.");
       }
-      if (verifiedDomains.length === 0) {
-        throw new Error("No verified domains found on your account. Please register and verify a domain first.");
-      }
-      for (let i = 0; i < parsed.length; i++) {
-        const item = parsed[i];
-        if (!item.from) {
-          throw new Error(`Email #[${i + 1}] is missing a "from" sender address.`);
-        }
-        const match = item.from.match(/<([^>]+)>/) || [null, item.from];
-        const cleanEmail = (match[1] || item.from).trim();
-        const emailDomain = cleanEmail.split("@")[1]?.toLowerCase();
-        if (!emailDomain || !verifiedDomains.some((d) => d.name.toLowerCase() === emailDomain)) {
-          throw new Error(`Email #[${i + 1}] sender domain "${emailDomain || "unknown"}" is not a verified domain on your account.`);
-        }
-      }
+      assertVerifiedSenders(
+        verifiedDomains,
+        parsed.map((item, i) => {
+          if (!item.from) throw new Error(`Email #[${i + 1}] is missing a "from" sender address.`);
+          const match = item.from.match(/<([^>]+)>/) || [null, item.from];
+          return { index: i, from: (match[1] || item.from).trim() };
+        })
+      );
       const result = await api.sendBatch(parsed);
       setLastBatchId(result.batch_id);
       setBatchStatus(null);
@@ -197,23 +192,14 @@ function EmailsPageContent() {
     e.preventDefault();
     setBulkSending(true);
     try {
-      if (verifiedDomains.length === 0) {
-        throw new Error("No verified domains found on your account. Please register and verify a domain first.");
-      }
       let finalFrom = bulkFrom.trim();
       if (!isCustomBulkFrom && bulkSelectedDomain) {
-        const prefix = bulkSenderPrefix.trim().replace(/@.*$/, "") || "marketing";
-        finalFrom = `${prefix}@${bulkSelectedDomain}`;
+        finalFrom = buildSenderAddress(bulkSenderPrefix || "marketing", bulkSelectedDomain);
       }
       if (!finalFrom) {
         throw new Error("Sender address is required.");
       }
-      const match = finalFrom.match(/<([^>]+)>/) || [null, finalFrom];
-      const cleanEmail = (match[1] || finalFrom).trim();
-      const emailDomain = cleanEmail.split("@")[1]?.toLowerCase();
-      if (!emailDomain || !verifiedDomains.some((d) => d.name.toLowerCase() === emailDomain)) {
-        throw new Error(`Domain "${emailDomain || "unknown"}" is not a verified domain on your account. Emails can only be sent from registered and verified domains.`);
-      }
+      assertVerifiedSender(verifiedDomains, finalFrom);
 
       const recipients = JSON.parse(bulkRecipientsJson) as BulkEmailPayload["recipients"];
       const replyTo = JSON.parse(bulkReplyToJson) as string[];
@@ -726,10 +712,10 @@ function EmailsPageContent() {
             </div>
             <form onSubmit={handleSendBulk} className="space-y-3">
               {verifiedDomains.length === 0 ? (
-                <div className="rounded-md border border-amber-500/30 bg-amber-500/10 p-3 text-xs text-amber-800 dark:text-amber-200">
-                  <p className="font-semibold">No verified domains found</p>
-                  <p className="mt-0.5 text-[11px]">You must register and verify a domain before sending bulk emails.</p>
-                </div>
+                <VerifiedDomainAlert
+                  hasRegisteredDomains={domains.length > 0}
+                  onNavigate={() => setIsBulkOpen(false)}
+                />
               ) : (
                 <div>
                   <div className="flex items-center justify-between mb-1">

@@ -22,6 +22,8 @@ import {
 import { useToast } from "@/lib/toast-context";
 import { ErrorState } from "@/components/ui/ErrorState";
 import { TableSkeleton } from "@/components/ui/LoadingState";
+import { getVerifiedDomains, assertVerifiedSender, buildSenderAddress } from "@/lib/domain-utils";
+import { VerifiedDomainAlert } from "@/components/common/VerifiedDomainAlert";
 
 export default function BroadcastsPage() {
   const toast = useToast();
@@ -53,7 +55,7 @@ export default function BroadcastsPage() {
   const [previewText, setPreviewText] = useState("");
   const [plainText, setPlainText] = useState("");
 
-  const verifiedDomains = domains.filter((d) => d.status === "verified");
+  const verifiedDomains = getVerifiedDomains(domains);
 
   const fetchData = async () => {
     setIsLoading(true);
@@ -110,22 +112,14 @@ export default function BroadcastsPage() {
     if (isSaving) return;
     setIsSaving(true);
     try {
-      if (verifiedDomains.length === 0) {
-        throw new Error("No verified domains found. You must register and verify a domain before creating broadcasts.");
-      }
       let finalFrom = from.trim();
       if (!isCustomFrom && selectedDomain) {
-        finalFrom = `${fromPrefix.trim().replace(/@.*$/, "") || "newsletter"}@${selectedDomain}`;
+        finalFrom = buildSenderAddress(fromPrefix || "newsletter", selectedDomain);
       }
       if (!finalFrom) {
         throw new Error("From address is required.");
       }
-      const match = finalFrom.match(/<([^>]+)>/) || [null, finalFrom];
-      const cleanEmail = (match[1] || finalFrom).trim();
-      const emailDomain = cleanEmail.split("@")[1]?.toLowerCase();
-      if (!emailDomain || !verifiedDomains.some((d) => d.name.toLowerCase() === emailDomain)) {
-        throw new Error(`Domain "${emailDomain || "unknown"}" is not a verified domain on your account. Emails can only be sent from registered and verified domains.`);
-      }
+      assertVerifiedSender(verifiedDomains, finalFrom);
 
       const payload = {
         name: name.trim(),
@@ -430,10 +424,10 @@ export default function BroadcastsPage() {
                 </div>
 
                 {verifiedDomains.length === 0 ? (
-                  <div className="rounded-lg border border-amber-500/30 bg-amber-500/10 p-3 text-xs text-amber-800 dark:text-amber-200">
-                    <p className="font-semibold">No verified domains found</p>
-                    <p className="mt-0.5 text-[11px]">You must register and verify a domain in the Domains tab before creating broadcasts.</p>
-                  </div>
+                  <VerifiedDomainAlert
+                    hasRegisteredDomains={domains.length > 0}
+                    onNavigate={() => setIsOpen(false)}
+                  />
                 ) : isCustomFrom ? (
                   <input
                     type="text"

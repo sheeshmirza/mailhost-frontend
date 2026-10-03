@@ -26,6 +26,8 @@ import {
 import { useToast } from "@/lib/toast-context";
 import { ErrorState } from "@/components/ui/ErrorState";
 import { TableSkeleton } from "@/components/ui/LoadingState";
+import { getVerifiedDomains, assertVerifiedSender, buildSenderAddress } from "@/lib/domain-utils";
+import { VerifiedDomainAlert } from "@/components/common/VerifiedDomainAlert";
 
 export default function AutomationsPage() {
   const toast = useToast();
@@ -56,7 +58,7 @@ export default function AutomationsPage() {
   const [emailFrom, setEmailFrom] = useState("");
   const [emailHtml, setEmailHtml] = useState("");
 
-  const verifiedDomains = domains.filter((d) => d.status === "verified");
+  const verifiedDomains = getVerifiedDomains(domains);
 
   const fetchAutomations = async () => {
     const revision = ++automationListRevision.current;
@@ -143,22 +145,14 @@ export default function AutomationsPage() {
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      if (verifiedDomains.length === 0) {
-        throw new Error("No verified domains found. You must register and verify a domain before creating automation emails.");
-      }
       let finalFrom = emailFrom.trim();
       if (!isCustomFrom && selectedDomain) {
-        finalFrom = `${emailFromPrefix.trim().replace(/@.*$/, "") || "automations"}@${selectedDomain}`;
+        finalFrom = buildSenderAddress(emailFromPrefix || "automations", selectedDomain);
       }
       if (!finalFrom) {
         throw new Error("Sender email address is required.");
       }
-      const match = finalFrom.match(/<([^>]+)>/) || [null, finalFrom];
-      const cleanEmail = (match[1] || finalFrom).trim();
-      const emailDomain = cleanEmail.split("@")[1]?.toLowerCase();
-      if (!emailDomain || !verifiedDomains.some((d) => d.name.toLowerCase() === emailDomain)) {
-        throw new Error(`Domain "${emailDomain || "unknown"}" is not a verified domain on your account. Emails can only be sent from registered and verified domains.`);
-      }
+      assertVerifiedSender(verifiedDomains, finalFrom);
 
       const steps: AutomationStep[] = [{
         id: crypto.randomUUID(),
@@ -645,12 +639,10 @@ export default function AutomationsPage() {
                 </div>
 
                 {verifiedDomains.length === 0 ? (
-                  <div className="rounded-md border border-amber-500/30 bg-amber-500/10 p-2.5 text-xs text-amber-800 dark:text-amber-200">
-                    <p className="font-medium">No verified domains found</p>
-                    <p className="text-[11px] text-amber-700 dark:text-amber-300">
-                      You must register and verify a domain before creating automation email steps.
-                    </p>
-                  </div>
+                  <VerifiedDomainAlert
+                    hasRegisteredDomains={domains.length > 0}
+                    onNavigate={() => setIsOpen(false)}
+                  />
                 ) : isCustomFrom ? (
                   <input
                     type="text"

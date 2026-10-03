@@ -4,6 +4,8 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { X, Send, Eye, Code, CheckCircle2, AlertCircle, Globe, ShieldAlert } from "lucide-react";
 import { api, DomainView } from "@/lib/api";
+import { getVerifiedDomains, assertVerifiedSender, buildSenderAddress } from "@/lib/domain-utils";
+import { VerifiedDomainAlert } from "@/components/common/VerifiedDomainAlert";
 import { useToast } from "@/lib/toast-context";
 
 interface SendEmailModalProps {
@@ -105,15 +107,13 @@ export default function SendEmailModal({
 
   if (!isOpen) return null;
 
-  const verifiedDomains = domains.filter((d) => d.status === "verified");
+  const verifiedDomains = getVerifiedDomains(domains);
 
   const computeFinalFrom = (): string => {
     if (isCustomFrom) {
       return from.trim();
     }
-    const cleanPrefix = senderPrefix.trim().replace(/@.*$/, "") || "notifications";
-    const namePart = senderName.trim() ? `"${senderName.trim()}" ` : "";
-    return `${namePart}<${cleanPrefix}@${selectedDomain}>`;
+    return buildSenderAddress(senderPrefix, selectedDomain, senderName);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -122,23 +122,12 @@ export default function SendEmailModal({
     setIsSending(true);
 
     try {
-      if (verifiedDomains.length === 0) {
-        throw new Error("No verified domains found. You must register and verify a domain before sending emails.");
-      }
-
       const finalFrom = computeFinalFrom();
       if (!finalFrom) {
         throw new Error("Sender address is required");
       }
 
-      // Extract raw email address
-      const match = finalFrom.match(/<([^>]+)>/) || [null, finalFrom];
-      const cleanEmail = (match[1] || finalFrom).trim();
-      const emailDomain = cleanEmail.split("@")[1]?.toLowerCase();
-
-      if (!emailDomain || !verifiedDomains.some((d) => d.name.toLowerCase() === emailDomain)) {
-        throw new Error(`Domain "${emailDomain || "unknown"}" is not a verified domain on your account. Emails can only be sent through registered and verified domains.`);
-      }
+      assertVerifiedSender(verifiedDomains, finalFrom);
 
       const recipients = toInput
         .split(",")
@@ -241,27 +230,10 @@ export default function SendEmailModal({
             )}
 
             {!loadingDomains && verifiedDomains.length === 0 && (
-              <div className="flex items-start gap-2.5 rounded-lg border border-amber-500/30 bg-amber-500/10 p-3 text-xs text-amber-800 dark:text-amber-200">
-                <ShieldAlert className="h-4 w-4 flex-shrink-0 text-amber-500 mt-0.5" />
-                <div className="space-y-1">
-                  <p className="font-medium">
-                    {domains.length === 0 ? "No registered domains found" : "No verified domains found"}
-                  </p>
-                  <p className="text-[11px] text-amber-700 dark:text-amber-300">
-                    {domains.length === 0
-                      ? "Emails can only be sent through verified domains registered on your account. Please add and verify a domain first."
-                      : "You have registered domains, but none are verified yet. Emails can only be sent from verified domains."}
-                  </p>
-                  <Link
-                    href="/domains"
-                    onClick={onClose}
-                    className="inline-flex items-center gap-1 font-semibold underline hover:text-amber-900 dark:hover:text-amber-100"
-                  >
-                    <Globe className="h-3 w-3" />
-                    Manage Domains &rarr;
-                  </Link>
-                </div>
-              </div>
+              <VerifiedDomainAlert
+                hasRegisteredDomains={domains.length > 0}
+                onNavigate={onClose}
+              />
             )}
 
             {/* Sender and Recipient */}

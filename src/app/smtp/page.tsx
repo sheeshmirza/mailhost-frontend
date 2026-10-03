@@ -5,6 +5,8 @@ import { api, SMTPCredView, DomainView } from "@/lib/api";
 import { useToast } from "@/lib/toast-context";
 import { ErrorState } from "@/components/ui/ErrorState";
 import { TableSkeleton } from "@/components/ui/LoadingState";
+import { getVerifiedDomains, assertVerifiedSender, buildSenderAddress } from "@/lib/domain-utils";
+import { VerifiedDomainAlert } from "@/components/common/VerifiedDomainAlert";
 import {
   Plus,
   Trash2,
@@ -37,7 +39,7 @@ export default function SMTPPage() {
   } | null>(null);
   const [copiedPass, setCopiedPass] = useState(false);
 
-  const verifiedDomains = domains.filter((d) => d.status === "verified");
+  const verifiedDomains = getVerifiedDomains(domains);
 
   const fetchData = async () => {
     setIsLoading(true);
@@ -75,22 +77,14 @@ export default function SMTPPage() {
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      if (verifiedDomains.length === 0) {
-        throw new Error("No verified domains found. You must register and verify a domain before creating SMTP credentials.");
-      }
       let finalEmail = email.trim();
       if (!isCustomEmail && selectedDomain) {
-        finalEmail = `${emailPrefix.trim().replace(/@.*$/, "") || "smtp"}@${selectedDomain}`;
+        finalEmail = buildSenderAddress(emailPrefix || "smtp", selectedDomain);
       }
       if (!finalEmail) {
         throw new Error("Sender email address is required.");
       }
-      const match = finalEmail.match(/<([^>]+)>/) || [null, finalEmail];
-      const cleanEmail = (match[1] || finalEmail).trim();
-      const emailDomain = cleanEmail.split("@")[1]?.toLowerCase();
-      if (!emailDomain || !verifiedDomains.some((d) => d.name.toLowerCase() === emailDomain)) {
-        throw new Error(`Domain "${emailDomain || "unknown"}" is not a verified domain on your account.`);
-      }
+      assertVerifiedSender(verifiedDomains, finalEmail);
 
       const res = await api.createSMTPCredential(finalEmail, credName.trim() || undefined);
       setGeneratedCreds({
@@ -346,12 +340,10 @@ await transporter.sendMail({
                   </div>
 
                   {verifiedDomains.length === 0 ? (
-                    <div className="rounded-md border border-amber-500/30 bg-amber-500/10 p-2.5 text-xs text-amber-800 dark:text-amber-200">
-                      <p className="font-medium">No verified domains found</p>
-                      <p className="text-[11px] text-amber-700 dark:text-amber-300">
-                        You must register and verify a domain before generating SMTP credentials.
-                      </p>
-                    </div>
+                    <VerifiedDomainAlert
+                      hasRegisteredDomains={domains.length > 0}
+                      onNavigate={() => setIsOpen(false)}
+                    />
                   ) : isCustomEmail ? (
                     <input
                       type="email"
