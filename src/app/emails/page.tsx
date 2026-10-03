@@ -9,6 +9,7 @@ import {
   SendEmailPayload,
   BulkEmailPayload,
   BatchStatusView,
+  DomainView,
 } from "@/lib/api";
 import {
   Send,

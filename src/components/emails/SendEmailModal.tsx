@@ -1,8 +1,9 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { X, Send, Eye, Code, CheckCircle2, AlertCircle } from "lucide-react";
-import { api } from "@/lib/api";
+import Link from "next/link";
+import { X, Send, Eye, Code, CheckCircle2, AlertCircle, Globe, ShieldAlert } from "lucide-react";
+import { api, DomainView } from "@/lib/api";
 import { useToast } from "@/lib/toast-context";
 
 interface SendEmailModalProps {
@@ -17,7 +18,14 @@ export default function SendEmailModal({
   onSent,
 }: SendEmailModalProps) {
   const toast = useToast();
+  const [domains, setDomains] = useState<DomainView[]>([]);
+  const [selectedDomain, setSelectedDomain] = useState("");
+  const [senderPrefix, setSenderPrefix] = useState("notifications");
+  const [senderName, setSenderName] = useState("");
+  const [isCustomFrom, setIsCustomFrom] = useState(false);
   const [from, setFrom] = useState("");
+  const [loadingDomains, setLoadingDomains] = useState(true);
+
   const [toInput, setToInput] = useState("");
   const [subject, setSubject] = useState("");
   const [htmlContent, setHtmlContent] = useState("");
@@ -65,6 +73,24 @@ export default function SendEmailModal({
     if (isOpen) {
       setError(null);
       setSuccessId(null);
+      setLoadingDomains(true);
+      api.listDomains()
+        .then((res) => {
+          const list = res.data || [];
+          setDomains(list);
+          const verified = list.filter((d) => d.status === "verified");
+          if (verified.length > 0) {
+            setSelectedDomain((cur) => (verified.some((v) => v.name === cur) ? cur : verified[0].name));
+          } else {
+            setSelectedDomain("");
+          }
+        })
+        .catch((err) => {
+          console.error("Failed to load domains", err);
+        })
+        .finally(() => {
+          setLoadingDomains(false);
+        });
     }
   }, [isOpen]);
 
@@ -79,12 +105,41 @@ export default function SendEmailModal({
 
   if (!isOpen) return null;
 
+  const verifiedDomains = domains.filter((d) => d.status === "verified");
+
+  const computeFinalFrom = (): string => {
+    if (isCustomFrom) {
+      return from.trim();
+    }
+    const cleanPrefix = senderPrefix.trim().replace(/@.*$/, "") || "notifications";
+    const namePart = senderName.trim() ? `"${senderName.trim()}" ` : "";
+    return `${namePart}<${cleanPrefix}@${selectedDomain}>`;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
     setIsSending(true);
 
     try {
+      if (verifiedDomains.length === 0) {
+        throw new Error("No verified domains found. You must register and verify a domain before sending emails.");
+      }
+
+      const finalFrom = computeFinalFrom();
+      if (!finalFrom) {
+        throw new Error("Sender address is required");
+      }
+
+      // Extract raw email address
+      const match = finalFrom.match(/<([^>]+)>/) || [null, finalFrom];
+      const cleanEmail = (match[1] || finalFrom).trim();
+      const emailDomain = cleanEmail.split("@")[1]?.toLowerCase();
+
+      if (!emailDomain || !verifiedDomains.some((d) => d.name.toLowerCase() === emailDomain)) {
+        throw new Error(`Domain "${emailDomain || "unknown"}" is not a verified domain on your account. Emails can only be sent through registered and verified domains.`);
+      }
+
       const recipients = toInput
         .split(",")
         .map((s) => s.trim())
@@ -100,7 +155,7 @@ export default function SendEmailModal({
       }
 
       const res = await api.sendEmail({
-        from: from.trim(),
+        from: finalFrom,
         to: recipients,
         subject: subject.trim(),
         html: htmlContent,
@@ -185,20 +240,102 @@ export default function SendEmailModal({
               </div>
             )}
 
+            {!loadingDomains && verifiedDomains.length === 0 && (
+              <div className="flex items-start gap-2.5 rounded-lg border border-amber-500/30 bg-amber-500/10 p-3 text-xs text-amber-800 dark:text-amber-200">
+                <ShieldAlert className="h-4 w-4 flex-shrink-0 text-amber-500 mt-0.5" />
+                <div className="space-y-1">
+                  <p className="font-medium">
+                    {domains.length === 0 ? "No registered domains found" : "No verified domains found"}
+                  </p>
+                  <p className="text-[11px] text-amber-700 dark:text-amber-300">
+                    {domains.length === 0
+                      ? "Emails can only be sent through verified domains registered on your account. Please add and verify a domain first."
+                      : "You have registered domains, but none are verified yet. Emails can only be sent from verified domains."}
+                  </p>
+                  <Link
+                    href="/domains"
+                    onClick={onClose}
+                    className="inline-flex items-center gap-1 font-semibold underline hover:text-amber-900 dark:hover:text-amber-100"
+                  >
+                    <Globe className="h-3 w-3" />
+                    Manage Domains &rarr;
+                  </Link>
+                </div>
+              </div>
+            )}
+
             {/* Sender and Recipient */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               <div>
-                <label className="block text-[11px] font-medium text-zinc-600 dark:text-zinc-400 mb-1">
-                  From
-                </label>
-                <input
-                  type="text"
-                  value={from}
-                  onChange={(e) => setFrom(e.target.value)}
-                  placeholder="Verified sender address"
-                  required
-                  className="w-full rounded-md border border-surface-border bg-surface-raised px-3 py-1.5 text-xs text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-600 focus:border-zinc-500 focus:outline-none"
-                />
+                <div className="flex items-center justify-between mb-1">
+                  <label className="block text-[11px] font-medium text-zinc-600 dark:text-zinc-400">
+                    From (Verified Domain)
+                  </label>
+                  {verifiedDomains.length > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (!isCustomFrom) {
+                          setFrom(computeFinalFrom());
+                        }
+                        setIsCustomFrom(!isCustomFrom);
+                      }}
+                      className="text-[10px] text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white underline"
+                    >
+                      {isCustomFrom ? "Use domain picker" : "Custom name/format"}
+                    </button>
+                  )}
+                </div>
+
+                {isCustomFrom ? (
+                  <input
+                    type="text"
+                    value={from}
+                    onChange={(e) => setFrom(e.target.value)}
+                    placeholder='Acme <support@yourdomain.com>'
+                    required
+                    className="w-full rounded-md border border-surface-border bg-surface-raised px-3 py-1.5 text-xs text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-600 focus:border-zinc-500 focus:outline-none"
+                  />
+                ) : (
+                  <div className="space-y-1.5">
+                    <div className="flex gap-1.5">
+                      <input
+                        type="text"
+                        value={senderName}
+                        onChange={(e) => setSenderName(e.target.value)}
+                        placeholder="Sender Name (optional)"
+                        className="w-1/3 rounded-md border border-surface-border bg-surface-raised px-2.5 py-1.5 text-xs text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-600 focus:border-zinc-500 focus:outline-none"
+                      />
+                      <div className="flex flex-1 items-center rounded-md border border-surface-border bg-surface-raised overflow-hidden">
+                        <input
+                          type="text"
+                          value={senderPrefix}
+                          onChange={(e) => setSenderPrefix(e.target.value)}
+                          placeholder="prefix"
+                          required
+                          className="w-1/2 bg-transparent px-2.5 py-1.5 text-xs text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-600 focus:outline-none text-right"
+                        />
+                        <span className="text-xs text-zinc-400 dark:text-zinc-500 px-0.5 select-none">@</span>
+                        <select
+                          value={selectedDomain}
+                          onChange={(e) => setSelectedDomain(e.target.value)}
+                          disabled={verifiedDomains.length === 0}
+                          className="w-1/2 bg-transparent px-1.5 py-1.5 text-xs font-medium text-zinc-900 dark:text-white focus:outline-none cursor-pointer truncate"
+                        >
+                          {verifiedDomains.length === 0 ? (
+                            <option value="">No verified domains</option>
+                          ) : (
+                            verifiedDomains.map((dom) => (
+                              <option key={dom.id || dom.name} value={dom.name} className="bg-surface text-zinc-900 dark:text-white">
+                                {dom.name}
+                              </option>
+                            ))
+                          )}
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
 
               <div>
@@ -395,7 +532,7 @@ export default function SendEmailModal({
               </button>
               <button
                 type="submit"
-                disabled={isSending}
+                disabled={isSending || (!loadingDomains && verifiedDomains.length === 0)}
                 className="btn-primary"
               >
                 <Send className="h-3.5 w-3.5" />
