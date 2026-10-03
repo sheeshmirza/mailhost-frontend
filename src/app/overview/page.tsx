@@ -16,6 +16,17 @@ import {
   AlertTriangle,
   ArrowRight,
   RefreshCw,
+  Radio,
+  Users,
+  GitBranch,
+  FileText,
+  Mail,
+  Server,
+  Inbox,
+  ArrowRightLeft,
+  Globe,
+  Sparkles,
+  ShieldCheck,
 } from "lucide-react";
 import CodeSnippet from "@/components/ui/CodeSnippet";
 import { ErrorState } from "@/components/ui/ErrorState";
@@ -308,6 +319,141 @@ export default function OverviewPage() {
               No email volume recorded in this timeframe yet.
             </div>
           )}
+        </div>
+      </div>
+
+      {/* Platform Capabilities: Marketing Engine & Complete Email Suite */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Pillar 1: Marketing & Growth Engine */}
+        <div className="rounded-xl border border-surface-border bg-surface p-5 space-y-4 shadow-sm">
+          <div className="flex items-center justify-between border-b border-surface-border pb-3">
+            <div className="flex items-center gap-2">
+              <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-teal-50 dark:bg-teal-900/30 text-teal-700 dark:text-teal-300">
+                <Sparkles className="h-4 w-4" />
+              </div>
+              <div>
+                <h2 className="text-sm font-semibold text-zinc-900 dark:text-white">Marketing & Growth Engine</h2>
+                <p className="text-[11px] text-zinc-500">Campaigns, audiences, drip workflows & templates</p>
+              </div>
+            </div>
+            <span className="badge badge-info text-[10px]">Marketing Suite</span>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3 text-xs">
+            <Link
+              href="/broadcasts"
+              className="group rounded-lg border border-surface-border bg-surface-raised p-3 hover:border-teal-500/50 hover:bg-surface transition-all flex flex-col justify-between"
+            >
+              <div className="flex items-center justify-between">
+                <span className="font-semibold text-zinc-900 dark:text-white group-hover:text-teal-600 dark:group-hover:text-teal-400">Broadcasts</span>
+                <Radio className="h-3.5 w-3.5 text-teal-600 dark:text-teal-400" />
+              </div>
+              <p className="text-[11px] text-zinc-500 mt-1">Mass newsletters & scheduled campaigns</p>
+              <span className="mt-2 text-[10px] text-teal-600 dark:text-teal-400 font-medium group-hover:underline">Launch Campaign →</span>
+            </Link>
+
+            <Link
+              href="/audiences"
+              className="group rounded-lg border border-surface-border bg-surface-raised p-3 hover:border-teal-500/50 hover:bg-surface transition-all flex flex-col justify-between"
+            >
+              <div className="flex items-center justify-between">
+                <span className="font-semibold text-zinc-900 dark:text-white group-hover:text-teal-600 dark:group-hover:text-teal-400">Audiences</span>
+                <Users className="h-3.5 w-3.5 text-teal-600 dark:text-teal-400" />
+              </div>
+              <p className="text-[11px] text-zinc-500 mt-1">Subscriber lists, tags & custom traits</p>
+              <span className="mt-2 text-[10px] text-teal-600 dark:text-teal-400 font-medium group-hover:underline">Manage Contacts →</span>
+            </Link>
+
+            <Link
+              href="/automations"
+              className="group rounded-lg border border-surface-border bg-surface-raised p-3 hover:border-teal-500/50 hover:bg-surface transition-all flex flex-col justify-between"
+            >
+              <div className="flex items-center justify-between">
+                <span className="font-semibold text-zinc-900 dark:text-white group-hover:text-teal-600 dark:group-hover:text-teal-400">Automations</span>
+                <GitBranch className="h-3.5 w-3.5 text-teal-600 dark:text-teal-400" />
+              </div>
+              <p className="text-[11px] text-zinc-500 mt-1">Drip sequences, onboarding & triggers</p>
+              <span className="mt-2 text-[10px] text-teal-600 dark:text-teal-400 font-medium group-hover:underline">Build Workflow →</span>
+            </Link>
+
+            <Link
+              href="/templates"
+              className="group rounded-lg border border-surface-border bg-surface-raised p-3 hover:border-teal-500/50 hover:bg-surface transition-all flex flex-col justify-between"
+            >
+              <div className="flex items-center justify-between">
+                <span className="font-semibold text-zinc-900 dark:text-white group-hover:text-teal-600 dark:group-hover:text-teal-400">Templates</span>
+                <FileText className="h-3.5 w-3.5 text-teal-600 dark:text-teal-400" />
+              </div>
+              <p className="text-[11px] text-zinc-500 mt-1">Reusable HTML designs with versioning</p>
+              <span className="mt-2 text-[10px] text-teal-600 dark:text-teal-400 font-medium group-hover:underline">Design Template →</span>
+            </Link>
+          </div>
+        </div>
+
+        {/* Pillar 2: Complete Email & Mailbox Suite */}
+        <div className="rounded-xl border border-surface-border bg-surface p-5 space-y-4 shadow-sm">
+          <div className="flex items-center justify-between border-b border-surface-border pb-3">
+            <div className="flex items-center gap-2">
+              <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300">
+                <Server className="h-4 w-4" />
+              </div>
+              <div>
+                <h2 className="text-sm font-semibold text-zinc-900 dark:text-white">Complete Email Suite</h2>
+                <p className="text-[11px] text-zinc-500">MTA delivery, mailbox protocols & custom routing</p>
+              </div>
+            </div>
+            <span className="badge badge-success text-[10px]">Infrastructure</span>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3 text-xs">
+            <Link
+              href="/smtp"
+              className="group rounded-lg border border-surface-border bg-surface-raised p-3 hover:border-blue-500/50 hover:bg-surface transition-all flex flex-col justify-between"
+            >
+              <div className="flex items-center justify-between">
+                <span className="font-semibold text-zinc-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400">SMTP, IMAP & POP3</span>
+                <Server className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400" />
+              </div>
+              <p className="text-[11px] text-zinc-500 mt-1">Port 587/465 send & 993/995 mailbox sync</p>
+              <span className="mt-2 text-[10px] text-blue-600 dark:text-blue-400 font-medium group-hover:underline">View Protocols →</span>
+            </Link>
+
+            <Link
+              href="/inbound"
+              className="group rounded-lg border border-surface-border bg-surface-raised p-3 hover:border-blue-500/50 hover:bg-surface transition-all flex flex-col justify-between"
+            >
+              <div className="flex items-center justify-between">
+                <span className="font-semibold text-zinc-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400">Inbound & Receiving</span>
+                <Inbox className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400" />
+              </div>
+              <p className="text-[11px] text-zinc-500 mt-1">Port 25 MTA receiving & raw .eml download</p>
+              <span className="mt-2 text-[10px] text-blue-600 dark:text-blue-400 font-medium group-hover:underline">Inspect Inbound →</span>
+            </Link>
+
+            <Link
+              href="/aliases"
+              className="group rounded-lg border border-surface-border bg-surface-raised p-3 hover:border-blue-500/50 hover:bg-surface transition-all flex flex-col justify-between"
+            >
+              <div className="flex items-center justify-between">
+                <span className="font-semibold text-zinc-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400">Aliases & Catch-All</span>
+                <ArrowRightLeft className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400" />
+              </div>
+              <p className="text-[11px] text-zinc-500 mt-1">Virtual addresses & forwarding</p>
+              <span className="mt-2 text-[10px] text-blue-600 dark:text-blue-400 font-medium group-hover:underline">Configure Aliases →</span>
+            </Link>
+
+            <Link
+              href="/domains"
+              className="group rounded-lg border border-surface-border bg-surface-raised p-3 hover:border-blue-500/50 hover:bg-surface transition-all flex flex-col justify-between"
+            >
+              <div className="flex items-center justify-between">
+                <span className="font-semibold text-zinc-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400">Domains & DNS</span>
+                <Globe className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400" />
+              </div>
+              <p className="text-[11px] text-zinc-500 mt-1">DKIM, SPF & DMARC authentication</p>
+              <span className="mt-2 text-[10px] text-blue-600 dark:text-blue-400 font-medium group-hover:underline">Verify Domains →</span>
+            </Link>
+          </div>
         </div>
       </div>
 

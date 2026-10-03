@@ -27,31 +27,31 @@ import clsx from "clsx";
 
 const navGroups = [
   {
-    title: "Email",
+    title: "Email Suite",
     items: [
       { label: "Overview", href: "/overview", icon: LayoutDashboard },
       { label: "Emails", href: "/emails", icon: Mail },
-      { label: "Domains", href: "/domains", icon: Globe },
+      { label: "Inbound", href: "/inbound", icon: Inbox },
       { label: "Aliases", href: "/aliases", icon: ArrowRightLeft },
+      { label: "Domains", href: "/domains", icon: Globe },
     ],
   },
   {
-    title: "Engagement",
+    title: "Marketing & Growth",
     items: [
-      { label: "Audiences", href: "/audiences", icon: Users },
       { label: "Broadcasts", href: "/broadcasts", icon: Radio },
+      { label: "Audiences", href: "/audiences", icon: Users },
       { label: "Automations", href: "/automations", icon: GitBranch },
+      { label: "Templates", href: "/templates", icon: FileText },
       { label: "Events", href: "/events", icon: Zap },
     ],
   },
   {
-    title: "Developer",
+    title: "Protocols & Developer",
     items: [
-      { label: "API Keys", href: "/api-keys", icon: Key },
-      { label: "Templates", href: "/templates", icon: FileText },
-      { label: "Webhooks", href: "/webhooks", icon: Webhook },
       { label: "SMTP & Protocols", href: "/smtp", icon: Server },
-      { label: "Inbound", href: "/inbound", icon: Inbox },
+      { label: "API Keys", href: "/api-keys", icon: Key },
+      { label: "Webhooks", href: "/webhooks", icon: Webhook },
     ],
   },
   {
