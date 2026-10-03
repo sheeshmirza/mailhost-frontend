@@ -1,4 +1,6 @@
 // Resend / Mailhost API Client
+import { z } from "zod";
+import { telemetry } from "./telemetry";
 
 const getBaseUrl = (): string => {
   const configuredUrl = process.env.NEXT_PUBLIC_API_URL?.trim() || "https://api.buy4cashback.com";
@@ -7,6 +9,24 @@ const getBaseUrl = (): string => {
 
 export const getConfiguredAPIBaseUrl = () =>
   process.env.NEXT_PUBLIC_API_URL?.trim().replace(/\/+$/, "") || "";
+
+export function safeParseJSON<T>(jsonStr: string, fallback: T): { data: T; error?: string } {
+  try {
+    const parsed = JSON.parse(jsonStr);
+    return { data: parsed as T };
+  } catch (err) {
+    return { data: fallback, error: err instanceof Error ? err.message : "Invalid JSON syntax" };
+  }
+}
+
+/** Validation Schemas */
+export const SendEmailSchema = z.object({
+  from: z.string().min(3, "From address is required"),
+  to: z.array(z.string().email("Invalid recipient email address")).min(1, "At least one recipient is required"),
+  subject: z.string().min(1, "Subject is required"),
+  html: z.string().optional(),
+  text: z.string().optional(),
+});
 
 // API Types
 export interface UserView {
@@ -539,6 +559,13 @@ export class APIError extends Error {
   }
 }
 
+export function getErrorMessage(err: unknown, fallback = "An unexpected error occurred"): string {
+  if (err instanceof APIError) return err.message;
+  if (err instanceof Error) return err.message;
+  if (typeof err === "string") return err;
+  return fallback;
+}
+
 const API_CACHE_TTL_MS = 8_000;
 const API_CACHE_MAX_ENTRIES = 128;
 const API_READ_TIMEOUT_MS = 15_000;
@@ -640,7 +667,8 @@ export class APIClient {
     url: string,
     options: RequestInit,
     requestToken: string | null,
-    responseType: "json" | "blob" | "text" | "response"
+    responseType: "json" | "blob" | "text" | "response",
+    retryAttempt = 0
   ): Promise<T> {
     const headers = new Headers(options.headers);
     if (!headers.has("Accept")) headers.set("Accept", "application/json");
@@ -734,16 +762,36 @@ export class APIClient {
 
       return data as T;
     } catch (error) {
-      if (error instanceof APIError) throw error;
+      const isTransient =
+        error instanceof TypeError ||
+        (error instanceof APIError && [502, 503, 504].includes(error.status));
+      const isIdempotent = !options.method || options.method.toUpperCase() === "GET";
+
+      if (isTransient && isIdempotent && retryAttempt < 2 && !callerSignal?.aborted) {
+        const backoffMs = Math.pow(2, retryAttempt) * 350 + Math.random() * 150;
+        telemetry.log("api_retry", `Transient network failure on ${url}. Retrying attempt ${retryAttempt + 1}...`);
+        await new Promise((r) => setTimeout(r, backoffMs));
+        return this.performRequest<T>(url, options, requestToken, responseType, retryAttempt + 1);
+      }
+
+      if (error instanceof APIError) {
+        telemetry.error(`API request error: ${error.message}`, error, { url, status: error.status });
+        throw error;
+      }
       if (didTimeout) {
-        throw new APIError("The request timed out. Please try again.", 0, error);
+        const timeoutErr = new APIError("The request timed out. Please try again.", 0, error);
+        telemetry.error("API request timed out", timeoutErr, { url });
+        throw timeoutErr;
       }
       if (callerSignal?.aborted) {
         throw new APIError("The request was cancelled.", 0, error);
       }
       if (error instanceof TypeError) {
-        throw new APIError("Could not connect to the API. Check your connection and try again.", 0, error);
+        const connErr = new APIError("Could not connect to the API. Check your connection and try again.", 0, error);
+        telemetry.error("Network connection failure", connErr, { url });
+        throw connErr;
       }
+      telemetry.error("Unhandled API error", error, { url });
       throw error;
     } finally {
       clearTimeout(timeoutId);
