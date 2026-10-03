@@ -74,6 +74,21 @@ export default function Sidebar() {
     <aside className="hidden lg:flex fixed left-0 top-14 bottom-0 z-30 w-60 flex-col justify-between border-r border-surface-border bg-surface px-3 py-5 transition-colors overflow-y-auto">
       {/* Navigation Links */}
       <nav className="flex flex-col">
+        {/* Platform Positioning Header */}
+        <div className="px-3 mb-4 pb-3 border-b border-surface-border">
+          <div className="flex items-center gap-2">
+            <span className="flex h-5 w-5 items-center justify-center rounded bg-teal-600 text-white font-bold text-[10px]">
+              M
+            </span>
+            <span className="text-xs font-bold text-zinc-900 dark:text-white tracking-tight">
+              Mailhost Suite
+            </span>
+          </div>
+          <p className="text-[10px] text-zinc-500 dark:text-zinc-400 mt-1 leading-snug">
+            One destination for powerful emailing. All in one suite.
+          </p>
+        </div>
+
         {navGroups.map((group, groupIdx) => (
           <div key={group.title} className={groupIdx !== 0 ? "pt-5" : ""}>
             <div className="px-3 mb-2 text-[10px] font-semibold uppercase tracking-[0.08em] text-content-subtle">

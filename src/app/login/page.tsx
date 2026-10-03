@@ -107,11 +107,11 @@ export default function LoginPage() {
         {/* Brand Header */}
         <div className="flex flex-col items-center space-y-2.5 text-center">
           <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-teal-800 text-lg font-bold text-white shadow-sm dark:bg-teal-300 dark:text-teal-950">
-            R
+            M
           </div>
           <h1 className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-white">
             {mode === "login"
-              ? "Sign in to Resend"
+              ? "Sign in to Mailhost"
               : mode === "register"
               ? "Create your account"
               : "Connect with API Key"}
@@ -119,7 +119,7 @@ export default function LoginPage() {
           <p className="text-xs text-zinc-500 dark:text-zinc-400">
             {mode === "apikey"
               ? "Enter your secret API key to access this dashboard."
-              : "Next generation transactional email platform."}
+              : "One destination for powerful emailing. All in one suite."}
           </p>
         </div>
 

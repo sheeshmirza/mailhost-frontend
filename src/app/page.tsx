@@ -164,16 +164,19 @@ export default function HomePage() {
         {/* Badge */}
         <div className="inline-flex items-center gap-2 rounded-full border border-teal-500/30 bg-teal-50/60 dark:bg-teal-950/30 px-3.5 py-1 text-xs text-teal-800 dark:text-teal-300 backdrop-blur-sm">
           <Sparkles className="h-3.5 w-3.5 text-teal-600 dark:text-teal-400" />
-          <span>Marketing Automation Engine + Complete Email Suite</span>
+          <span>One destination for powerful emailing · All in one suite</span>
         </div>
 
         {/* Hero Title */}
         <div className="space-y-4 max-w-4xl mx-auto">
           <h1 className="text-4xl sm:text-6xl md:text-7xl font-bold tracking-tight text-zinc-900 dark:text-white leading-[1.08]">
-            Marketing Platform &amp; Complete Email Suite
+            One destination for powerful emailing.{" "}
+            <span className="block text-transparent bg-clip-text bg-gradient-to-r from-teal-600 via-emerald-500 to-sky-600 dark:from-teal-400 dark:via-emerald-300 dark:to-sky-400">
+              All in one suite.
+            </span>
           </h1>
           <p className="text-base sm:text-lg md:text-xl text-zinc-600 dark:text-zinc-400 max-w-3xl mx-auto leading-relaxed">
-            The all-in-one email solution: Launch targeted marketing broadcast campaigns, build automated customer drip journeys, deliver transactional emails with sub-second latency, and run full mailbox infrastructure over SMTP, IMAP, and POP3.
+            The complete email platform: Launch high-converting marketing broadcast campaigns, build automated multi-step customer drip journeys, deliver transactional emails with sub-second latency, and run full mailbox infrastructure over SMTP, IMAP, and POP3.
           </p>
         </div>
 
@@ -587,10 +590,10 @@ export default function HomePage() {
         <div className="rounded-3xl border border-surface-border bg-surface p-8 sm:p-12 text-center space-y-6 shadow-2xl relative overflow-hidden">
           <div className="space-y-3 max-w-xl mx-auto">
             <h2 className="text-3xl sm:text-4xl font-bold tracking-tight text-zinc-900 dark:text-white">
-              Ready to send emails that actually reach the inbox?
+              One destination for powerful emailing.
             </h2>
             <p className="text-xs sm:text-sm text-zinc-600 dark:text-zinc-400">
-              Start sending transactional emails and marketing broadcasts in under two minutes.
+              Start sending transactional emails, automated drip journeys, and marketing broadcasts in under two minutes.
             </p>
           </div>
 
@@ -618,13 +621,13 @@ export default function HomePage() {
           <div className="grid grid-cols-2 md:grid-cols-5 gap-8">
             <div className="col-span-2 space-y-3">
               <div className="flex items-center gap-2">
-                <div className="flex h-6 w-6 items-center justify-center rounded-md bg-zinc-900 text-white dark:bg-white dark:text-black font-semibold text-xs">
-                  R
+                <div className="flex h-6 w-6 items-center justify-center rounded-md bg-teal-600 text-white font-semibold text-xs">
+                  M
                 </div>
-                <span className="text-sm font-semibold text-zinc-900 dark:text-white">Resend</span>
+                <span className="text-sm font-semibold text-zinc-900 dark:text-white">Mailhost</span>
               </div>
               <p className="text-zinc-500 max-w-sm">
-                Next-generation marketing automation engine and complete mailbox suite for modern developers.
+                One destination for powerful emailing. All in one suite: marketing automation, transactional delivery, and complete mailbox infrastructure.
               </p>
               <div className="flex items-center gap-2 text-zinc-500 font-mono text-[11px]">
                 <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
@@ -667,7 +670,7 @@ export default function HomePage() {
           </div>
 
           <div className="border-t border-surface-border pt-6 flex flex-col sm:flex-row items-center justify-between text-zinc-500 text-[11px] gap-4">
-            <p>© 2026 Resend Inc. All rights reserved.</p>
+            <p>© 2026 Mailhost Suite. All rights reserved.</p>
             <div className="flex items-center gap-4">
               <Link href="/overview" className="hover:text-zinc-900 dark:hover:text-white">Dashboard</Link>
               <Link href="/login" className="hover:text-zinc-900 dark:hover:text-white">Login</Link>

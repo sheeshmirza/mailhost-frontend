@@ -111,11 +111,11 @@ export default function Navbar({
           )}
 
           <Link href="/" className="flex items-center gap-2.5 group">
-            <div className="flex h-6 w-6 items-center justify-center rounded-md bg-zinc-900 text-white dark:bg-white dark:text-black font-semibold text-xs tracking-tighter group-hover:opacity-90 transition-opacity">
-              R
+            <div className="flex h-6 w-6 items-center justify-center rounded-md bg-teal-600 text-white font-semibold text-xs tracking-tighter group-hover:opacity-90 transition-opacity">
+              M
             </div>
             <span className="text-sm font-semibold tracking-tight text-zinc-900 dark:text-white">
-              Resend
+              Mailhost
             </span>
           </Link>
 
@@ -358,10 +358,10 @@ export default function Navbar({
             <div className="space-y-4">
               <div className="flex items-center justify-between pb-3 border-b border-surface-border">
                 <div className="flex items-center gap-2">
-                  <div className="flex h-6 w-6 items-center justify-center rounded-md bg-zinc-900 text-white dark:bg-white dark:text-black font-semibold text-xs">
-                    R
+                  <div className="flex h-6 w-6 items-center justify-center rounded-md bg-teal-600 text-white font-semibold text-xs">
+                    M
                   </div>
-                  <span className="text-sm font-semibold text-zinc-900 dark:text-white">Resend</span>
+                  <span className="text-sm font-semibold text-zinc-900 dark:text-white">Mailhost</span>
                 </div>
                 <button
                   onClick={() => setMobileMenuOpen(false)}

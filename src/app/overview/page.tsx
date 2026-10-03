@@ -123,11 +123,16 @@ export default function OverviewPage() {
       {/* Top Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-surface-border pb-6">
         <div>
-          <h1 className="text-xl font-semibold tracking-tight text-zinc-900 dark:text-white">
-            Overview
-          </h1>
+          <div className="flex items-center gap-2">
+            <h1 className="text-xl font-semibold tracking-tight text-zinc-900 dark:text-white">
+              Overview
+            </h1>
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-teal-500/10 text-teal-600 dark:text-teal-400 border border-teal-500/20">
+              <Sparkles className="w-2.5 h-2.5" /> All-in-One Suite
+            </span>
+          </div>
           <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
-            Real-time delivery performance and account activity.
+            One destination for powerful emailing: marketing campaigns, visual drip journeys, transactional delivery, and direct MX infrastructure.
           </p>
         </div>
 
