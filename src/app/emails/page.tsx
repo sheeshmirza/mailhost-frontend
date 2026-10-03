@@ -36,6 +36,7 @@ function EmailsPageContent() {
   const initialId = searchParams?.get("id") ?? null;
 
   const [emails, setEmails] = useState<EmailSummary[]>([]);
+  const [domains, setDomains] = useState<DomainView[]>([]);
   const [selectedEmail, setSelectedEmail] = useState<EmailDetail | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
@@ -47,6 +48,9 @@ function EmailsPageContent() {
   const [batchJson, setBatchJson] = useState("[]");
   const [batchSending, setBatchSending] = useState(false);
   const [bulkSending, setBulkSending] = useState(false);
+  const [bulkSenderPrefix, setBulkSenderPrefix] = useState("marketing");
+  const [bulkSelectedDomain, setBulkSelectedDomain] = useState("");
+  const [isCustomBulkFrom, setIsCustomBulkFrom] = useState(false);
   const [bulkFrom, setBulkFrom] = useState("");
   const [bulkSubject, setBulkSubject] = useState("");
   const [bulkHtml, setBulkHtml] = useState("");
@@ -63,6 +67,21 @@ function EmailsPageContent() {
   const [emailPageHistory, setEmailPageHistory] = useState<(string | undefined)[]>([]);
   const emailListRevision = useRef(0);
   const emailDetailRevision = useRef(0);
+
+  const verifiedDomains = domains.filter((d) => d.status === "verified");
+
+  useEffect(() => {
+    api.listDomains()
+      .then((res) => {
+        const list = res.data || [];
+        setDomains(list);
+        const verified = list.filter((d) => d.status === "verified");
+        if (verified.length > 0) {
+          setBulkSelectedDomain(verified[0].name);
+        }
+      })
+      .catch((err) => console.error("Failed to load domains", err));
+  }, []);
 
   const fetchEmails = async (before?: string, resetPage = true): Promise<boolean> => {
     const revision = ++emailListRevision.current;
@@ -143,6 +162,24 @@ function EmailsPageContent() {
     setBatchSending(true);
     try {
       const parsed: SendEmailPayload[] = JSON.parse(batchJson);
+      if (!Array.isArray(parsed) || parsed.length === 0) {
+        throw new Error("Batch must contain at least 1 email object.");
+      }
+      if (verifiedDomains.length === 0) {
+        throw new Error("No verified domains found on your account. Please register and verify a domain first.");
+      }
+      for (let i = 0; i < parsed.length; i++) {
+        const item = parsed[i];
+        if (!item.from) {
+          throw new Error(`Email #[${i + 1}] is missing a "from" sender address.`);
+        }
+        const match = item.from.match(/<([^>]+)>/) || [null, item.from];
+        const cleanEmail = (match[1] || item.from).trim();
+        const emailDomain = cleanEmail.split("@")[1]?.toLowerCase();
+        if (!emailDomain || !verifiedDomains.some((d) => d.name.toLowerCase() === emailDomain)) {
+          throw new Error(`Email #[${i + 1}] sender domain "${emailDomain || "unknown"}" is not a verified domain on your account.`);
+        }
+      }
       const result = await api.sendBatch(parsed);
       setLastBatchId(result.batch_id);
       setBatchStatus(null);
@@ -150,7 +187,7 @@ function EmailsPageContent() {
       setIsBatchOpen(false);
       fetchEmails();
     } catch (err: any) {
-      toast.error("Invalid Batch JSON or send failed: " + err.message);
+      toast.error("Batch send failed: " + err.message);
     } finally {
       setBatchSending(false);
     }
@@ -160,6 +197,24 @@ function EmailsPageContent() {
     e.preventDefault();
     setBulkSending(true);
     try {
+      if (verifiedDomains.length === 0) {
+        throw new Error("No verified domains found on your account. Please register and verify a domain first.");
+      }
+      let finalFrom = bulkFrom.trim();
+      if (!isCustomBulkFrom && bulkSelectedDomain) {
+        const prefix = bulkSenderPrefix.trim().replace(/@.*$/, "") || "marketing";
+        finalFrom = `${prefix}@${bulkSelectedDomain}`;
+      }
+      if (!finalFrom) {
+        throw new Error("Sender address is required.");
+      }
+      const match = finalFrom.match(/<([^>]+)>/) || [null, finalFrom];
+      const cleanEmail = (match[1] || finalFrom).trim();
+      const emailDomain = cleanEmail.split("@")[1]?.toLowerCase();
+      if (!emailDomain || !verifiedDomains.some((d) => d.name.toLowerCase() === emailDomain)) {
+        throw new Error(`Domain "${emailDomain || "unknown"}" is not a verified domain on your account. Emails can only be sent from registered and verified domains.`);
+      }
+
       const recipients = JSON.parse(bulkRecipientsJson) as BulkEmailPayload["recipients"];
       const replyTo = JSON.parse(bulkReplyToJson) as string[];
       const headers = JSON.parse(bulkHeadersJson) as Record<string, string>;
@@ -171,7 +226,7 @@ function EmailsPageContent() {
         throw new Error("Reply-to, headers, or attachment data has an invalid JSON shape.");
       }
       const result = await api.sendBulk({
-        from: bulkFrom.trim(),
+        from: finalFrom,
         reply_to: replyTo,
         subject: bulkSubject.trim(),
         html: bulkHtml,
@@ -670,10 +725,64 @@ function EmailsPageContent() {
               <p className="mt-1 text-xs text-content-muted">One shared message template, with variables rendered individually for each recipient.</p>
             </div>
             <form onSubmit={handleSendBulk} className="space-y-3">
-              <label className="block text-xs font-medium text-content-secondary">
-                From address
-                <input value={bulkFrom} onChange={(event) => setBulkFrom(event.target.value)} required className="input-base mt-1" placeholder="Sender email address" />
-              </label>
+              {verifiedDomains.length === 0 ? (
+                <div className="rounded-md border border-amber-500/30 bg-amber-500/10 p-3 text-xs text-amber-800 dark:text-amber-200">
+                  <p className="font-semibold">No verified domains found</p>
+                  <p className="mt-0.5 text-[11px]">You must register and verify a domain before sending bulk emails.</p>
+                </div>
+              ) : (
+                <div>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="block text-xs font-medium text-content-secondary">
+                      From address (Verified Domain)
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (!isCustomBulkFrom) {
+                          setBulkFrom(`${bulkSenderPrefix || "marketing"}@${bulkSelectedDomain}`);
+                        }
+                        setIsCustomBulkFrom(!isCustomBulkFrom);
+                      }}
+                      className="text-[10px] text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white underline"
+                    >
+                      {isCustomBulkFrom ? "Use domain picker" : "Custom format"}
+                    </button>
+                  </div>
+                  {isCustomBulkFrom ? (
+                    <input
+                      value={bulkFrom}
+                      onChange={(event) => setBulkFrom(event.target.value)}
+                      required
+                      className="input-base mt-1"
+                      placeholder="e.g. Sales Team <sales@yourdomain.com>"
+                    />
+                  ) : (
+                    <div className="flex items-center rounded-md border border-surface-border bg-surface-raised overflow-hidden">
+                      <input
+                        type="text"
+                        value={bulkSenderPrefix}
+                        onChange={(e) => setBulkSenderPrefix(e.target.value)}
+                        placeholder="prefix"
+                        required
+                        className="w-1/2 bg-transparent px-3 py-2 text-xs text-zinc-900 dark:text-white placeholder-zinc-400 focus:outline-none text-right"
+                      />
+                      <span className="text-xs text-zinc-400 dark:text-zinc-500 px-1 select-none">@</span>
+                      <select
+                        value={bulkSelectedDomain}
+                        onChange={(e) => setBulkSelectedDomain(e.target.value)}
+                        className="w-1/2 bg-transparent px-2 py-2 text-xs font-medium text-zinc-900 dark:text-white focus:outline-none cursor-pointer truncate"
+                      >
+                        {verifiedDomains.map((dom) => (
+                          <option key={dom.id || dom.name} value={dom.name} className="bg-surface text-zinc-900 dark:text-white">
+                            {dom.name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
+                </div>
+              )}
               <label className="block text-xs font-medium text-content-secondary">
                 Subject
                 <input value={bulkSubject} onChange={(event) => setBulkSubject(event.target.value)} required className="input-base mt-1" placeholder="Welcome, {{first_name}}" />

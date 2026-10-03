@@ -7,6 +7,7 @@ import {
   AudienceView,
   SegmentView,
   TopicView,
+  DomainView,
 } from "@/lib/api";
 import {
   Plus,
@@ -15,6 +16,8 @@ import {
   Trash2,
   Pencil,
   CheckCircle2,
+  Globe,
+  ShieldAlert,
 } from "lucide-react";
 import { useToast } from "@/lib/toast-context";
 import { ErrorState } from "@/components/ui/ErrorState";
@@ -26,6 +29,7 @@ export default function BroadcastsPage() {
   const [audiences, setAudiences] = useState<AudienceView[]>([]);
   const [segments, setSegments] = useState<SegmentView[]>([]);
   const [topics, setTopics] = useState<TopicView[]>([]);
+  const [domains, setDomains] = useState<DomainView[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
 
@@ -37,6 +41,9 @@ export default function BroadcastsPage() {
   const [scheduledAt, setScheduledAt] = useState("");
   const [isSending, setIsSending] = useState(false);
   const [name, setName] = useState("");
+  const [fromPrefix, setFromPrefix] = useState("newsletter");
+  const [selectedDomain, setSelectedDomain] = useState("");
+  const [isCustomFrom, setIsCustomFrom] = useState(false);
   const [from, setFrom] = useState("");
   const [subject, setSubject] = useState("");
   const [html, setHtml] = useState("");
@@ -46,15 +53,18 @@ export default function BroadcastsPage() {
   const [previewText, setPreviewText] = useState("");
   const [plainText, setPlainText] = useState("");
 
+  const verifiedDomains = domains.filter((d) => d.status === "verified");
+
   const fetchData = async () => {
     setIsLoading(true);
     setLoadError(null);
     try {
-      const [bcRes, audRes, segRes, topicRes] = await Promise.allSettled([
+      const [bcRes, audRes, segRes, topicRes, domRes] = await Promise.allSettled([
         api.listBroadcasts(),
         api.listAudiences(),
         api.listSegments(),
         api.listTopics(),
+        api.listDomains(),
       ]);
       const failedResources: string[] = [];
       if (bcRes.status === "fulfilled") {
@@ -72,6 +82,14 @@ export default function BroadcastsPage() {
       else failedResources.push("segments");
       if (topicRes.status === "fulfilled") setTopics(topicRes.value.data || []);
       else failedResources.push("topics");
+      if (domRes.status === "fulfilled") {
+        const dList = domRes.value.data || [];
+        setDomains(dList);
+        const verified = dList.filter((d) => d.status === "verified");
+        if (verified.length > 0) {
+          setSelectedDomain((cur) => (verified.some((v) => v.name === cur) ? cur : verified[0].name));
+        }
+      }
       if (failedResources.length) {
         setLoadError(`Could not load ${failedResources.join(" and ")}.`);
       }
@@ -92,9 +110,26 @@ export default function BroadcastsPage() {
     if (isSaving) return;
     setIsSaving(true);
     try {
+      if (verifiedDomains.length === 0) {
+        throw new Error("No verified domains found. You must register and verify a domain before creating broadcasts.");
+      }
+      let finalFrom = from.trim();
+      if (!isCustomFrom && selectedDomain) {
+        finalFrom = `${fromPrefix.trim().replace(/@.*$/, "") || "newsletter"}@${selectedDomain}`;
+      }
+      if (!finalFrom) {
+        throw new Error("From address is required.");
+      }
+      const match = finalFrom.match(/<([^>]+)>/) || [null, finalFrom];
+      const cleanEmail = (match[1] || finalFrom).trim();
+      const emailDomain = cleanEmail.split("@")[1]?.toLowerCase();
+      if (!emailDomain || !verifiedDomains.some((d) => d.name.toLowerCase() === emailDomain)) {
+        throw new Error(`Domain "${emailDomain || "unknown"}" is not a verified domain on your account. Emails can only be sent from registered and verified domains.`);
+      }
+
       const payload = {
         name: name.trim(),
-        from: from.trim(),
+        from: finalFrom,
         subject: subject.trim(),
         html,
         text: plainText || undefined,
@@ -374,17 +409,64 @@ export default function BroadcastsPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">
-                  From Address
-                </label>
-                <input
-                  type="text"
-                  value={from}
-                  onChange={(e) => setFrom(e.target.value)}
-                  placeholder="Sender email address"
-                  required
-                  className="w-full rounded-lg border border-surface-border bg-surface-raised px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-zinc-900/10 dark:focus:ring-white/10"
-                />
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300">
+                    From Address (Verified Domain)
+                  </label>
+                  {verifiedDomains.length > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (!isCustomFrom) {
+                          setFrom(`${fromPrefix || "newsletter"}@${selectedDomain}`);
+                        }
+                        setIsCustomFrom(!isCustomFrom);
+                      }}
+                      className="text-xs text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white underline"
+                    >
+                      {isCustomFrom ? "Use domain picker" : "Custom format"}
+                    </button>
+                  )}
+                </div>
+
+                {verifiedDomains.length === 0 ? (
+                  <div className="rounded-lg border border-amber-500/30 bg-amber-500/10 p-3 text-xs text-amber-800 dark:text-amber-200">
+                    <p className="font-semibold">No verified domains found</p>
+                    <p className="mt-0.5 text-[11px]">You must register and verify a domain in the Domains tab before creating broadcasts.</p>
+                  </div>
+                ) : isCustomFrom ? (
+                  <input
+                    type="text"
+                    value={from}
+                    onChange={(e) => setFrom(e.target.value)}
+                    placeholder="e.g. Newsletter Team <newsletter@yourdomain.com>"
+                    required
+                    className="w-full rounded-lg border border-surface-border bg-surface-raised px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-zinc-900/10 dark:focus:ring-white/10"
+                  />
+                ) : (
+                  <div className="flex items-center rounded-lg border border-surface-border bg-surface-raised overflow-hidden">
+                    <input
+                      type="text"
+                      value={fromPrefix}
+                      onChange={(e) => setFromPrefix(e.target.value)}
+                      placeholder="newsletter"
+                      required
+                      className="w-1/2 bg-transparent px-3 py-2 text-sm text-zinc-900 dark:text-white placeholder-zinc-400 focus:outline-none text-right"
+                    />
+                    <span className="text-sm text-zinc-400 dark:text-zinc-500 px-1 select-none">@</span>
+                    <select
+                      value={selectedDomain}
+                      onChange={(e) => setSelectedDomain(e.target.value)}
+                      className="w-1/2 bg-transparent px-2 py-2 text-sm font-medium text-zinc-900 dark:text-white focus:outline-none cursor-pointer truncate"
+                    >
+                      {verifiedDomains.map((dom) => (
+                        <option key={dom.id || dom.name} value={dom.name} className="bg-surface text-zinc-900 dark:text-white">
+                          {dom.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
               </div>
 
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">

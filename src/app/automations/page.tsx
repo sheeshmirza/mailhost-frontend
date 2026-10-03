@@ -7,6 +7,7 @@ import {
   AutomationRun,
   AutomationRunDetail,
   AutomationStep,
+  DomainView,
 } from "@/lib/api";
 import {
   GitBranch,
@@ -19,6 +20,8 @@ import {
   Filter,
   RefreshCw,
   Zap,
+  Globe,
+  ShieldAlert,
 } from "lucide-react";
 import { useToast } from "@/lib/toast-context";
 import { ErrorState } from "@/components/ui/ErrorState";
@@ -27,6 +30,7 @@ import { TableSkeleton } from "@/components/ui/LoadingState";
 export default function AutomationsPage() {
   const toast = useToast();
   const [automations, setAutomations] = useState<AutomationView[]>([]);
+  const [domains, setDomains] = useState<DomainView[]>([]);
   const [selectedAuto, setSelectedAuto] = useState<AutomationView | null>(null);
   const [runs, setRuns] = useState<AutomationRun[]>([]);
   const [selectedRun, setSelectedRun] = useState<AutomationRunDetail | null>(null);
@@ -46,26 +50,44 @@ export default function AutomationsPage() {
   const [triggerType, setTriggerType] = useState<string>("");
   const [eventName, setEventName] = useState("");
   const [emailSubject, setEmailSubject] = useState("");
+  const [emailFromPrefix, setEmailFromPrefix] = useState("automations");
+  const [selectedDomain, setSelectedDomain] = useState("");
+  const [isCustomFrom, setIsCustomFrom] = useState(false);
   const [emailFrom, setEmailFrom] = useState("");
   const [emailHtml, setEmailHtml] = useState("");
+
+  const verifiedDomains = domains.filter((d) => d.status === "verified");
 
   const fetchAutomations = async () => {
     const revision = ++automationListRevision.current;
     setIsLoading(true);
     setLoadError(null);
     try {
-      const listResponse = await api.listAutomations();
+      const [listResponse, domainsResponse] = await Promise.allSettled([
+        api.listAutomations(),
+        api.listDomains(),
+      ]);
       if (revision !== automationListRevision.current) return;
-      const list = listResponse.data || [];
-      setAutomations(list);
-      const nextAutomation =
-        list.find((automation) => automation.id === selectedAuto?.id) || list[0] || null;
-      setSelectedAuto(nextAutomation);
-      if (nextAutomation) void loadRuns(nextAutomation.id);
-      else {
-        runsRevision.current += 1;
-        setRuns([]);
-        setRunsLoading(false);
+      if (listResponse.status === "fulfilled") {
+        const list = listResponse.value.data || [];
+        setAutomations(list);
+        const nextAutomation =
+          list.find((automation) => automation.id === selectedAuto?.id) || list[0] || null;
+        setSelectedAuto(nextAutomation);
+        if (nextAutomation) void loadRuns(nextAutomation.id);
+        else {
+          runsRevision.current += 1;
+          setRuns([]);
+          setRunsLoading(false);
+        }
+      }
+      if (domainsResponse.status === "fulfilled") {
+        const dList = domainsResponse.value.data || [];
+        setDomains(dList);
+        const verified = dList.filter((d) => d.status === "verified");
+        if (verified.length > 0) {
+          setSelectedDomain((cur) => (verified.some((v) => v.name === cur) ? cur : verified[0].name));
+        }
       }
     } catch (err) {
       if (revision !== automationListRevision.current) return;
@@ -121,11 +143,28 @@ export default function AutomationsPage() {
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
+      if (verifiedDomains.length === 0) {
+        throw new Error("No verified domains found. You must register and verify a domain before creating automation emails.");
+      }
+      let finalFrom = emailFrom.trim();
+      if (!isCustomFrom && selectedDomain) {
+        finalFrom = `${emailFromPrefix.trim().replace(/@.*$/, "") || "automations"}@${selectedDomain}`;
+      }
+      if (!finalFrom) {
+        throw new Error("Sender email address is required.");
+      }
+      const match = finalFrom.match(/<([^>]+)>/) || [null, finalFrom];
+      const cleanEmail = (match[1] || finalFrom).trim();
+      const emailDomain = cleanEmail.split("@")[1]?.toLowerCase();
+      if (!emailDomain || !verifiedDomains.some((d) => d.name.toLowerCase() === emailDomain)) {
+        throw new Error(`Domain "${emailDomain || "unknown"}" is not a verified domain on your account. Emails can only be sent from registered and verified domains.`);
+      }
+
       const steps: AutomationStep[] = [{
         id: crypto.randomUUID(),
         type: "send_email",
         config: {
-          from: emailFrom.trim(),
+          from: finalFrom,
           subject: emailSubject.trim(),
           html: emailHtml,
         },
@@ -144,6 +183,8 @@ export default function AutomationsPage() {
       toast.success("Automation workflow deployed!");
       setIsOpen(false);
       setName("");
+      setEmailSubject("");
+      setEmailHtml("");
       await fetchAutomations();
       setSelectedAuto(newAuto);
     } catch (err: any) {
@@ -583,17 +624,66 @@ export default function AutomationsPage() {
 
               {/* Initial Email Configuration */}
               <div className="pt-2 border-t border-surface-border space-y-2">
-                <span className="text-[11px] font-semibold text-zinc-600 dark:text-zinc-300 uppercase tracking-wider block">
-                  Step 1: Immediate Email
-                </span>
-                <input
-                  type="email"
-                  value={emailFrom}
-                  onChange={(e) => setEmailFrom(e.target.value)}
-                  placeholder="Sender email address"
-                  required
-                  className="w-full rounded-md border border-surface-border bg-surface-raised px-3 py-1.5 text-xs text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-600 focus:outline-none"
-                />
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-semibold text-zinc-600 dark:text-zinc-300 uppercase tracking-wider block">
+                    Step 1: Immediate Email (Verified Domain)
+                  </span>
+                  {verifiedDomains.length > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (!isCustomFrom) {
+                          setEmailFrom(`${emailFromPrefix || "automations"}@${selectedDomain}`);
+                        }
+                        setIsCustomFrom(!isCustomFrom);
+                      }}
+                      className="text-[10px] text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white underline"
+                    >
+                      {isCustomFrom ? "Use domain picker" : "Custom format"}
+                    </button>
+                  )}
+                </div>
+
+                {verifiedDomains.length === 0 ? (
+                  <div className="rounded-md border border-amber-500/30 bg-amber-500/10 p-2.5 text-xs text-amber-800 dark:text-amber-200">
+                    <p className="font-medium">No verified domains found</p>
+                    <p className="text-[11px] text-amber-700 dark:text-amber-300">
+                      You must register and verify a domain before creating automation email steps.
+                    </p>
+                  </div>
+                ) : isCustomFrom ? (
+                  <input
+                    type="text"
+                    value={emailFrom}
+                    onChange={(e) => setEmailFrom(e.target.value)}
+                    placeholder="e.g. Bot <bot@yourdomain.com>"
+                    required
+                    className="w-full rounded-md border border-surface-border bg-surface-raised px-3 py-1.5 text-xs text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-600 focus:outline-none"
+                  />
+                ) : (
+                  <div className="flex items-center rounded-md border border-surface-border bg-surface-raised overflow-hidden">
+                    <input
+                      type="text"
+                      value={emailFromPrefix}
+                      onChange={(e) => setEmailFromPrefix(e.target.value)}
+                      placeholder="automations"
+                      required
+                      className="w-1/2 bg-transparent px-3 py-1.5 text-xs text-zinc-900 dark:text-white placeholder-zinc-400 focus:outline-none text-right"
+                    />
+                    <span className="text-xs text-zinc-400 dark:text-zinc-500 px-1 select-none">@</span>
+                    <select
+                      value={selectedDomain}
+                      onChange={(e) => setSelectedDomain(e.target.value)}
+                      className="w-1/2 bg-transparent px-2 py-1.5 text-xs font-medium text-zinc-900 dark:text-white focus:outline-none cursor-pointer truncate"
+                    >
+                      {verifiedDomains.map((dom) => (
+                        <option key={dom.id || dom.name} value={dom.name} className="bg-surface text-zinc-900 dark:text-white">
+                          {dom.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
                 <input
                   type="text"
                   value={emailSubject}

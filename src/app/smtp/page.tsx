@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { api, SMTPCredView } from "@/lib/api";
+import { api, SMTPCredView, DomainView } from "@/lib/api";
 import { useToast } from "@/lib/toast-context";
 import { ErrorState } from "@/components/ui/ErrorState";
 import { TableSkeleton } from "@/components/ui/LoadingState";
@@ -20,11 +20,15 @@ export default function SMTPPage() {
   const smtpSecurity = process.env.NEXT_PUBLIC_SMTP_SECURITY?.trim() || "Not configured";
   const smtpAuthMechanism = process.env.NEXT_PUBLIC_SMTP_AUTH_MECHANISM?.trim() || "Not configured";
   const [credentials, setCredentials] = useState<SMTPCredView[]>([]);
+  const [domains, setDomains] = useState<DomainView[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
 
   // New credential modal
   const [isOpen, setIsOpen] = useState(false);
+  const [emailPrefix, setEmailPrefix] = useState("smtp");
+  const [selectedDomain, setSelectedDomain] = useState("");
+  const [isCustomEmail, setIsCustomEmail] = useState(false);
   const [email, setEmail] = useState("");
   const [credName, setCredName] = useState("");
   const [generatedCreds, setGeneratedCreds] = useState<{
@@ -33,12 +37,29 @@ export default function SMTPPage() {
   } | null>(null);
   const [copiedPass, setCopiedPass] = useState(false);
 
+  const verifiedDomains = domains.filter((d) => d.status === "verified");
+
   const fetchData = async () => {
     setIsLoading(true);
     setLoadError(null);
     try {
-      const res = await api.listSMTPCredentials();
-      setCredentials(res.data || []);
+      const [credRes, domRes] = await Promise.allSettled([
+        api.listSMTPCredentials(),
+        api.listDomains(),
+      ]);
+      if (credRes.status === "fulfilled") {
+        setCredentials(credRes.value.data || []);
+      } else {
+        setLoadError("Could not load SMTP credentials.");
+      }
+      if (domRes.status === "fulfilled") {
+        const dList = domRes.value.data || [];
+        setDomains(dList);
+        const verified = dList.filter((d) => d.status === "verified");
+        if (verified.length > 0) {
+          setSelectedDomain((cur) => (verified.some((v) => v.name === cur) ? cur : verified[0].name));
+        }
+      }
     } catch (err) {
       console.error("Failed to load SMTP credentials", err);
       setLoadError(err instanceof Error ? err.message : "Could not load SMTP data.");
@@ -54,7 +75,24 @@ export default function SMTPPage() {
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const res = await api.createSMTPCredential(email.trim(), credName.trim() || undefined);
+      if (verifiedDomains.length === 0) {
+        throw new Error("No verified domains found. You must register and verify a domain before creating SMTP credentials.");
+      }
+      let finalEmail = email.trim();
+      if (!isCustomEmail && selectedDomain) {
+        finalEmail = `${emailPrefix.trim().replace(/@.*$/, "") || "smtp"}@${selectedDomain}`;
+      }
+      if (!finalEmail) {
+        throw new Error("Sender email address is required.");
+      }
+      const match = finalEmail.match(/<([^>]+)>/) || [null, finalEmail];
+      const cleanEmail = (match[1] || finalEmail).trim();
+      const emailDomain = cleanEmail.split("@")[1]?.toLowerCase();
+      if (!emailDomain || !verifiedDomains.some((d) => d.name.toLowerCase() === emailDomain)) {
+        throw new Error(`Domain "${emailDomain || "unknown"}" is not a verified domain on your account.`);
+      }
+
+      const res = await api.createSMTPCredential(finalEmail, credName.trim() || undefined);
       setGeneratedCreds({
         username: res.username,
         password: res.password,
@@ -287,17 +325,66 @@ await transporter.sendMail({
             ) : (
               <form onSubmit={handleCreate} className="space-y-4">
                 <div>
-                  <label className="block text-[11px] font-medium text-zinc-600 dark:text-zinc-300 mb-1">
-                    Sender Email Address (Must belong to verified domain)
-                  </label>
-                  <input
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="Sender email address on a verified domain"
-                    required
-                    className="w-full rounded-md border border-surface-border bg-surface-raised px-3 py-1.5 text-xs text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-600 focus:outline-none font-mono"
-                  />
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="block text-[11px] font-medium text-zinc-600 dark:text-zinc-300">
+                      Sender Email Address (Verified Domain)
+                    </label>
+                    {verifiedDomains.length > 0 && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (!isCustomEmail) {
+                            setEmail(`${emailPrefix || "smtp"}@${selectedDomain}`);
+                          }
+                          setIsCustomEmail(!isCustomEmail);
+                        }}
+                        className="text-[10px] text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white underline"
+                      >
+                        {isCustomEmail ? "Use domain picker" : "Custom format"}
+                      </button>
+                    )}
+                  </div>
+
+                  {verifiedDomains.length === 0 ? (
+                    <div className="rounded-md border border-amber-500/30 bg-amber-500/10 p-2.5 text-xs text-amber-800 dark:text-amber-200">
+                      <p className="font-medium">No verified domains found</p>
+                      <p className="text-[11px] text-amber-700 dark:text-amber-300">
+                        You must register and verify a domain before generating SMTP credentials.
+                      </p>
+                    </div>
+                  ) : isCustomEmail ? (
+                    <input
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder="e.g. mailer@yourdomain.com"
+                      required
+                      className="w-full rounded-md border border-surface-border bg-surface-raised px-3 py-1.5 text-xs text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-600 focus:outline-none font-mono"
+                    />
+                  ) : (
+                    <div className="flex items-center rounded-md border border-surface-border bg-surface-raised overflow-hidden">
+                      <input
+                        type="text"
+                        value={emailPrefix}
+                        onChange={(e) => setEmailPrefix(e.target.value)}
+                        placeholder="smtp"
+                        required
+                        className="w-1/2 bg-transparent px-3 py-1.5 text-xs text-zinc-900 dark:text-white placeholder-zinc-400 focus:outline-none text-right font-mono"
+                      />
+                      <span className="text-xs text-zinc-400 dark:text-zinc-500 px-1 select-none">@</span>
+                      <select
+                        value={selectedDomain}
+                        onChange={(e) => setSelectedDomain(e.target.value)}
+                        className="w-1/2 bg-transparent px-2 py-1.5 text-xs font-medium text-zinc-900 dark:text-white focus:outline-none cursor-pointer truncate"
+                      >
+                        {verifiedDomains.map((dom) => (
+                          <option key={dom.id || dom.name} value={dom.name} className="bg-surface text-zinc-900 dark:text-white">
+                            {dom.name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
                 </div>
 
                 <div>
