@@ -2,8 +2,9 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import DOMPurify from "dompurify";
 import { X, Send, Eye, Code, CheckCircle2, AlertCircle, Globe, ShieldAlert } from "lucide-react";
-import { api, DomainView } from "@/lib/api";
+import { api, DomainView, safeParseJSON, SendEmailSchema } from "@/lib/api";
 import { getVerifiedDomains, assertVerifiedSender, buildSenderAddress } from "@/lib/domain-utils";
 import { VerifiedDomainAlert } from "@/components/common/VerifiedDomainAlert";
 import { useToast } from "@/lib/toast-context";
@@ -96,6 +97,18 @@ export default function SendEmailModal({
     }
   }, [isOpen]);
 
+  // Keyboard accessibility: Close on Escape key
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        onClose();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isOpen, onClose]);
+
   // Load preview when preview tab is clicked
   useEffect(() => {
     if (activeTab === "preview" && htmlContent) {
@@ -134,13 +147,26 @@ export default function SendEmailModal({
         .map((s) => s.trim())
         .filter(Boolean);
 
-      if (recipients.length === 0) {
-        throw new Error("At least one recipient email is required");
+      const parsedTags = safeParseJSON<{ name: string; value: string }[]>(tagsJson, []);
+      if (parsedTags.error || !Array.isArray(parsedTags.data)) {
+        throw new Error(`Tags error: ${parsedTags.error || "Tags must be a JSON array of { name, value } objects"}`);
       }
-      const tags = JSON.parse(tagsJson) as { name: string; value: string }[];
-      const variables = JSON.parse(templateVariablesJson) as Record<string, unknown>;
-      if (!Array.isArray(tags) || !variables || Array.isArray(variables) || typeof variables !== "object") {
-        throw new Error("Tags must be a JSON array and template variables must be a JSON object.");
+
+      const parsedVars = safeParseJSON<Record<string, unknown>>(templateVariablesJson, {});
+      if (parsedVars.error || !parsedVars.data || Array.isArray(parsedVars.data) || typeof parsedVars.data !== "object") {
+        throw new Error(`Template variables error: ${parsedVars.error || "Variables must be a JSON object"}`);
+      }
+
+      const validation = SendEmailSchema.safeParse({
+        from: finalFrom,
+        to: recipients,
+        subject: subject.trim(),
+        html: htmlContent,
+        text: textContent,
+      });
+
+      if (!validation.success) {
+        throw new Error(validation.error.issues[0]?.message || "Invalid email form data");
       }
 
       const res = await api.sendEmail({
@@ -154,8 +180,8 @@ export default function SendEmailModal({
         reply_to: replyTo ? [replyTo.trim()] : undefined,
         scheduled_at: scheduledAt ? new Date(scheduledAt).toISOString() : undefined,
         template: templateRef.trim() || undefined,
-        variables,
-        tags,
+        variables: parsedVars.data,
+        tags: parsedTags.data,
         attachments,
       });
 
@@ -172,16 +198,22 @@ export default function SendEmailModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="send-email-title"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in"
+    >
       <div className="relative flex flex-col w-full max-w-2xl max-h-[90vh] rounded-xl border border-surface-border bg-surface shadow-2xl overflow-hidden">
         {/* Modal Header */}
         <div className="flex items-center justify-between border-b border-surface-border px-5 py-3.5 bg-surface-raised/40">
           <div className="flex items-center gap-2">
             <Send className="h-4 w-4 text-zinc-900 dark:text-white" />
-            <h2 className="text-sm font-semibold text-zinc-900 dark:text-white">Send Email</h2>
+            <h2 id="send-email-title" className="text-sm font-semibold text-zinc-900 dark:text-white">Send Email</h2>
           </div>
           <button
             onClick={onClose}
+            aria-label="Close send email modal"
             className="rounded-md p-1 text-zinc-500 hover:bg-surface-raised hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white transition-colors"
           >
             <X className="h-4 w-4" />
@@ -399,10 +431,14 @@ export default function SendEmailModal({
               )}
 
               {activeTab === "preview" && (
-                <div className="h-64 overflow-y-auto rounded-md border border-surface-border bg-white p-4">
-                  <div
-                    dangerouslySetInnerHTML={{ __html: previewHtml || htmlContent }}
-                    className="text-black"
+                <div className="h-64 rounded-md border border-surface-border bg-white overflow-hidden shadow-inner">
+                  <iframe
+                    title="Email Preview"
+                    sandbox="allow-same-origin"
+                    srcDoc={DOMPurify.sanitize(
+                      previewHtml || htmlContent || "<p style='color:#71717a;font-family:sans-serif;font-size:12px;padding:16px;'>No HTML content to preview.</p>"
+                    )}
+                    className="w-full h-full border-0"
                   />
                 </div>
               )}

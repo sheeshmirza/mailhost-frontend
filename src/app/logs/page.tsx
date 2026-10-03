@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { ErrorState } from "@/components/ui/ErrorState";
 import { TableSkeleton } from "@/components/ui/LoadingState";
+import { WidgetErrorBoundary } from "@/components/ui/WidgetErrorBoundary";
 import { useToast } from "@/lib/toast-context";
 import { useAuth } from "@/lib/auth-context";
 
@@ -29,6 +30,7 @@ export default function LogsHealthPage() {
   const [readiness, setReadiness] = useState<string | null>(null);
   const [auditLogs, setAuditLogs] = useState<AuditLogView[]>([]);
   const [dedicatedIPs, setDedicatedIPs] = useState<DedicatedIPView[]>([]);
+  const [warmingSchedule, setWarmingSchedule] = useState<{ day?: number; daily_quota?: number; [key: string]: unknown }[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [auditLogsError, setAuditLogsError] = useState<string | null>(null);
@@ -70,10 +72,11 @@ export default function LogsHealthPage() {
     setLoadError(null);
     setAuditLogsError(null);
     try {
-      const [readyRes, logsRes, ipsRes] = await Promise.allSettled([
+      const [readyRes, logsRes, ipsRes, schedRes] = await Promise.allSettled([
         api.getReadiness(),
         api.listAuditLogs(),
         api.listDedicatedIPs(),
+        api.getWarmingSchedule(),
       ]);
 
       const failedResources: string[] = [];
@@ -94,6 +97,9 @@ export default function LogsHealthPage() {
         setDedicatedIPs(ipsRes.value.data || []);
       } else {
         failedResources.push("dedicated IP data");
+      }
+      if (schedRes.status === "fulfilled") {
+        setWarmingSchedule(schedRes.value.schedule || []);
       }
       if (failedResources.length) {
         setLoadError(`Could not load ${failedResources.join(" and ")}.`);
@@ -156,48 +162,77 @@ export default function LogsHealthPage() {
       </div>
 
       {/* Dedicated IP Auto-Warming Schedule */}
-      {dedicatedIPs.length > 0 && (
-        <div className="rounded-xl border border-surface-border bg-surface p-5 space-y-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Flame className="h-4 w-4 text-amber-500" />
-              <h2 className="text-sm font-semibold text-zinc-900 dark:text-white">
-                Dedicated IP Auto-Warming Progression
-              </h2>
+      <WidgetErrorBoundary fallbackTitle="Dedicated IP progression unavailable">
+        {dedicatedIPs.length > 0 && (
+          <div className="rounded-xl border border-surface-border bg-surface p-5 space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Flame className="h-4 w-4 text-amber-500" />
+                <h2 className="text-sm font-semibold text-zinc-900 dark:text-white">
+                  Dedicated IP Auto-Warming Progression
+                </h2>
+              </div>
             </div>
-          </div>
 
-          <div className="divide-y divide-surface-border">
-            {dedicatedIPs.map((ip) => (
-              <div key={ip.id} className="py-3 flex items-center justify-between gap-3 text-xs">
-                <div className="space-y-0.5">
-                  <span className="font-mono text-zinc-900 dark:text-white font-semibold">{ip.ip_address}</span>
-                  <span className="text-[11px] text-zinc-400 dark:text-zinc-500 block">
-                    Day {ip.warmup_day} · Quota: {ip.daily_quota} emails/day · Sent Today: {ip.sent_today}
+            <div className="divide-y divide-surface-border">
+              {dedicatedIPs.map((ip) => (
+                <div key={ip.id} className="py-3 flex items-center justify-between gap-3 text-xs">
+                  <div className="space-y-0.5">
+                    <span className="font-mono text-zinc-900 dark:text-white font-semibold">{ip.ip_address}</span>
+                    <span className="text-[11px] text-zinc-400 dark:text-zinc-500 block">
+                      Day {ip.warmup_day} · Quota: {ip.daily_quota} emails/day · Sent Today: {ip.sent_today}
+                    </span>
+                  </div>
+                  <div className="flex shrink-0 items-center gap-2">
+                    <span className="badge badge-warning capitalize">{ip.status}</span>
+                    {canManageDedicatedIPs && (
+                      <button onClick={() => openIPEdit(ip)} className="btn-secondary min-h-8 px-2 py-1">Manage</button>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Live Warming Schedule Stages from Backend */}
+            {warmingSchedule.length > 0 && (
+              <div className="mt-4 pt-4 border-t border-surface-border space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-semibold text-zinc-700 dark:text-zinc-300">
+                    Live Warmup Ramp-Up Stages (ISP Reputation Safe)
+                  </span>
+                  <span className="text-[10px] text-zinc-500 font-mono">
+                    {warmingSchedule.length} Stages Configured
                   </span>
                 </div>
-                <div className="flex shrink-0 items-center gap-2">
-                  <span className="badge badge-warning capitalize">{ip.status}</span>
-                  {canManageDedicatedIPs && (
-                    <button onClick={() => openIPEdit(ip)} className="btn-secondary min-h-8 px-2 py-1">Manage</button>
-                  )}
+                <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-2 text-center text-xs">
+                  {warmingSchedule.slice(0, 6).map((stage, idx) => (
+                    <div key={idx} className="rounded-lg border border-surface-border bg-surface-raised p-2 space-y-0.5">
+                      <span className="text-[10px] text-zinc-500 block uppercase font-mono">
+                        Day {stage.day ?? idx + 1}
+                      </span>
+                      <span className="font-semibold text-zinc-900 dark:text-white font-mono text-xs">
+                        {stage.daily_quota ? stage.daily_quota.toLocaleString() : "—"}/day
+                      </span>
+                    </div>
+                  ))}
                 </div>
               </div>
-            ))}
+            )}
           </div>
-        </div>
-      )}
+        )}
+      </WidgetErrorBoundary>
 
       {/* Audit Logs Table */}
-      <div className="space-y-3">
-        <h2 className="text-sm font-semibold text-zinc-900 dark:text-white">Audit Log Activity</h2>
-        {isLoading && auditLogs.length === 0 ? (
-          <TableSkeleton rows={6} cols={5} />
-        ) : auditLogsError && auditLogs.length === 0 ? (
-          <ErrorState message={auditLogsError} onRetry={fetchHealthAndLogs} />
-        ) : (
-        <div className="overflow-x-auto rounded-xl border border-surface-border bg-surface">
-          <table className="w-full text-left text-xs min-w-[700px]">
+      <WidgetErrorBoundary fallbackTitle="Audit logs table unavailable">
+        <div className="space-y-3">
+          <h2 className="text-sm font-semibold text-zinc-900 dark:text-white">Audit Log Activity</h2>
+          {isLoading && auditLogs.length === 0 ? (
+            <TableSkeleton rows={6} cols={5} />
+          ) : auditLogsError && auditLogs.length === 0 ? (
+            <ErrorState message={auditLogsError} onRetry={fetchHealthAndLogs} />
+          ) : (
+          <div className="overflow-x-auto rounded-xl border border-surface-border bg-surface">
+            <table className="w-full text-left text-xs min-w-[700px]">
             <thead className="border-b border-surface-border bg-surface-raised text-[11px] font-medium uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
               <tr>
                 <th className="px-5 py-3">Action</th>
@@ -239,7 +274,8 @@ export default function LogsHealthPage() {
           </table>
         </div>
         )}
-      </div>
+        </div>
+      </WidgetErrorBoundary>
 
       {editingIP && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">

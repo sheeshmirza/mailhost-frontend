@@ -8,6 +8,7 @@ import {
   getConfiguredAPIBaseUrl,
   OrgMemberView,
   UserSession,
+  getErrorMessage,
 } from "@/lib/api";
 import {
   User,
@@ -127,8 +128,8 @@ export default function SettingsPage() {
       toast.success("Profile updated successfully");
       setTimeout(() => setProfileSaved(false), 2500);
       refresh();
-    } catch (err: any) {
-      toast.error("Failed to update profile: " + (err.response?.data?.message || err.message));
+    } catch (err: unknown) {
+      toast.error("Failed to update profile: " + getErrorMessage(err));
     }
   };
 
@@ -145,8 +146,8 @@ export default function SettingsPage() {
       toast.success("Password changed successfully");
       setTimeout(() => setPassSaved(false), 2500);
       await fetchTeamAndSessions();
-    } catch (err: any) {
-      toast.error("Failed to change password: " + (err.response?.data?.message || err.message));
+    } catch (err: unknown) {
+      toast.error("Failed to change password: " + getErrorMessage(err));
     }
   };
 
@@ -161,8 +162,8 @@ export default function SettingsPage() {
       toast.success("Email changed successfully");
       setTimeout(() => setEmailSaved(false), 2500);
       refresh();
-    } catch (err: any) {
-      toast.error("Failed to change email: " + (err.response?.data?.message || err.message));
+    } catch (err: unknown) {
+      toast.error("Failed to change email: " + getErrorMessage(err));
     }
   };
 
@@ -174,8 +175,8 @@ export default function SettingsPage() {
       setNewOrgName("");
       refresh();
       toast.success(`Organization "${newOrgName.trim()}" created! You can switch to it from the top navbar.`);
-    } catch (err: any) {
-      toast.error("Failed to create organization: " + (err.response?.data?.message || err.message));
+    } catch (err: unknown) {
+      toast.error("Failed to create organization: " + getErrorMessage(err));
     }
   };
 
@@ -186,8 +187,8 @@ export default function SettingsPage() {
       toast.success(`Member invited: ${newMemberEmail.trim()}`);
       setNewMemberEmail("");
       fetchTeamAndSessions();
-    } catch (err: any) {
-      toast.error("Failed to add member: " + (err.response?.data?.message || err.message));
+    } catch (err: unknown) {
+      toast.error("Failed to add member: " + getErrorMessage(err));
     }
   };
 
@@ -196,8 +197,8 @@ export default function SettingsPage() {
       await api.removeMember(id);
       toast.success("Member removed");
       fetchTeamAndSessions();
-    } catch (err: any) {
-      toast.error("Failed to remove member: " + (err.response?.data?.message || err.message));
+    } catch (err: unknown) {
+      toast.error("Failed to remove member: " + getErrorMessage(err));
     }
   };
 

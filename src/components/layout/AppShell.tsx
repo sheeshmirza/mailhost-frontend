@@ -5,6 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
 import Navbar from "./Navbar";
 import Sidebar from "./Sidebar";
+import { OfflineBanner } from "@/components/ui/OfflineBanner";
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname() || "/";
@@ -25,8 +26,9 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   if (!isPublic && isLoading) {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center bg-background">
-        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-zinc-900 text-white dark:bg-white dark:text-black font-bold text-lg shadow-sm animate-pulse">
-          R
+        <OfflineBanner />
+        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-teal-800 text-white font-bold text-lg shadow-sm animate-pulse dark:bg-teal-300 dark:text-teal-950">
+          M
         </div>
         <p className="mt-3 text-xs text-zinc-500 dark:text-zinc-400 font-medium tracking-wide">
           Verifying session...
@@ -42,6 +44,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="relative flex min-h-screen flex-col bg-background">
+      <OfflineBanner />
       <Navbar isLanding={isLanding} isLogin={isLogin} />
       <div className="flex flex-1">
         {!isPublic && <Sidebar />}

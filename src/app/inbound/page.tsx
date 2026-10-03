@@ -25,6 +25,8 @@ import { useToast } from "@/lib/toast-context";
 import { TableSkeleton } from "@/components/ui/LoadingState";
 import { ErrorState } from "@/components/ui/ErrorState";
 import { CursorPagination } from "@/components/ui/CursorPagination";
+import { WidgetErrorBoundary } from "@/components/ui/WidgetErrorBoundary";
+import DOMPurify from "dompurify";
 
 export default function InboundPage() {
   const toast = useToast();
@@ -131,10 +133,33 @@ export default function InboundPage() {
     };
   }, []);
 
+  // Keyboard accessibility
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        if (selectedInbound) setSelectedInbound(null);
+        if (isAliasOpen) setIsAliasOpen(false);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [selectedInbound, isAliasOpen]);
+
   const loadDetail = async (id: string) => {
     const revision = ++detailLoadRevision.current;
     try {
       const detail = await api.getInbound(id);
+      if (revision !== detailLoadRevision.current) return;
+      if (!detail.attachments || detail.attachments.length === 0) {
+        try {
+          const attRes = await api.listReceivedAttachments(id);
+          if (attRes?.data && attRes.data.length > 0) {
+            detail.attachments = attRes.data;
+          }
+        } catch {
+          // attachments optional
+        }
+      }
       if (revision === detailLoadRevision.current) setSelectedInbound(detail);
     } catch (err) {
       if (revision !== detailLoadRevision.current) return;
@@ -282,130 +307,132 @@ export default function InboundPage() {
         </div>
       </div>
 
-      {error ? (
-        <ErrorState message={error} onRetry={fetchData} />
-      ) : activeTab === "emails" ? (
-        isLoading && inboundEmails.length === 0 ? (
-          <TableSkeleton rows={5} cols={6} />
-        ) : (
-          <div className="overflow-x-auto rounded-xl border border-surface-border bg-surface">
-            <table className="w-full text-left text-xs min-w-[650px]">
-              <thead className="border-b border-surface-border bg-surface-raised text-[11px] font-medium uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
-                <tr>
-                  <th className="px-5 py-3">Subject</th>
-                  <th className="px-5 py-3">From</th>
-                  <th className="px-5 py-3">To (Recipient)</th>
-                  <th className="px-5 py-3">Size</th>
-                  <th className="px-5 py-3">Received At</th>
-                  <th className="px-5 py-3 text-right">Inspect</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-surface-border">
-                {inboundEmails.length > 0 ? (
-                  inboundEmails.map((item) => (
-                    <tr
-                      key={item.id}
-                      onClick={() => void loadDetail(item.id)}
-                      className="cursor-pointer hover:bg-surface-raised/40 transition-colors"
-                    >
-                      <td className="px-5 py-3 font-medium text-zinc-900 dark:text-white max-w-xs truncate">
-                        {item.subject || "(no subject)"}
-                      </td>
-                      <td className="px-5 py-3 font-mono text-zinc-600 dark:text-zinc-400 max-w-xs truncate">
-                        {item.mail_from || item.from}
-                      </td>
-                      <td className="px-5 py-3 font-mono text-zinc-600 dark:text-zinc-400 max-w-xs truncate">
-                        {item.rcpt_to?.join(", ") || "—"}
-                      </td>
-                      <td className="px-5 py-3 font-mono text-zinc-500 dark:text-zinc-400">
-                        {(item.size / 1024).toFixed(1)} KB
-                      </td>
-                      <td className="px-5 py-3 font-mono text-zinc-500 dark:text-zinc-400">
-                        {new Date(item.created_at).toLocaleString()}
-                      </td>
-                      <td className="px-5 py-3 text-right">
-                        <ChevronRight className="h-4 w-4 text-zinc-400 dark:text-zinc-500 ml-auto" />
+      <WidgetErrorBoundary fallbackTitle="Inbound data table unavailable">
+        {error ? (
+          <ErrorState message={error} onRetry={fetchData} />
+        ) : activeTab === "emails" ? (
+          isLoading && inboundEmails.length === 0 ? (
+            <TableSkeleton rows={5} cols={6} />
+          ) : (
+            <div className="overflow-x-auto rounded-xl border border-surface-border bg-surface">
+              <table className="w-full text-left text-xs min-w-[650px]">
+                <thead className="border-b border-surface-border bg-surface-raised text-[11px] font-medium uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+                  <tr>
+                    <th className="px-5 py-3">Subject</th>
+                    <th className="px-5 py-3">From</th>
+                    <th className="px-5 py-3">To (Recipient)</th>
+                    <th className="px-5 py-3">Size</th>
+                    <th className="px-5 py-3">Received At</th>
+                    <th className="px-5 py-3 text-right">Inspect</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y border-surface-border">
+                  {inboundEmails.length > 0 ? (
+                    inboundEmails.map((item) => (
+                      <tr
+                        key={item.id}
+                        onClick={() => void loadDetail(item.id)}
+                        className="cursor-pointer hover:bg-surface-raised/40 transition-colors"
+                      >
+                        <td className="px-5 py-3 font-medium text-zinc-900 dark:text-white max-w-xs truncate">
+                          {item.subject || "(no subject)"}
+                        </td>
+                        <td className="px-5 py-3 font-mono text-zinc-600 dark:text-zinc-400 max-w-xs truncate">
+                          {item.mail_from || item.from}
+                        </td>
+                        <td className="px-5 py-3 font-mono text-zinc-600 dark:text-zinc-400 max-w-xs truncate">
+                          {item.rcpt_to?.join(", ") || "—"}
+                        </td>
+                        <td className="px-5 py-3 font-mono text-zinc-500 dark:text-zinc-400">
+                          {(item.size / 1024).toFixed(1)} KB
+                        </td>
+                        <td className="px-5 py-3 font-mono text-zinc-500 dark:text-zinc-400">
+                          {new Date(item.created_at).toLocaleString()}
+                        </td>
+                        <td className="px-5 py-3 text-right">
+                          <ChevronRight className="h-4 w-4 text-zinc-400 dark:text-zinc-500 ml-auto" />
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan={6} className="py-12 text-center text-xs text-zinc-500 dark:text-zinc-400">
+                        No inbound emails received yet. Configure MX records pointing to port 25 to receive mail.
                       </td>
                     </tr>
-                  ))
-                ) : (
+                  )}
+                </tbody>
+              </table>
+            </div>
+          )
+        ) : isLoading && aliases.length === 0 ? (
+            <TableSkeleton rows={4} cols={4} />
+          ) : (
+            <div className="overflow-x-auto rounded-xl border border-surface-border bg-surface">
+              <table className="w-full text-left text-xs min-w-[500px]">
+                <thead className="border-b border-surface-border bg-surface-raised text-[11px] font-medium uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
                   <tr>
-                    <td colSpan={6} className="py-12 text-center text-xs text-zinc-500 dark:text-zinc-400">
-                      No inbound emails received yet. Configure MX records pointing to port 25 to receive mail.
+                    <th className="px-5 py-3">Alias Address</th>
+                    <th className="px-5 py-3">Forward To</th>
+                    <th className="px-5 py-3">Created</th>
+                    <th className="px-5 py-3 text-right">Delete</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y border-surface-border font-mono">
+                  {aliases.length > 0 ? (
+                    aliases.map((al) => (
+                      <tr key={al.id} className="hover:bg-surface-raised/40 transition-colors">
+                        <td className="px-5 py-3 text-zinc-900 dark:text-white font-semibold">
+                          {al.address || al.alias || al.name}
+                        </td>
+                        <td className="px-5 py-3 text-zinc-700 dark:text-zinc-300">
+                          {al.destinations && al.destinations.length > 0
+                            ? al.destinations.join(", ")
+                            : al.forward_to && al.forward_to.length > 0
+                            ? al.forward_to.join(", ")
+                            : al.store_copy
+                            ? "Stored in Inbox"
+                            : "—"}
+                        </td>
+                        <td className="px-5 py-3 text-zinc-500 dark:text-zinc-400 text-[11px]">
+                          {new Date(al.created_at).toLocaleDateString()}
+                        </td>
+                        <td className="px-5 py-3 text-right">
+                          <button
+                            onClick={() => {
+                              setEditingAliasId(al.id);
+                              setAliasPrefix(al.address || al.alias || al.name);
+                              setSelectedDomain(al.domain_id);
+                              setForwardTo((al.destinations?.length ? al.destinations : al.forward_to || []).join(", "));
+                              setStoreAliasCopy(al.store_copy ?? true);
+                              setIsAliasOpen(true);
+                            }}
+                            title="Edit alias routing"
+                            className="rounded p-1 text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white"
+                          >
+                            <Pencil className="h-4 w-4" />
+                          </button>
+                          <button
+                            onClick={() => handleDeleteAlias(al.id)}
+                            className="rounded p-1 text-zinc-400 hover:text-red-500 dark:hover:text-red-400 transition-colors"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                  <tr>
+                    <td colSpan={4} className="py-12 text-center text-xs text-zinc-500 dark:text-zinc-400 font-sans">
+                      No forwarding aliases configured yet.
                     </td>
                   </tr>
                 )}
               </tbody>
             </table>
           </div>
-        )
-      ) : isLoading && aliases.length === 0 ? (
-          <TableSkeleton rows={4} cols={4} />
-        ) : (
-          <div className="overflow-x-auto rounded-xl border border-surface-border bg-surface">
-            <table className="w-full text-left text-xs min-w-[500px]">
-              <thead className="border-b border-surface-border bg-surface-raised text-[11px] font-medium uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
-                <tr>
-                  <th className="px-5 py-3">Alias Address</th>
-                  <th className="px-5 py-3">Forward To</th>
-                  <th className="px-5 py-3">Created</th>
-                  <th className="px-5 py-3 text-right">Delete</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-surface-border font-mono">
-                {aliases.length > 0 ? (
-                  aliases.map((al) => (
-                    <tr key={al.id} className="hover:bg-surface-raised/40 transition-colors">
-                      <td className="px-5 py-3 text-zinc-900 dark:text-white font-semibold">
-                        {al.address || al.alias || al.name}
-                      </td>
-                      <td className="px-5 py-3 text-zinc-700 dark:text-zinc-300">
-                        {al.destinations && al.destinations.length > 0
-                          ? al.destinations.join(", ")
-                          : al.forward_to && al.forward_to.length > 0
-                          ? al.forward_to.join(", ")
-                          : al.store_copy
-                          ? "Stored in Inbox"
-                          : "—"}
-                      </td>
-                      <td className="px-5 py-3 text-zinc-500 dark:text-zinc-400 text-[11px]">
-                        {new Date(al.created_at).toLocaleDateString()}
-                      </td>
-                      <td className="px-5 py-3 text-right">
-                        <button
-                          onClick={() => {
-                            setEditingAliasId(al.id);
-                            setAliasPrefix(al.address || al.alias || al.name);
-                            setSelectedDomain(al.domain_id);
-                            setForwardTo((al.destinations?.length ? al.destinations : al.forward_to || []).join(", "));
-                            setStoreAliasCopy(al.store_copy ?? true);
-                            setIsAliasOpen(true);
-                          }}
-                          title="Edit alias routing"
-                          className="rounded p-1 text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white"
-                        >
-                          <Pencil className="h-4 w-4" />
-                        </button>
-                        <button
-                          onClick={() => handleDeleteAlias(al.id)}
-                          className="rounded p-1 text-zinc-400 hover:text-red-500 dark:hover:text-red-400 transition-colors"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </button>
-                      </td>
-                    </tr>
-                  ))
-                ) : (
-                <tr>
-                  <td colSpan={4} className="py-12 text-center text-xs text-zinc-500 dark:text-zinc-400 font-sans">
-                    No forwarding aliases configured yet.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-      )}
+        )}
+      </WidgetErrorBoundary>
       {activeTab === "emails" && (inboundPageHistory.length > 0 || nextInboundBefore) && (
         <CursorPagination
           page={inboundPageHistory.length + 1}
@@ -472,8 +499,13 @@ export default function InboundPage() {
                 Email Body
               </h3>
               {selectedInbound.html ? (
-                <div className="rounded-lg border border-surface-border bg-white p-4 text-black max-h-80 overflow-y-auto">
-                  <div dangerouslySetInnerHTML={{ __html: selectedInbound.html }} />
+                <div className="rounded-lg border border-surface-border bg-white overflow-hidden shadow-inner h-80">
+                  <iframe
+                    title="Inbound Email HTML Content"
+                    sandbox="allow-same-origin"
+                    srcDoc={DOMPurify.sanitize(selectedInbound.html)}
+                    className="w-full h-full border-0"
+                  />
                 </div>
               ) : selectedInbound.text ? (
                 <pre className="rounded-lg border border-surface-border bg-surface-raised p-4 font-mono text-xs text-zinc-800 dark:text-zinc-200 max-h-80 overflow-y-auto whitespace-pre-wrap">

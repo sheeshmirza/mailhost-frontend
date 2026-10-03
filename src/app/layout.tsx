@@ -18,12 +18,14 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
+        <meta httpEquiv="X-Content-Type-Options" content="nosniff" />
+        <meta name="referrer" content="strict-origin-when-cross-origin" />
         <script
           dangerouslySetInnerHTML={{
             __html: `
               (function() {
                 try {
-                  var theme = localStorage.getItem('resend_theme') || 'light';
+                  var theme = localStorage.getItem('mailhost_theme') || localStorage.getItem('resend_theme') || 'light';
                   var supportDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
                   if (theme === 'dark' || (theme === 'system' && supportDark)) {
                     document.documentElement.classList.add('dark');

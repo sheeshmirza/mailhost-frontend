@@ -38,13 +38,19 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     // Read persisted theme from localStorage; default to "light"
-    const saved = (localStorage.getItem("resend_theme") as Theme) || "light";
+    const saved =
+      (localStorage.getItem("mailhost_theme") as Theme) ||
+      (localStorage.getItem("resend_theme") as Theme) ||
+      "light";
     setThemeState(saved);
     applyTheme(saved);
 
     const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
     const handleChange = () => {
-      const current = localStorage.getItem("resend_theme") as Theme;
+      const current =
+        (localStorage.getItem("mailhost_theme") as Theme) ||
+        (localStorage.getItem("resend_theme") as Theme) ||
+        "light";
       if (current === "system") {
         applyTheme("system");
       }
@@ -55,7 +61,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
   const setTheme = (t: Theme) => {
     setThemeState(t);
-    localStorage.setItem("resend_theme", t);
+    localStorage.setItem("mailhost_theme", t);
     applyTheme(t);
   };
 

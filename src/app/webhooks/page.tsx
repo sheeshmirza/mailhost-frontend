@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { api, WebhookView, WebhookTestResponse, WebhookDeliveryItem } from "@/lib/api";
+import { api, WebhookView, WebhookTestResponse, WebhookDeliveryItem, getErrorMessage } from "@/lib/api";
 import { useToast } from "@/lib/toast-context";
 import { ErrorState } from "@/components/ui/ErrorState";
 import { TableSkeleton } from "@/components/ui/LoadingState";
@@ -180,8 +180,8 @@ export default function WebhooksPage() {
       await api.deleteWebhook(id);
       toast.success("Webhook deleted");
       fetchWebhooks();
-    } catch (err: any) {
-      toast.error("Failed to delete webhook: " + (err.response?.data?.message || err.message));
+    } catch (err: unknown) {
+      toast.error("Failed to delete webhook: " + getErrorMessage(err));
     }
   };
 

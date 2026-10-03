@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useMemo } from "react";
-import { api, SMTPCredView, DomainView } from "@/lib/api";
+import { api, SMTPCredView, DomainView, getErrorMessage } from "@/lib/api";
 import { useToast } from "@/lib/toast-context";
 import { ErrorState } from "@/components/ui/ErrorState";
 import { TableSkeleton } from "@/components/ui/LoadingState";
@@ -117,8 +117,8 @@ export default function SMTPProtocolsPage() {
       });
       toast.success("Mail application credential generated");
       fetchData();
-    } catch (err: any) {
-      toast.error("Failed to generate credential: " + (err.response?.data?.message || err.message));
+    } catch (err: unknown) {
+      toast.error("Failed to generate credential: " + getErrorMessage(err));
     } finally {
       setIsSubmitting(false);
     }
@@ -130,8 +130,8 @@ export default function SMTPProtocolsPage() {
       await api.deleteSMTPCredential(id);
       toast.success("Credential revoked successfully");
       fetchData();
-    } catch (err: any) {
-      toast.error("Failed to revoke credential: " + (err.response?.data?.message || err.message));
+    } catch (err: unknown) {
+      toast.error("Failed to revoke credential: " + getErrorMessage(err));
     }
   };
 

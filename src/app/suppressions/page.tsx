@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { api } from "@/lib/api";
+import { api, getErrorMessage } from "@/lib/api";
 import { useToast } from "@/lib/toast-context";
 import { ErrorState } from "@/components/ui/ErrorState";
 import { TableSkeleton } from "@/components/ui/LoadingState";
@@ -54,8 +54,8 @@ export default function SuppressionsPage() {
       await api.deleteSuppression(address);
       toast.success(`Removed ${address} from suppression list`);
       fetchSuppressions();
-    } catch (err: any) {
-      toast.error("Failed to delete suppression: " + (err.response?.data?.message || err.message));
+    } catch (err: unknown) {
+      toast.error("Failed to delete suppression: " + getErrorMessage(err));
     }
   };
 

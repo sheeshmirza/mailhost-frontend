@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
@@ -28,6 +28,7 @@ import {
   FileText,
   Webhook,
   ShieldAlert,
+  ShieldCheck,
   Server,
   Settings,
   Activity,
@@ -36,6 +37,7 @@ import {
 } from "lucide-react";
 import SendEmailModal from "../emails/SendEmailModal";
 import clsx from "clsx";
+import { getConfiguredAPIBaseUrl } from "@/lib/api";
 
 const navGroups = [
   {
@@ -43,6 +45,7 @@ const navGroups = [
     items: [
       { label: "Overview", href: "/overview", icon: LayoutDashboard },
       { label: "Emails", href: "/emails", icon: Mail },
+      { label: "Deliverability", href: "/deliverability", icon: ShieldCheck },
       { label: "Inbound", href: "/inbound", icon: Inbox },
       { label: "Aliases", href: "/aliases", icon: ArrowRightLeft },
       { label: "Domains", href: "/domains", icon: Globe },
@@ -95,6 +98,18 @@ export default function Navbar({
   const [showUserDropdown, setShowUserDropdown] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setShowOrgDropdown(false);
+        setShowUserDropdown(false);
+        setMobileMenuOpen(false);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
+
   return (
     <>
       <header className="sticky top-0 z-40 flex h-14 w-full items-center justify-between border-b border-surface-border bg-surface/95 px-4 shadow-sm backdrop-blur-md transition-colors sm:px-6">
@@ -127,6 +142,9 @@ export default function Navbar({
               <div className="relative">
                 <button
                   onClick={() => setShowOrgDropdown(!showOrgDropdown)}
+                  aria-haspopup="menu"
+                  aria-expanded={showOrgDropdown}
+                  aria-label="Switch organization or account"
                   className="flex items-center gap-1.5 rounded-md px-2 py-1 text-xs font-medium text-zinc-700 dark:text-zinc-300 hover:bg-surface-raised hover:text-zinc-900 dark:hover:text-white transition-colors"
                 >
                   <Building className="h-3.5 w-3.5 text-zinc-500" />
@@ -141,8 +159,10 @@ export default function Navbar({
                     <div
                       className="fixed inset-0 z-10"
                       onClick={() => setShowOrgDropdown(false)}
+                      role="presentation"
+                      aria-hidden="true"
                     />
-                    <div className="absolute left-0 mt-1.5 w-56 z-20 rounded-xl border border-surface-border bg-surface p-1 shadow-lg animate-fade-in">
+                    <div role="menu" className="absolute left-0 mt-1.5 w-56 z-20 rounded-xl border border-surface-border bg-surface p-1 shadow-lg animate-fade-in">
                       <div className="px-2 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-zinc-500">
                         Teams & Accounts
                       </div>
@@ -194,7 +214,7 @@ export default function Navbar({
               SDKs
             </a>
             <a
-              href="/backend/openapi.json"
+              href={`${getConfiguredAPIBaseUrl() || "https://api.buy4cashback.com"}/openapi.json`}
               target="_blank"
               rel="noreferrer"
               className="hover:text-zinc-900 dark:hover:text-white transition-colors"
@@ -276,6 +296,9 @@ export default function Navbar({
               <div className="relative">
                 <button
                   onClick={() => setShowUserDropdown(!showUserDropdown)}
+                  aria-haspopup="menu"
+                  aria-expanded={showUserDropdown}
+                  aria-label="User account menu"
                   className="flex h-7 w-7 items-center justify-center rounded-full border border-surface-border bg-surface-raised text-xs font-semibold text-zinc-700 dark:text-zinc-200 hover:border-zinc-400 dark:hover:border-zinc-500 transition-colors"
                 >
                   {user?.name ? user.name.charAt(0).toUpperCase() : "?"}
@@ -286,8 +309,10 @@ export default function Navbar({
                     <div
                       className="fixed inset-0 z-10"
                       onClick={() => setShowUserDropdown(false)}
+                      role="presentation"
+                      aria-hidden="true"
                     />
-                    <div className="absolute right-0 mt-1.5 w-56 z-20 rounded-xl border border-surface-border bg-surface p-1 shadow-lg animate-fade-in">
+                    <div role="menu" className="absolute right-0 mt-1.5 w-56 z-20 rounded-xl border border-surface-border bg-surface p-1 shadow-lg animate-fade-in">
                       <div className="border-b border-surface-border px-3 py-2 mb-1">
                         <p className="text-xs font-medium text-zinc-900 dark:text-white truncate">
                           {user?.name || "Account"}
@@ -349,12 +374,19 @@ export default function Navbar({
 
       {/* Mobile Sidebar Navigation Drawer Overlay (for dashboard) */}
       {!isHomepage && !isLoginPage && mobileMenuOpen && (
-        <div className="fixed inset-0 z-40 lg:hidden">
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Navigation drawer"
+          className="fixed inset-0 z-40 lg:hidden"
+        >
           <div
             className="fixed inset-0 bg-black/60 backdrop-blur-sm animate-fade-in"
             onClick={() => setMobileMenuOpen(false)}
+            role="presentation"
+            aria-hidden="true"
           />
-          <nav className="fixed inset-y-0 left-0 w-64 border-r border-surface-border bg-surface p-4 shadow-2xl flex flex-col justify-between overflow-y-auto animate-fade-in">
+          <nav aria-label="Mobile Navigation" className="fixed inset-y-0 left-0 w-64 border-r border-surface-border bg-surface p-4 shadow-2xl flex flex-col justify-between overflow-y-auto animate-fade-in">
             <div className="space-y-4">
               <div className="flex items-center justify-between pb-3 border-b border-surface-border">
                 <div className="flex items-center gap-2">

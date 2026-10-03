@@ -27,10 +27,12 @@ import {
   Flame,
   Sliders,
   Check,
+  Loader2,
 } from "lucide-react";
 import { useToast } from "@/lib/toast-context";
 import { ErrorState } from "@/components/ui/ErrorState";
 import { TableSkeleton } from "@/components/ui/LoadingState";
+import { WidgetErrorBoundary } from "@/components/ui/WidgetErrorBoundary";
 import { getVerifiedDomains, assertVerifiedSender, buildSenderAddress } from "@/lib/domain-utils";
 import { VerifiedDomainAlert } from "@/components/common/VerifiedDomainAlert";
 
@@ -66,6 +68,7 @@ export default function BroadcastsPage() {
   const [selectedEngagementBroadcast, setSelectedEngagementBroadcast] = useState<BroadcastView | null>(null);
   const [enableAbTest, setEnableAbTest] = useState(false);
   const [subjectVariantB, setSubjectVariantB] = useState("");
+  const [actionLoadingId, setActionLoadingId] = useState<string | null>(null);
 
   // Smart Subject Line Quality & Engagement Calculator
   const getSubjectMetrics = (text: string) => {
@@ -242,23 +245,29 @@ export default function BroadcastsPage() {
   };
 
   const handleDuplicate = async (id: string) => {
+    setActionLoadingId(id);
     try {
       await api.duplicateBroadcast(id);
       toast.success("Broadcast duplicated");
-      fetchData();
+      await fetchData();
     } catch (err: any) {
       toast.error("Failed to duplicate broadcast: " + err.message);
+    } finally {
+      setActionLoadingId(null);
     }
   };
 
   const handleDelete = async (id: string) => {
     if (!confirm("Are you sure you want to delete this broadcast?")) return;
+    setActionLoadingId(id);
     try {
       await api.deleteBroadcast(id);
       toast.success("Broadcast deleted");
-      fetchData();
+      await fetchData();
     } catch (err: any) {
       toast.error("Failed to delete broadcast: " + err.message);
+    } finally {
+      setActionLoadingId(null);
     }
   };
 
@@ -289,109 +298,117 @@ export default function BroadcastsPage() {
       )}
 
       {/* Broadcasts Table */}
-      {isLoading && broadcasts.length === 0 ? (
-        <TableSkeleton rows={5} cols={6} />
-      ) : loadError && broadcasts.length === 0 ? (
-        <ErrorState message={loadError} onRetry={fetchData} />
-      ) : (
-      <div className="overflow-x-auto rounded-xl border border-surface-border bg-surface">
-        <table className="w-full text-left text-sm min-w-[600px]">
-          <thead className="bg-surface-raised border-b border-surface-border">
-            <tr>
-              <th className="px-4 py-3 text-[11px] font-medium uppercase tracking-wider text-zinc-500">Campaign Name</th>
-              <th className="px-4 py-3 text-[11px] font-medium uppercase tracking-wider text-zinc-500">Subject</th>
-              <th className="px-4 py-3 text-[11px] font-medium uppercase tracking-wider text-zinc-500">From</th>
-              <th className="px-4 py-3 text-[11px] font-medium uppercase tracking-wider text-zinc-500">Status</th>
-              <th className="px-4 py-3 text-[11px] font-medium uppercase tracking-wider text-zinc-500">Created</th>
-              <th className="px-4 py-3 text-[11px] font-medium uppercase tracking-wider text-zinc-500 text-right">Actions</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-surface-border">
-            {broadcasts.length > 0 ? (
-              broadcasts.map((b) => (
-                <tr key={b.id} className="hover:bg-surface-raised/50 transition-colors">
-                  <td className="px-4 py-3 font-medium text-zinc-900 dark:text-white max-w-xs truncate">
-                    {b.name}
-                  </td>
-                  <td className="px-4 py-3 text-zinc-700 dark:text-zinc-300 max-w-xs truncate">
-                    {b.subject}
-                  </td>
-                  <td className="px-4 py-3 font-mono text-zinc-500 dark:text-zinc-400 text-[11px] truncate">
-                    {b.from}
-                  </td>
-                  <td className="px-4 py-3">
-                    <span
-                      className={`inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium ${
-                        b.status === "sent"
-                          ? "bg-emerald-50 text-emerald-700"
-                          : b.status === "sending" || b.status === "queued"
-                          ? "bg-emerald-50 text-emerald-700"
-                          : "bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300"
-                      }`}
-                    >
-                      {b.status === "sent" && <CheckCircle2 className="h-2.5 w-2.5 mr-1" />}
-                      {b.status}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 font-mono text-zinc-500 dark:text-zinc-400 text-[11px]">
-                    {new Date(b.created_at).toLocaleDateString()}
-                  </td>
-                  <td className="px-4 py-3 text-right">
-                    <div className="flex items-center justify-end gap-1">
-                      <button
-                        onClick={() => setSelectedEngagementBroadcast(b)}
-                        title="Campaign Engagement & Deliverability Telemetry"
-                        className="rounded p-1 text-teal-600 hover:text-teal-700 dark:text-teal-400 hover:bg-surface-raised"
+      <WidgetErrorBoundary fallbackTitle="Broadcast campaigns list unavailable">
+        {isLoading && broadcasts.length === 0 ? (
+          <TableSkeleton rows={5} cols={6} />
+        ) : loadError && broadcasts.length === 0 ? (
+          <ErrorState message={loadError} onRetry={fetchData} />
+        ) : (
+        <div className="overflow-x-auto rounded-xl border border-surface-border bg-surface">
+          <table className="w-full text-left text-sm min-w-[600px]">
+            <thead className="bg-surface-raised border-b border-surface-border">
+              <tr>
+                <th className="px-4 py-3 text-[11px] font-medium uppercase tracking-wider text-zinc-500">Campaign Name</th>
+                <th className="px-4 py-3 text-[11px] font-medium uppercase tracking-wider text-zinc-500">Subject</th>
+                <th className="px-4 py-3 text-[11px] font-medium uppercase tracking-wider text-zinc-500">From</th>
+                <th className="px-4 py-3 text-[11px] font-medium uppercase tracking-wider text-zinc-500">Status</th>
+                <th className="px-4 py-3 text-[11px] font-medium uppercase tracking-wider text-zinc-500">Created</th>
+                <th className="px-4 py-3 text-[11px] font-medium uppercase tracking-wider text-zinc-500 text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y border-surface-border">
+              {broadcasts.length > 0 ? (
+                broadcasts.map((b) => (
+                  <tr key={b.id} className="hover:bg-surface-raised/50 transition-colors">
+                    <td className="px-4 py-3 font-medium text-zinc-900 dark:text-white max-w-xs truncate">
+                      {b.name}
+                    </td>
+                    <td className="px-4 py-3 text-zinc-700 dark:text-zinc-300 max-w-xs truncate">
+                      {b.subject}
+                    </td>
+                    <td className="px-4 py-3 font-mono text-zinc-500 dark:text-zinc-400 text-[11px] truncate">
+                      {b.from}
+                    </td>
+                    <td className="px-4 py-3">
+                      <span
+                        className={`inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium ${
+                          b.status === "sent"
+                            ? "bg-emerald-50 text-emerald-700"
+                            : b.status === "sending" || b.status === "queued"
+                            ? "bg-emerald-50 text-emerald-700"
+                            : "bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300"
+                        }`}
                       >
-                        <BarChart3 className="h-4 w-4" />
-                      </button>
-                      {b.status !== "sent" && (
+                        {b.status === "sent" && <CheckCircle2 className="h-2.5 w-2.5 mr-1" />}
+                        {b.status}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 font-mono text-zinc-500 dark:text-zinc-400 text-[11px]">
+                      {new Date(b.created_at).toLocaleDateString()}
+                    </td>
+                    <td className="px-4 py-3 text-right">
+                      <div className="flex items-center justify-end gap-1">
                         <button
-                          onClick={() => handleSend(b.id)}
-                          title="Send broadcast now"
-                          className="rounded p-1 text-emerald-600 hover:text-emerald-700 dark:text-emerald-400 hover:bg-surface-raised"
+                          onClick={() => setSelectedEngagementBroadcast(b)}
+                          title="Campaign Engagement & Deliverability Telemetry"
+                          className="rounded p-1 text-teal-600 hover:text-teal-700 dark:text-teal-400 hover:bg-surface-raised"
                         >
-                          <Send className="h-4 w-4" />
+                          <BarChart3 className="h-4 w-4" />
                         </button>
-                      )}
-                      {b.status === "draft" && (
+                        {b.status !== "sent" && (
+                          <button
+                            onClick={() => handleSend(b.id)}
+                            title="Send broadcast now"
+                            className="rounded p-1 text-emerald-600 hover:text-emerald-700 dark:text-emerald-400 hover:bg-surface-raised"
+                          >
+                            <Send className="h-4 w-4" />
+                          </button>
+                        )}
+                        {b.status === "draft" && (
+                          <button
+                            onClick={() => handleEdit(b.id)}
+                            title="Edit draft"
+                            className="rounded p-1 text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white hover:bg-surface-raised"
+                          >
+                            <Pencil className="h-4 w-4" />
+                          </button>
+                        )}
                         <button
-                          onClick={() => handleEdit(b.id)}
-                          title="Edit draft"
-                          className="rounded p-1 text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white hover:bg-surface-raised"
+                          onClick={() => handleDuplicate(b.id)}
+                          disabled={actionLoadingId === b.id}
+                          title="Duplicate broadcast"
+                          className="rounded p-1 text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white hover:bg-surface-raised disabled:opacity-50"
                         >
-                          <Pencil className="h-4 w-4" />
+                          {actionLoadingId === b.id ? (
+                            <Loader2 className="h-4 w-4 animate-spin text-zinc-500" />
+                          ) : (
+                            <Copy className="h-4 w-4" />
+                          )}
                         </button>
-                      )}
-                      <button
-                        onClick={() => handleDuplicate(b.id)}
-                        title="Duplicate broadcast"
-                        className="rounded p-1 text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white hover:bg-surface-raised"
-                      >
-                        <Copy className="h-4 w-4" />
-                      </button>
-                      <button
-                        onClick={() => handleDelete(b.id)}
-                        title="Delete broadcast"
-                        className="rounded p-1 text-zinc-400 hover:text-red-500 dark:text-zinc-500 dark:hover:text-red-400 hover:bg-surface-raised"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </button>
-                    </div>
+                        <button
+                          onClick={() => handleDelete(b.id)}
+                          disabled={actionLoadingId === b.id}
+                          title="Delete broadcast"
+                          className="rounded p-1 text-zinc-400 hover:text-red-500 dark:text-zinc-500 dark:hover:text-red-400 hover:bg-surface-raised disabled:opacity-50"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan={6} className="py-16 text-center text-sm text-zinc-500">
+                    No broadcasts found. Create your first campaign above.
                   </td>
                 </tr>
-              ))
-            ) : (
-              <tr>
-                <td colSpan={6} className="py-16 text-center text-sm text-zinc-500">
-                  No broadcasts found. Create your first campaign above.
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
-      )}
+              )}
+            </tbody>
+          </table>
+        </div>
+        )}
+      </WidgetErrorBoundary>
 
       {/* New Broadcast Modal */}
       {isOpen && (
@@ -566,7 +583,7 @@ export default function BroadcastsPage() {
                   );
                 })()}
 
-                {/* A/B Variant Testing Toggle */}
+                {/* A/B Subject Variant Optimizer */}
                 <div className="mt-2 flex items-center justify-between text-xs">
                   <button
                     type="button"
@@ -574,23 +591,62 @@ export default function BroadcastsPage() {
                     className="flex items-center gap-1.5 text-teal-600 hover:underline dark:text-teal-400 font-medium"
                   >
                     <Sliders className="h-3 w-3" />
-                    <span>{enableAbTest ? "Hide A/B Variant Test" : "Enable A/B Subject Variant Test"}</span>
+                    <span>{enableAbTest ? "Hide Subject A/B Optimizer" : "Compare with Challenger Subject (A/B Test)"}</span>
                   </button>
                 </div>
 
                 {enableAbTest && (
-                  <div className="mt-2 rounded-lg border border-dashed border-teal-500/40 bg-teal-50/30 dark:bg-teal-950/20 p-3 space-y-2">
+                  <div className="mt-2 rounded-lg border border-dashed border-teal-500/40 bg-teal-50/20 dark:bg-teal-950/20 p-3 space-y-3">
                     <div className="flex items-center justify-between text-xs font-semibold text-teal-800 dark:text-teal-300">
-                      <span>Variant B (Challenger Subject Line)</span>
-                      <span className="font-mono text-[10px] bg-teal-100 dark:bg-teal-900 px-1.5 py-0.5 rounded">50% Cohort Split</span>
+                      <span>Challenger Subject Line (Variant B)</span>
+                      <span className="font-mono text-[10px] bg-teal-100 dark:bg-teal-900/60 px-1.5 py-0.5 rounded text-teal-700 dark:text-teal-300">
+                        Heuristic Optimizer
+                      </span>
                     </div>
                     <input
                       type="text"
                       value={subjectVariantB}
                       onChange={(e) => setSubjectVariantB(e.target.value)}
-                      placeholder="e.g. You're invited to test Version 2.0"
-                      className="w-full rounded-md border border-surface-border bg-surface px-3 py-1.5 text-xs focus:outline-none focus:border-teal-500"
+                      placeholder="e.g. Early access: Discover version 2.0 now"
+                      className="w-full rounded-md border border-surface-border bg-surface px-3 py-1.5 text-xs focus:outline-none focus:border-teal-500 text-zinc-900 dark:text-white"
                     />
+
+                    {subjectVariantB.trim().length > 0 && (() => {
+                      const mA = getSubjectMetrics(subject);
+                      const mB = getSubjectMetrics(subjectVariantB);
+                      return (
+                        <div className="space-y-2 pt-1 border-t border-teal-500/20">
+                          <div className="grid grid-cols-2 gap-2 text-xs">
+                            <div className="rounded border border-surface-border bg-surface p-2 space-y-1">
+                              <span className="text-[10px] uppercase font-bold text-zinc-500">Variant A (Current)</span>
+                              <div className="font-semibold text-zinc-900 dark:text-white">Score: {mA.score}/100</div>
+                              <div className="text-[10px] text-zinc-500">{mA.len} chars</div>
+                            </div>
+                            <div className="rounded border border-teal-500/30 bg-teal-50/50 dark:bg-teal-950/40 p-2 space-y-1">
+                              <span className="text-[10px] uppercase font-bold text-teal-600 dark:text-teal-400">Variant B (Challenger)</span>
+                              <div className="font-semibold text-teal-800 dark:text-teal-200">Score: {mB.score}/100</div>
+                              <div className="text-[10px] text-teal-600 dark:text-teal-400">{mB.len} chars</div>
+                            </div>
+                          </div>
+
+                          <div className="flex items-center justify-between pt-1">
+                            <span className="text-[11px] text-zinc-500 dark:text-zinc-400">
+                              {mB.score >= mA.score ? "Variant B scored higher!" : "Variant A currently scores higher."}
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setSubject(subjectVariantB);
+                                toast.success("Variant B applied as the campaign subject line!");
+                              }}
+                              className="btn-secondary text-[11px] py-1 px-2.5"
+                            >
+                              Adopt Variant B as Subject
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })()}
                   </div>
                 )}
               </div>
@@ -687,77 +743,58 @@ export default function BroadcastsPage() {
             </div>
 
             {/* Campaign Summary Cards */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-center">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-center">
               <div className="rounded-xl border border-surface-border bg-surface-raised p-3">
-                <span className="text-[10px] uppercase font-sans text-zinc-500 block">Recipients</span>
+                <span className="text-[10px] uppercase font-sans text-zinc-500 block">Total Targeted</span>
                 <span className="text-base font-bold text-zinc-900 dark:text-white font-mono">
-                  {selectedEngagementBroadcast.recipients_count ?? (selectedEngagementBroadcast.status === "sent" ? "All active" : "0")}
+                  {selectedEngagementBroadcast.recipients_count != null ? selectedEngagementBroadcast.recipients_count.toLocaleString() : "—"}
                 </span>
               </div>
               <div className="rounded-xl border border-surface-border bg-surface-raised p-3">
-                <span className="text-[10px] uppercase font-sans text-zinc-500 block">Delivered</span>
+                <span className="text-[10px] uppercase font-sans text-zinc-500 block">Delivered Messages</span>
                 <span className="text-base font-bold text-emerald-600 dark:text-emerald-400 font-mono">
-                  {selectedEngagementBroadcast.sent_count ?? (selectedEngagementBroadcast.status === "sent" ? "100%" : "0")}
+                  {selectedEngagementBroadcast.sent_count != null ? selectedEngagementBroadcast.sent_count.toLocaleString() : (selectedEngagementBroadcast.status === "sent" ? "Completed" : "0")}
                 </span>
               </div>
-              <div className="rounded-xl border border-surface-border bg-surface-raised p-3">
-                <span className="text-[10px] uppercase font-sans text-zinc-500 block">Est. Opens</span>
-                <span className="text-base font-bold text-teal-600 dark:text-teal-400 font-mono">
-                  {selectedEngagementBroadcast.status === "sent" ? "42.8%" : "—"}
-                </span>
-              </div>
-              <div className="rounded-xl border border-surface-border bg-surface-raised p-3">
-                <span className="text-[10px] uppercase font-sans text-zinc-500 block">Est. Clicks</span>
-                <span className="text-base font-bold text-indigo-600 dark:text-indigo-400 font-mono">
-                  {selectedEngagementBroadcast.status === "sent" ? "11.2%" : "—"}
+              <div className="rounded-xl border border-surface-border bg-surface-raised p-3 col-span-2 sm:col-span-1">
+                <span className="text-[10px] uppercase font-sans text-zinc-500 block">Dispatch Status</span>
+                <span className="text-base font-bold capitalize text-teal-600 dark:text-teal-400 font-mono">
+                  {selectedEngagementBroadcast.status}
                 </span>
               </div>
             </div>
 
-            {/* Visual Conversion Funnel */}
-            <div className="space-y-2 rounded-xl border border-surface-border bg-surface-raised p-4">
+            {/* Live Transmission Details */}
+            <div className="space-y-2 rounded-xl border border-surface-border bg-surface-raised p-4 text-xs">
               <span className="text-xs font-bold text-zinc-900 dark:text-white block">
-                Audience Conversion Funnel
+                Transmission Details
               </span>
-              <div className="space-y-2 text-xs">
-                <div>
-                  <div className="flex justify-between text-[11px] mb-1">
-                    <span className="text-zinc-600 dark:text-zinc-400">1. Target Audience Identified</span>
-                    <span className="font-mono font-bold">100%</span>
-                  </div>
-                  <div className="h-2 rounded-full bg-surface-border overflow-hidden">
-                    <div className="h-full bg-teal-500 rounded-full" style={{ width: "100%" }} />
-                  </div>
+              <div className="space-y-2">
+                <div className="flex justify-between items-center py-1 border-b border-surface-border">
+                  <span className="text-zinc-600 dark:text-zinc-400">Sender Address</span>
+                  <span className="font-mono text-zinc-900 dark:text-white">{selectedEngagementBroadcast.from}</span>
                 </div>
-
-                <div>
-                  <div className="flex justify-between text-[11px] mb-1">
-                    <span className="text-zinc-600 dark:text-zinc-400">2. Direct MX Outbound Handshake</span>
-                    <span className="font-mono font-bold">99.8%</span>
-                  </div>
-                  <div className="h-2 rounded-full bg-surface-border overflow-hidden">
-                    <div className="h-full bg-emerald-500 rounded-full" style={{ width: "99.8%" }} />
-                  </div>
+                <div className="flex justify-between items-center py-1 border-b border-surface-border">
+                  <span className="text-zinc-600 dark:text-zinc-400">Created At</span>
+                  <span className="font-mono text-zinc-900 dark:text-white">{new Date(selectedEngagementBroadcast.created_at).toLocaleString()}</span>
                 </div>
-
-                <div>
-                  <div className="flex justify-between text-[11px] mb-1">
-                    <span className="text-zinc-600 dark:text-zinc-400">3. Opened &amp; Engaged</span>
-                    <span className="font-mono font-bold">42.8%</span>
-                  </div>
-                  <div className="h-2 rounded-full bg-surface-border overflow-hidden">
-                    <div className="h-full bg-sky-500 rounded-full" style={{ width: "42.8%" }} />
-                  </div>
+                <div className="flex justify-between items-center py-1 border-b border-surface-border">
+                  <span className="text-zinc-600 dark:text-zinc-400">Dispatched At</span>
+                  <span className="font-mono text-zinc-900 dark:text-white">
+                    {selectedEngagementBroadcast.sent_at ? new Date(selectedEngagementBroadcast.sent_at).toLocaleString() : "Not dispatched yet"}
+                  </span>
                 </div>
-
-                <div>
-                  <div className="flex justify-between text-[11px] mb-1">
-                    <span className="text-zinc-600 dark:text-zinc-400">4. Clicked Target Call-to-Action</span>
-                    <span className="font-mono font-bold">11.2%</span>
+                {selectedEngagementBroadcast.scheduled_at && (
+                  <div className="flex justify-between items-center py-1 border-b border-surface-border">
+                    <span className="text-zinc-600 dark:text-zinc-400">Scheduled Delivery</span>
+                    <span className="font-mono text-zinc-900 dark:text-white">{new Date(selectedEngagementBroadcast.scheduled_at).toLocaleString()}</span>
                   </div>
-                  <div className="h-2 rounded-full bg-surface-border overflow-hidden">
-                    <div className="h-full bg-indigo-500 rounded-full" style={{ width: "11.2%" }} />
-                  </div>
+                )}
+                <div className="flex justify-between items-center py-1">
+                  <span className="text-zinc-600 dark:text-zinc-400">Delivery Telemetry Logs</span>
+                  <Link href="/events" className="text-teal-600 hover:underline dark:text-teal-400 font-medium">
+                    View webhook events →
+                  </Link>
                 </div>
               </div>
             </div>

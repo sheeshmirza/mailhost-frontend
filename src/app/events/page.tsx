@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import { api, CustomEvent } from "@/lib/api";
+import { api, CustomEvent, getErrorMessage } from "@/lib/api";
 import { useToast } from "@/lib/toast-context";
 import { ErrorState } from "@/components/ui/ErrorState";
 import { TableSkeleton } from "@/components/ui/LoadingState";
@@ -97,8 +97,8 @@ export default function EventsPage() {
       toast.success(`Event "${name}" triggered successfully`);
       setIsOpen(false);
       void fetchEvents();
-    } catch (err: any) {
-      toast.error("Failed to trigger event: " + (err.response?.data?.message || err.message));
+    } catch (err: unknown) {
+      toast.error("Failed to trigger event: " + getErrorMessage(err));
     } finally {
       setIsSubmitting(false);
     }
@@ -174,7 +174,7 @@ export default function EventsPage() {
             ) : (
               <tr>
                 <td colSpan={4} className="py-12 text-center text-xs text-zinc-500 dark:text-zinc-400 font-sans">
-                  No events recorded yet. Click 'Trigger Event' to test.
+                  No events recorded yet. Click &apos;Trigger Event&apos; to test.
                 </td>
               </tr>
             )}

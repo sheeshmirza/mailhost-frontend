@@ -6,6 +6,7 @@ import {
   api,
   AliasView,
   DomainView,
+  getErrorMessage,
 } from "@/lib/api";
 import {
   ArrowRightLeft,
@@ -190,8 +191,8 @@ export default function AliasesPage() {
       }
       setIsModalOpen(false);
       fetchData();
-    } catch (err: any) {
-      toast.error(err?.response?.data?.message || err?.message || "Failed to save alias");
+    } catch (err: unknown) {
+      toast.error(getErrorMessage(err, "Failed to save alias"));
     } finally {
       setIsSubmitting(false);
     }
@@ -205,8 +206,8 @@ export default function AliasesPage() {
       toast.success("Alias deleted successfully");
       setDeletingAlias(null);
       fetchData();
-    } catch (err: any) {
-      toast.error(err?.response?.data?.message || err?.message || "Failed to delete alias");
+    } catch (err: unknown) {
+      toast.error(getErrorMessage(err, "Failed to delete alias"));
     } finally {
       setIsDeleting(false);
     }

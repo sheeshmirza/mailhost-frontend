@@ -827,7 +827,7 @@ export default function AudiencesPage() {
                   ) : (
                     <tr>
                       <td colSpan={6} className="py-12 text-center text-xs text-zinc-500 dark:text-zinc-400 font-sans">
-                        No contacts found matching the selected filter. Click "Add Contact" to import.
+                        No contacts found matching the selected filter. Click &quot;Add Contact&quot; to import.
                       </td>
                     </tr>
                   )}
@@ -902,7 +902,7 @@ export default function AudiencesPage() {
               ) : (
                 <tr>
                   <td colSpan={3} className="py-12 text-center text-sm text-zinc-500 dark:text-zinc-400">
-                    No segments defined yet. Click "New Segment" to create a dynamic contact group.
+                    No segments defined yet. Click &quot;New Segment&quot; to create a dynamic contact group.
                   </td>
                 </tr>
               )}

@@ -30,6 +30,7 @@ import {
 } from "lucide-react";
 import CodeSnippet from "@/components/ui/CodeSnippet";
 import { ErrorState } from "@/components/ui/ErrorState";
+import { WidgetErrorBoundary } from "@/components/ui/WidgetErrorBoundary";
 
 export default function OverviewPage() {
   const [analytics, setAnalytics] = useState<AnalyticsResponse | null>(null);
@@ -264,29 +265,34 @@ export default function OverviewPage() {
       </div>
 
       {/* Activity Timeline Chart */}
-      <div className="rounded-xl border border-surface-border bg-surface p-5 space-y-4 shadow-sm">
-        <div className="flex items-center justify-between">
-          <div>
-            <h2 className="text-sm font-semibold text-zinc-900 dark:text-white">Email Volume</h2>
-            <p className="text-xs text-zinc-500 dark:text-zinc-400">
-              Aggregated deliveries grouped by {interval}
-            </p>
+      <WidgetErrorBoundary fallbackTitle="Email volume chart unavailable">
+        <div className="rounded-xl border border-surface-border bg-surface p-5 space-y-4 shadow-sm">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-sm font-semibold text-zinc-900 dark:text-white">Email Volume</h2>
+              <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                Aggregated deliveries grouped by {interval}
+              </p>
+            </div>
+            <div className="flex items-center gap-4 text-xs">
+              <span className="flex items-center gap-1.5 text-zinc-500 dark:text-zinc-400">
+                <span className="h-2 w-2 rounded-full bg-zinc-900 dark:bg-white" /> Sent
+              </span>
+              <span className="flex items-center gap-1.5 text-zinc-500 dark:text-zinc-400">
+                <span className="h-2 w-2 rounded-full bg-emerald-500" /> Delivered
+              </span>
+              <span className="flex items-center gap-1.5 text-zinc-500 dark:text-zinc-400">
+                <span className="h-2 w-2 rounded-full bg-teal-600" /> Opened
+              </span>
+            </div>
           </div>
-          <div className="flex items-center gap-4 text-xs">
-            <span className="flex items-center gap-1.5 text-zinc-500 dark:text-zinc-400">
-              <span className="h-2 w-2 rounded-full bg-zinc-900 dark:bg-white" /> Sent
-            </span>
-            <span className="flex items-center gap-1.5 text-zinc-500 dark:text-zinc-400">
-              <span className="h-2 w-2 rounded-full bg-emerald-500" /> Delivered
-            </span>
-            <span className="flex items-center gap-1.5 text-zinc-500 dark:text-zinc-400">
-              <span className="h-2 w-2 rounded-full bg-teal-600" /> Opened
-            </span>
-          </div>
-        </div>
 
-        {/* Bar representation */}
-        <div className="h-44 w-full flex items-end gap-1.5 pt-6 border-b border-surface-border">
+          {/* Bar representation */}
+          <div
+            role="img"
+            aria-label={`Aggregated email delivery chart grouped by ${interval}`}
+            className="h-44 w-full flex items-end gap-1.5 pt-6 border-b border-surface-border"
+          >
           {analytics?.series && analytics.series.length > 0 ? (
             analytics.series.map((bucket, i) => {
               const heightPct = Math.max(
@@ -326,6 +332,7 @@ export default function OverviewPage() {
           )}
         </div>
       </div>
+      </WidgetErrorBoundary>
 
       {/* Platform Capabilities: Marketing Engine & Complete Email Suite */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -465,64 +472,66 @@ export default function OverviewPage() {
       {/* Two Column Grid: Recent Activity & Quick SDK Integration */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Recent Emails */}
-        <div className="rounded-xl border border-surface-border bg-surface p-5 space-y-4 shadow-sm">
-          <div className="flex items-center justify-between">
-            <h2 className="text-sm font-semibold text-zinc-900 dark:text-white">Recent Emails</h2>
-            <Link
-              href="/emails"
-              className="flex items-center gap-1 text-xs text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white transition-colors"
-            >
-              <span>View all</span>
-              <ArrowRight className="h-3.5 w-3.5" />
-            </Link>
-          </div>
+        <WidgetErrorBoundary fallbackTitle="Recent emails list unavailable">
+          <div className="rounded-xl border border-surface-border bg-surface p-5 space-y-4 shadow-sm">
+            <div className="flex items-center justify-between">
+              <h2 className="text-sm font-semibold text-zinc-900 dark:text-white">Recent Emails</h2>
+              <Link
+                href="/emails"
+                className="flex items-center gap-1 text-xs text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white transition-colors"
+              >
+                <span>View all</span>
+                <ArrowRight className="h-3.5 w-3.5" />
+              </Link>
+            </div>
 
-          <div className="divide-y divide-surface-border">
-            {recentEmails.length > 0 ? (
-              recentEmails.map((email) => (
-                <Link
-                  key={email.id}
-                  href={`/emails?id=${email.id}`}
-                  className="flex items-center justify-between py-3 hover:bg-surface-raised/50 -mx-2 px-2 rounded-md transition-colors"
-                >
-                  <div className="space-y-0.5 truncate max-w-[70%]">
-                    <p className="text-xs font-medium text-zinc-900 dark:text-zinc-200 truncate">
-                      {email.subject || "(no subject)"}
-                    </p>
-                    <p className="text-[11px] text-zinc-500 dark:text-zinc-400 font-mono truncate">
-                      {email.from}
-                    </p>
-                  </div>
-                  <div className="text-right">
-                    <span className={`badge capitalize ${
-                      email.status === "delivered"
-                        ? "badge-success"
-                        : email.status === "bounced" || email.status === "failed"
-                        ? "badge-error"
-                        : email.status === "sent"
-                        ? "badge-info"
-                        : email.status === "canceled"
-                        ? "badge-neutral"
-                        : "badge-warning"
-                    }`}>
-                      {email.status || "queued"}
-                    </span>
-                    <p className="text-[10px] text-zinc-400 dark:text-zinc-500 mt-0.5 font-mono">
-                      {new Date(email.created_at).toLocaleTimeString([], {
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })}
-                    </p>
-                  </div>
-                </Link>
-              ))
-            ) : (
-              <div className="py-8 text-center text-xs text-zinc-500 dark:text-zinc-400">
-                No emails sent yet. Click "Send Email" to get started!
-              </div>
-            )}
+            <div className="divide-y divide-surface-border">
+              {recentEmails.length > 0 ? (
+                recentEmails.map((email) => (
+                  <Link
+                    key={email.id}
+                    href={`/emails?id=${email.id}`}
+                    className="flex items-center justify-between py-3 hover:bg-surface-raised/50 -mx-2 px-2 rounded-md transition-colors"
+                  >
+                    <div className="space-y-0.5 truncate max-w-[70%]">
+                      <p className="text-xs font-medium text-zinc-900 dark:text-zinc-200 truncate">
+                        {email.subject || "(no subject)"}
+                      </p>
+                      <p className="text-[11px] text-zinc-500 dark:text-zinc-400 font-mono truncate">
+                        {email.from}
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <span className={`badge capitalize ${
+                        email.status === "delivered"
+                          ? "badge-success"
+                          : email.status === "bounced" || email.status === "failed"
+                          ? "badge-error"
+                          : email.status === "sent"
+                          ? "badge-info"
+                          : email.status === "canceled"
+                          ? "badge-neutral"
+                          : "badge-warning"
+                      }`}>
+                        {email.status || "queued"}
+                      </span>
+                      <p className="text-[10px] text-zinc-400 dark:text-zinc-500 mt-0.5 font-mono">
+                        {new Date(email.created_at).toLocaleTimeString([], {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}
+                      </p>
+                    </div>
+                  </Link>
+                ))
+              ) : (
+                <div className="py-8 text-center text-xs text-zinc-500 dark:text-zinc-400">
+                  No emails sent yet. Click &quot;Send Email&quot; to get started!
+                </div>
+              )}
+            </div>
           </div>
-        </div>
+        </WidgetErrorBoundary>
 
         {/* Quick Send SDK Snippet */}
         <div className="rounded-xl border border-surface-border bg-surface p-5 space-y-4 shadow-sm">

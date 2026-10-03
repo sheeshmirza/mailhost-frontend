@@ -1175,7 +1175,7 @@ export default function AutomationsPage() {
                                     Step {idx + 1} — Conditional Branch (If / Else)
                                   </span>
                                   <span className="text-xs font-bold text-zinc-900 dark:text-white">
-                                    Rule: Check field <code className="text-indigo-600 dark:text-indigo-300 font-mono font-semibold">{step.config.field}</code> {step.config.operator} <code className="text-indigo-600 dark:text-indigo-300 font-mono font-semibold">"{String(step.config.value)}"</code>
+                                    Rule: Check field <code className="text-indigo-600 dark:text-indigo-300 font-mono font-semibold">{step.config.field}</code> {step.config.operator} <code className="text-indigo-600 dark:text-indigo-300 font-mono font-semibold">&quot;{String(step.config.value)}&quot;</code>
                                   </span>
                                 </div>
                               </div>
@@ -1836,7 +1836,7 @@ export default function AutomationsPage() {
                         ) : st.type === "condition" ? (
                           <div className="flex items-center gap-1.5 text-indigo-600 font-medium">
                             <GitBranch className="h-3.5 w-3.5" />
-                            <span>If {st.config.field} {st.config.operator} "{String(st.config.value)}"</span>
+                            <span>If {st.config.field} {st.config.operator} &quot;{String(st.config.value)}&quot;</span>
                           </div>
                         ) : (
                           <div className="flex items-center gap-1.5 text-zinc-900 dark:text-white font-medium">

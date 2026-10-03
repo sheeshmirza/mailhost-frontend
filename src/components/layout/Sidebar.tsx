@@ -25,6 +25,7 @@ import {
   ArrowRightLeft,
 } from "lucide-react";
 import clsx from "clsx";
+import { getConfiguredAPIBaseUrl } from "@/lib/api";
 
 const navGroups = [
   {
@@ -127,7 +128,7 @@ export default function Sidebar() {
           <ExternalLink className="h-3 w-3 text-zinc-400" />
         </Link>
         <a
-          href="/backend/openapi.json"
+          href={`${getConfiguredAPIBaseUrl() || "https://api.buy4cashback.com"}/openapi.json`}
           target="_blank"
           rel="noreferrer"
           className="flex min-h-9 items-center gap-2 rounded-md px-3 text-[13px] font-medium text-content-muted transition-colors hover:bg-surface-raised hover:text-content-primary"

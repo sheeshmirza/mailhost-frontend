@@ -16,7 +16,7 @@ import {
   X,
   CheckCircle2,
 } from "lucide-react";
-import { api, TemplateView, TemplateVersion } from "@/lib/api";
+import { api, TemplateView, TemplateVersion, getErrorMessage } from "@/lib/api";
 import { useToast } from "@/lib/toast-context";
 import { ErrorState } from "@/components/ui/ErrorState";
 import { TableSkeleton } from "@/components/ui/LoadingState";
@@ -157,8 +157,8 @@ export default function TemplatesPage() {
       toast.success(`Template rolled back to v${version}`);
       fetchTemplates();
       loadVersions(templateId);
-    } catch (err: any) {
-      toast.error("Rollback failed: " + (err.response?.data?.message || err.message));
+    } catch (err: unknown) {
+      toast.error("Rollback failed: " + getErrorMessage(err));
     }
   };
 
@@ -190,8 +190,8 @@ export default function TemplatesPage() {
       setVariablesJson("[]");
       await fetchTemplates();
       setSelectedTemplate(savedTemplate);
-    } catch (err: any) {
-      toast.error(`${editingTemplateId ? "Failed to update template" : "Failed to create template"}: ${err.message}`);
+    } catch (err: unknown) {
+      toast.error(`${editingTemplateId ? "Failed to update template" : "Failed to create template"}: ${getErrorMessage(err)}`);
     } finally {
       setIsSaving(false);
     }
@@ -213,8 +213,8 @@ export default function TemplatesPage() {
       await api.publishTemplate(id);
       toast.success("Template published successfully");
       fetchTemplates();
-    } catch (err: any) {
-      toast.error("Failed to publish: " + (err.response?.data?.message || err.message));
+    } catch (err: unknown) {
+      toast.error("Failed to publish: " + getErrorMessage(err));
     }
   };
 
@@ -224,8 +224,8 @@ export default function TemplatesPage() {
       toast.success("Template deleted");
       setSelectedTemplate(null);
       fetchTemplates();
-    } catch (err: any) {
-      toast.error("Failed to delete template: " + (err.response?.data?.message || err.message));
+    } catch (err: unknown) {
+      toast.error("Failed to delete template: " + getErrorMessage(err));
     }
   };
 
