@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import Link from "next/link";
 import {
   api,
   BroadcastView,
@@ -18,6 +19,7 @@ import {
   CheckCircle2,
   Globe,
   ShieldAlert,
+  ShieldCheck,
   BarChart3,
   Sparkles,
   TrendingUp,
@@ -610,20 +612,30 @@ export default function BroadcastsPage() {
                 <textarea value={plainText} onChange={(event) => setPlainText(event.target.value)} rows={3} className="w-full rounded-lg border border-surface-border bg-surface-raised px-3 py-2 font-mono text-sm" />
               </div>
 
-              <div className="flex justify-end gap-2.5 pt-4 border-t border-surface-border mt-6">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setIsOpen(false);
-                    setEditingBroadcastId(null);
-                  }}
-                  className="btn-secondary"
+              <div className="flex items-center justify-between gap-2.5 pt-4 border-t border-surface-border mt-6">
+                <Link
+                  href="/deliverability"
+                  target="_blank"
+                  className="inline-flex items-center gap-1.5 text-xs text-teal-600 dark:text-teal-400 hover:underline"
                 >
-                  Cancel
-                </button>
-                <button type="submit" disabled={isSaving} className="btn-primary">
-                  {isSaving ? "Saving..." : editingBroadcastId ? "Save Draft" : "Save Campaign"}
-                </button>
+                  <ShieldCheck className="h-3.5 w-3.5" />
+                  <span>Pre-Flight Deliverability Audit</span>
+                </Link>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsOpen(false);
+                      setEditingBroadcastId(null);
+                    }}
+                    className="btn-secondary"
+                  >
+                    Cancel
+                  </button>
+                  <button type="submit" disabled={isSaving} className="btn-primary">
+                    {isSaving ? "Saving..." : editingBroadcastId ? "Save Draft" : "Save Campaign"}
+                  </button>
+                </div>
               </div>
             </form>
           </div>

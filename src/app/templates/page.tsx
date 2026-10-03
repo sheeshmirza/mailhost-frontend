@@ -9,6 +9,12 @@ import {
   History,
   RotateCcw,
   Pencil,
+  Sparkles,
+  Send,
+  Smartphone,
+  Monitor,
+  X,
+  CheckCircle2,
 } from "lucide-react";
 import { api, TemplateView, TemplateVersion } from "@/lib/api";
 import { useToast } from "@/lib/toast-context";
@@ -34,6 +40,53 @@ export default function TemplatesPage() {
   const [html, setHtml] = useState("");
   const [text, setText] = useState("");
   const [variablesJson, setVariablesJson] = useState("[]");
+
+  // Playground & Test Send State
+  const [isPlaygroundOpen, setIsPlaygroundOpen] = useState(false);
+  const [playgroundVariables, setPlaygroundVariables] = useState(
+    '{\n  "first_name": "Jane",\n  "company": "Acme Corp",\n  "invite_url": "https://example.com/join"\n}'
+  );
+  const [playgroundPreview, setPlaygroundPreview] = useState<{ subject: string; html: string; text: string } | null>(null);
+  const [playgroundDevice, setPlaygroundDevice] = useState<"desktop" | "mobile">("desktop");
+  const [playgroundTo, setPlaygroundTo] = useState("");
+  const [isSendingTest, setIsSendingTest] = useState(false);
+  const [playgroundResult, setPlaygroundResult] = useState<any>(null);
+
+  const handleRunPreview = async (templateId: string, customVars?: Record<string, any>) => {
+    try {
+      let vars = customVars;
+      if (!vars) {
+        vars = JSON.parse(playgroundVariables);
+      }
+      const res = await api.previewTemplate(templateId, vars || {});
+      setPlaygroundPreview({ subject: res.subject, html: res.html, text: res.text });
+    } catch (err: any) {
+      console.error("Preview failed", err);
+    }
+  };
+
+  const handleTestSend = async () => {
+    if (!selectedTemplate) return;
+    if (!playgroundTo.trim()) {
+      toast.error("Please enter a recipient email address for test delivery.");
+      return;
+    }
+    setIsSendingTest(true);
+    setPlaygroundResult(null);
+    try {
+      const vars = JSON.parse(playgroundVariables);
+      const res = await api.testSendTemplate(selectedTemplate.id, {
+        to: playgroundTo.trim(),
+        variables: vars,
+      });
+      setPlaygroundResult(res);
+      toast.success(`Test email queued for delivery to ${playgroundTo.trim()}!`);
+    } catch (err: any) {
+      toast.error("Test send failed: " + err.message);
+    } finally {
+      setIsSendingTest(false);
+    }
+  };
 
   const fetchTemplates = async () => {
     const revision = ++templateListRevision.current;
@@ -288,6 +341,19 @@ export default function TemplatesPage() {
 
                 <div className="flex items-center gap-2">
                   <button
+                    onClick={() => {
+                      setPlaygroundTo("");
+                      setPlaygroundResult(null);
+                      setIsPlaygroundOpen(true);
+                      void handleRunPreview(selectedTemplate.id);
+                    }}
+                    className="btn-secondary text-teal-600 dark:text-teal-400"
+                    title="Live Playground & Test Send"
+                  >
+                    <Sparkles className="h-3.5 w-3.5 text-teal-600 dark:text-teal-400" />
+                    <span>Playground &amp; Test</span>
+                  </button>
+                  <button
                     onClick={() => handleEdit(selectedTemplate)}
                     className="btn-secondary"
                     title="Edit template"
@@ -500,6 +566,172 @@ await resend.emails.send({
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal: Interactive Template Playground & Test Send */}
+      {isPlaygroundOpen && selectedTemplate && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm animate-fade-in">
+          <div className="w-full max-w-4xl max-h-[90vh] flex flex-col rounded-2xl border border-surface-border bg-surface shadow-2xl overflow-hidden">
+            {/* Header */}
+            <div className="flex items-center justify-between border-b border-surface-border px-6 py-4">
+              <div className="flex items-center gap-2">
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-teal-50 dark:bg-teal-950/40 text-teal-600 dark:text-teal-400">
+                  <Sparkles className="h-4 w-4" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-semibold text-zinc-900 dark:text-white">
+                    Live Template Playground &amp; Test Send
+                  </h3>
+                  <p className="text-[11px] text-zinc-500">
+                    Template: <strong className="text-zinc-700 dark:text-zinc-300">{selectedTemplate.name}</strong>
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2">
+                {/* Device preview toggles */}
+                <div className="flex items-center rounded-lg border border-surface-border bg-surface-raised p-0.5">
+                  <button
+                    type="button"
+                    onClick={() => setPlaygroundDevice("desktop")}
+                    className={`rounded px-2 py-1 text-xs font-medium flex items-center gap-1 transition-colors ${
+                      playgroundDevice === "desktop"
+                        ? "bg-surface text-zinc-900 dark:text-white shadow-sm"
+                        : "text-zinc-500 hover:text-zinc-900 dark:hover:text-white"
+                    }`}
+                  >
+                    <Monitor className="h-3 w-3" />
+                    <span className="hidden sm:inline">Desktop</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setPlaygroundDevice("mobile")}
+                    className={`rounded px-2 py-1 text-xs font-medium flex items-center gap-1 transition-colors ${
+                      playgroundDevice === "mobile"
+                        ? "bg-surface text-zinc-900 dark:text-white shadow-sm"
+                        : "text-zinc-500 hover:text-zinc-900 dark:hover:text-white"
+                    }`}
+                  >
+                    <Smartphone className="h-3 w-3" />
+                    <span className="hidden sm:inline">Mobile (375px)</span>
+                  </button>
+                </div>
+
+                <button
+                  onClick={() => setIsPlaygroundOpen(false)}
+                  className="rounded-lg p-1.5 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+            </div>
+
+            {/* Body */}
+            <div className="grid grid-cols-1 md:grid-cols-12 flex-1 overflow-hidden divide-y md:divide-y-0 md:divide-x divide-surface-border">
+              {/* Left Column: Variables & Test Send Form (5 cols) */}
+              <div className="md:col-span-5 p-5 space-y-5 overflow-y-auto max-h-[70vh]">
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <label className="text-[11px] font-semibold uppercase tracking-wider text-zinc-500">
+                      Mock JSON Variables
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => void handleRunPreview(selectedTemplate.id)}
+                      className="text-[10px] text-teal-600 dark:text-teal-400 hover:underline"
+                    >
+                      Re-render
+                    </button>
+                  </div>
+                  <textarea
+                    rows={6}
+                    value={playgroundVariables}
+                    onChange={(e) => setPlaygroundVariables(e.target.value)}
+                    className="w-full rounded-lg border border-surface-border bg-surface-raised p-2.5 font-mono text-[11px] text-zinc-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-teal-500"
+                  />
+                  <p className="text-[10px] text-zinc-400">
+                    Interpolates <code className="font-mono text-teal-600">{"{{key}}"}</code> and <code className="font-mono text-teal-600">{"{{object.key}}"}</code> variables.
+                  </p>
+                </div>
+
+                {/* Instant Test Send Box */}
+                <div className="rounded-xl border border-surface-border bg-surface-raised p-4 space-y-3">
+                  <div className="flex items-center gap-1.5 text-xs font-semibold text-zinc-900 dark:text-white">
+                    <Send className="h-3.5 w-3.5 text-teal-600 dark:text-teal-400" />
+                    <span>Send Real Test to Inbox</span>
+                  </div>
+                  <p className="text-[11px] text-zinc-500">
+                    Dispatches a live test email with populated variables directly to your inbox via direct MX delivery.
+                  </p>
+                  <div>
+                    <input
+                      type="email"
+                      value={playgroundTo}
+                      onChange={(e) => setPlaygroundTo(e.target.value)}
+                      placeholder="Enter recipient email (e.g. you@domain.com)..."
+                      className="w-full rounded-lg border border-surface-border bg-surface px-3 py-2 text-xs text-zinc-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-teal-500"
+                    />
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => void handleTestSend()}
+                    disabled={isSendingTest || !playgroundTo.trim()}
+                    className="btn-primary w-full py-2 text-xs"
+                  >
+                    {isSendingTest ? (
+                      <RefreshCw className="h-3.5 w-3.5 animate-spin" />
+                    ) : (
+                      <Send className="h-3.5 w-3.5" />
+                    )}
+                    <span>{isSendingTest ? "Queuing Test Email..." : "Send Test Email"}</span>
+                  </button>
+
+                  {playgroundResult && (
+                    <div className="rounded-lg border border-emerald-500/20 bg-emerald-500/10 p-2.5 text-[11px] text-emerald-800 dark:text-emerald-300 space-y-1">
+                      <div className="flex items-center gap-1 font-semibold">
+                        <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" />
+                        <span>Dispatched to Delivery Queue</span>
+                      </div>
+                      <p className="font-mono text-[10px] text-zinc-500 truncate">
+                        ID: {playgroundResult.id} · Subject: {playgroundResult.subject}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Right Column: Live Rendered Output (7 cols) */}
+              <div className="md:col-span-7 p-5 space-y-3 flex flex-col overflow-y-auto max-h-[70vh] bg-surface-raised/40">
+                <div className="space-y-1">
+                  <span className="text-[10px] font-semibold uppercase tracking-wider text-zinc-500 block">
+                    Rendered Subject
+                  </span>
+                  <div className="rounded-md border border-surface-border bg-surface px-3 py-1.5 text-xs font-semibold text-zinc-900 dark:text-white">
+                    {playgroundPreview?.subject || selectedTemplate.subject}
+                  </div>
+                </div>
+
+                <div className="flex-1 flex flex-col space-y-1">
+                  <span className="text-[10px] font-semibold uppercase tracking-wider text-zinc-500 block">
+                    Rendered HTML Output ({playgroundDevice})
+                  </span>
+                  <div className="flex-1 flex justify-center items-start overflow-auto">
+                    <div
+                      style={{ width: playgroundDevice === "mobile" ? "375px" : "100%" }}
+                      className="rounded-xl border border-surface-border bg-white text-black p-5 shadow-sm min-h-[300px] transition-all"
+                    >
+                      <div
+                        dangerouslySetInnerHTML={{
+                          __html: playgroundPreview?.html || selectedTemplate.html,
+                        }}
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       )}

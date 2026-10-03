@@ -247,6 +247,106 @@ export interface WebhookView {
   updated_at: string;
 }
 
+export interface DeliverabilityInspectRequest {
+  domain?: string;
+  from?: string;
+  subject?: string;
+  html?: string;
+  text?: string;
+  headers?: Record<string, string>;
+}
+
+export interface DNSCheckResult {
+  status: "pass" | "warn" | "fail";
+  record_type: string;
+  query_name: string;
+  found_values: string[];
+  details: string;
+}
+
+export interface SpamAuditFinding {
+  rule: string;
+  severity: "high" | "medium" | "low";
+  penalty: number;
+  description: string;
+}
+
+export interface DeliverabilityInspectResponse {
+  score: number;
+  verdict: "Optimal" | "Good" | "Needs Improvement" | "Critical Risk";
+  domain: string;
+  dns_authentication: {
+    spf?: DNSCheckResult;
+    dkim?: DNSCheckResult;
+    dmarc?: DNSCheckResult;
+    mx?: DNSCheckResult;
+  };
+  spam_audit: SpamAuditFinding[];
+  placement_forecast: {
+    gmail: string;
+    outlook: string;
+    apple_mail: string;
+    yahoo: string;
+  };
+  rfc8058_compliant: boolean;
+  recommendations: string[];
+}
+
+export interface ContactImportItem {
+  email: string;
+  first_name?: string;
+  last_name?: string;
+  unsubscribed?: boolean;
+  traits?: Record<string, any>;
+}
+
+export interface ContactBulkImportRequest {
+  audience_id?: string;
+  contacts?: ContactImportItem[];
+  csv_data?: string;
+  skip_disposable?: boolean;
+  skip_role_based?: boolean;
+}
+
+export interface ContactBulkImportResponse {
+  total_processed: number;
+  imported: number;
+  updated: number;
+  invalid: number;
+  disposable: number;
+  role_based: number;
+  errors: string[];
+}
+
+export interface TemplatePreviewResponse {
+  id: string;
+  name: string;
+  subject: string;
+  html: string;
+  text: string;
+  raw_subject: string;
+  variables: Record<string, any>;
+}
+
+export interface WebhookTestResponse {
+  success: boolean;
+  status_code: number;
+  latency_ms: number;
+  response_body: string;
+  error?: string;
+  dispatched_at: string;
+}
+
+export interface WebhookDeliveryItem {
+  id: string;
+  event_type: string;
+  status: "delivered" | "queued" | "sending" | "failed";
+  attempts: number;
+  last_error?: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface SMTPCredView {
   id: string;
   domain_id: string;
@@ -1595,6 +1695,78 @@ export class APIClient {
   async logout() {
     return this.request<{ message: string }>("/v1/users/logout", {
       method: "POST",
+    });
+  }
+
+  // Deliverability & Spam Pre-Flight Inspector
+  async inspectDeliverability(data: DeliverabilityInspectRequest) {
+    return this.request<DeliverabilityInspectResponse>("/v1/deliverability/inspect", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  }
+
+  // Bulk Contact Ingestion & Data Hygiene
+  async bulkImportContacts(data: ContactBulkImportRequest) {
+    return this.request<ContactBulkImportResponse>("/v1/contacts/bulk-import", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  }
+
+  async importAudienceContacts(audienceId: string, data: ContactBulkImportRequest) {
+    return this.request<ContactBulkImportResponse>(`/v1/audiences/${audienceId}/import`, {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  }
+
+  // Template Live Playground & Test Send
+  async previewTemplate(id: string, variables: Record<string, any>) {
+    return this.request<TemplatePreviewResponse>(`/v1/templates/${id}/preview`, {
+      method: "POST",
+      body: JSON.stringify({ variables }),
+    });
+  }
+
+  async testSendTemplate(id: string, data: { to: string; from?: string; variables?: Record<string, any> }) {
+    return this.request<{ id: string; status: string; test_delivered: boolean; recipient: string; subject: string }>(
+      `/v1/templates/${id}/test-send`,
+      {
+        method: "POST",
+        body: JSON.stringify(data),
+      }
+    );
+  }
+
+  // Webhook Testing & Delivery Telemetry
+  async testWebhook(id: string, data?: { event_type?: string; payload?: any }) {
+    return this.request<WebhookTestResponse>(`/v1/webhooks/${id}/test`, {
+      method: "POST",
+      body: JSON.stringify(data || {}),
+    });
+  }
+
+  async listWebhookDeliveries(id: string, limit = 50) {
+    return this.request<{ data: WebhookDeliveryItem[]; next_before?: string }>(
+      `/v1/webhooks/${id}/deliveries?limit=${limit}`
+    );
+  }
+
+  async retryWebhookDelivery(webhookId: string, deliveryId: string) {
+    return this.request<{ id: string; status: string; retried: boolean }>(
+      `/v1/webhooks/${webhookId}/deliveries/${deliveryId}/retry`,
+      {
+        method: "POST",
+      }
+    );
+  }
+
+  // Manual & Batch Suppressions
+  async createSuppression(data: { address?: string; addresses?: string[]; reason?: string }) {
+    return this.request<{ object: string; added: number; reason: string }>("/v1/suppressions", {
+      method: "POST",
+      body: JSON.stringify(data),
     });
   }
 }

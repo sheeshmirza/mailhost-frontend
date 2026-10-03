@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { api, WebhookView } from "@/lib/api";
+import { api, WebhookView, WebhookTestResponse, WebhookDeliveryItem } from "@/lib/api";
 import { useToast } from "@/lib/toast-context";
 import { ErrorState } from "@/components/ui/ErrorState";
 import { TableSkeleton } from "@/components/ui/LoadingState";
@@ -12,6 +12,13 @@ import {
   Copy,
   Check,
   RefreshCw,
+  Zap,
+  Activity,
+  CheckCircle2,
+  AlertTriangle,
+  XCircle,
+  RotateCw,
+  X,
 } from "lucide-react";
 
 const availableEvents = [
@@ -41,6 +48,76 @@ export default function WebhooksPage() {
   ]);
   const [copiedSecret, setCopiedSecret] = useState<string | null>(null);
   const [newSigningSecret, setNewSigningSecret] = useState<string | null>(null);
+
+  // Webhook Test State
+  const [isTestOpen, setIsTestOpen] = useState(false);
+  const [testingWebhook, setTestingWebhook] = useState<WebhookView | null>(null);
+  const [testEventType, setTestEventType] = useState("email.delivered");
+  const [testPayloadJson, setTestPayloadJson] = useState('{\n  "email_id": "em_test_98231",\n  "recipient": "user@example.com",\n  "subject": "Order Confirmation",\n  "event": "delivered"\n}');
+  const [isTesting, setIsTesting] = useState(false);
+  const [testResult, setTestResult] = useState<WebhookTestResponse | null>(null);
+
+  // Webhook Deliveries Drawer State
+  const [isDeliveriesOpen, setIsDeliveriesOpen] = useState(false);
+  const [deliveriesWebhook, setDeliveriesWebhook] = useState<WebhookView | null>(null);
+  const [deliveries, setDeliveries] = useState<WebhookDeliveryItem[]>([]);
+  const [isDeliveriesLoading, setIsDeliveriesLoading] = useState(false);
+  const [retryingDeliveryId, setRetryingDeliveryId] = useState<string | null>(null);
+
+  const handleTestWebhook = async () => {
+    if (!testingWebhook) return;
+    setIsTesting(true);
+    setTestResult(null);
+    try {
+      let payload = undefined;
+      try {
+        payload = JSON.parse(testPayloadJson);
+      } catch {}
+      const res = await api.testWebhook(testingWebhook.id, {
+        event_type: testEventType,
+        payload,
+      });
+      setTestResult(res);
+      if (res.success) {
+        toast.success(`Webhook responded with HTTP ${res.status_code} in ${res.latency_ms}ms!`);
+      } else {
+        toast.error(`Webhook test failed: ${res.error || `HTTP ${res.status_code}`}`);
+      }
+    } catch (err: any) {
+      toast.error("Test failed: " + err.message);
+    } finally {
+      setIsTesting(false);
+    }
+  };
+
+  const handleOpenDeliveries = async (wh: WebhookView) => {
+    setDeliveriesWebhook(wh);
+    setIsDeliveriesOpen(true);
+    setIsDeliveriesLoading(true);
+    try {
+      const res = await api.listWebhookDeliveries(wh.id);
+      setDeliveries(res.data || []);
+    } catch (err: any) {
+      toast.error("Failed to load deliveries: " + err.message);
+    } finally {
+      setIsDeliveriesLoading(false);
+    }
+  };
+
+  const handleRetryDelivery = async (deliveryId: string) => {
+    if (!deliveriesWebhook) return;
+    setRetryingDeliveryId(deliveryId);
+    try {
+      await api.retryWebhookDelivery(deliveriesWebhook.id, deliveryId);
+      toast.success("Delivery re-queued for dispatch!");
+      const res = await api.listWebhookDeliveries(deliveriesWebhook.id);
+      setDeliveries(res.data || []);
+    } catch (err: any) {
+      toast.error("Retry failed: " + err.message);
+    } finally {
+      setRetryingDeliveryId(null);
+    }
+  };
 
   const fetchWebhooks = async () => {
     setIsLoading(true);
@@ -220,20 +297,40 @@ export default function WebhooksPage() {
                     )}
                   </td>
                   <td className="px-4 py-3 text-right">
-                    <button
-                      onClick={() => handleEdit(wh)}
-                      className="rounded-lg p-1.5 text-zinc-500 hover:bg-surface-raised hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white"
-                      title="Edit webhook"
-                    >
-                      <Pencil className="h-4 w-4" />
-                    </button>
-                    <button
-                      onClick={() => handleDelete(wh.id)}
-                      className="rounded-lg p-1.5 text-zinc-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 transition-colors"
-                      title="Delete webhook"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </button>
+                    <div className="flex items-center justify-end gap-1">
+                      <button
+                        onClick={() => {
+                          setTestingWebhook(wh);
+                          setTestResult(null);
+                          setIsTestOpen(true);
+                        }}
+                        className="rounded-lg p-1.5 text-teal-600 hover:bg-teal-50 dark:hover:bg-teal-950/30 transition-colors"
+                        title="Send Test Event"
+                      >
+                        <Zap className="h-4 w-4" />
+                      </button>
+                      <button
+                        onClick={() => void handleOpenDeliveries(wh)}
+                        className="rounded-lg p-1.5 text-zinc-500 hover:bg-surface-raised hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white transition-colors"
+                        title="View Deliveries History"
+                      >
+                        <Activity className="h-4 w-4" />
+                      </button>
+                      <button
+                        onClick={() => handleEdit(wh)}
+                        className="rounded-lg p-1.5 text-zinc-500 hover:bg-surface-raised hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white transition-colors"
+                        title="Edit webhook"
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </button>
+                      <button
+                        onClick={() => handleDelete(wh.id)}
+                        className="rounded-lg p-1.5 text-zinc-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 transition-colors"
+                        title="Delete webhook"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))
@@ -342,6 +439,227 @@ export default function WebhooksPage() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal: Live Webhook Test Dispatcher */}
+      {isTestOpen && testingWebhook && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm animate-fade-in">
+          <div className="w-full max-w-lg rounded-2xl border border-surface-border bg-surface p-6 shadow-2xl space-y-4">
+            <div className="flex items-center justify-between border-b border-surface-border pb-3">
+              <div className="flex items-center gap-2">
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-teal-50 dark:bg-teal-950/40 text-teal-600 dark:text-teal-400">
+                  <Zap className="h-4 w-4" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-semibold text-zinc-900 dark:text-white">
+                    Dispatch Test Webhook Event
+                  </h3>
+                  <p className="text-[11px] font-mono text-zinc-500 truncate max-w-xs">
+                    {testingWebhook.url}
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setIsTestOpen(false)}
+                className="rounded-lg p-1 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+
+            <div className="space-y-4 text-xs">
+              <div>
+                <label className="block text-[11px] font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">
+                  Event Type
+                </label>
+                <select
+                  value={testEventType}
+                  onChange={(e) => setTestEventType(e.target.value)}
+                  className="w-full rounded-lg border border-surface-border bg-surface-raised px-3 py-2 text-xs text-zinc-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-teal-500 font-mono"
+                >
+                  <option value="email.delivered">email.delivered</option>
+                  <option value="email.bounced">email.bounced</option>
+                  <option value="email.opened">email.opened</option>
+                  <option value="email.clicked">email.clicked</option>
+                  <option value="contact.created">contact.created</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">
+                  Payload Preview (JSON)
+                </label>
+                <textarea
+                  rows={5}
+                  value={testPayloadJson}
+                  onChange={(e) => setTestPayloadJson(e.target.value)}
+                  className="w-full rounded-lg border border-surface-border bg-surface-raised p-2.5 font-mono text-[11px] text-zinc-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-teal-500"
+                />
+              </div>
+
+              {testResult && (
+                <div
+                  className={`rounded-xl border p-3.5 space-y-2 ${
+                    testResult.success
+                      ? "border-emerald-500/20 bg-emerald-500/10 text-emerald-900 dark:text-emerald-300"
+                      : "border-rose-500/20 bg-rose-500/10 text-rose-900 dark:text-rose-300"
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-1.5 font-semibold text-xs">
+                      {testResult.success ? (
+                        <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+                      ) : (
+                        <AlertTriangle className="h-4 w-4 text-rose-600" />
+                      )}
+                      <span>
+                        {testResult.success ? "HTTP " + testResult.status_code + " OK" : "Delivery Error"}
+                      </span>
+                    </div>
+                    <span className="font-mono text-[10px] font-bold">
+                      {testResult.latency_ms} ms latency
+                    </span>
+                  </div>
+                  {testResult.error && (
+                    <p className="text-[11px] text-rose-600 dark:text-rose-400 font-mono">
+                      {testResult.error}
+                    </p>
+                  )}
+                  {testResult.response_body && (
+                    <div className="rounded bg-black/5 dark:bg-white/5 p-2 font-mono text-[10px] truncate">
+                      Response: {testResult.response_body}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              <div className="flex justify-end gap-2 pt-2 border-t border-surface-border">
+                <button
+                  type="button"
+                  onClick={() => setIsTestOpen(false)}
+                  className="rounded-md border border-surface-border px-4 py-2 text-xs font-medium text-zinc-700 hover:bg-surface-raised dark:text-zinc-300"
+                >
+                  Close
+                </button>
+                <button
+                  type="button"
+                  onClick={() => void handleTestWebhook()}
+                  disabled={isTesting}
+                  className="btn-primary inline-flex items-center gap-2 px-4 py-2 text-xs"
+                >
+                  {isTesting ? (
+                    <RefreshCw className="h-3.5 w-3.5 animate-spin" />
+                  ) : (
+                    <Zap className="h-3.5 w-3.5" />
+                  )}
+                  <span>{isTesting ? "Dispatching..." : "Send Test Event"}</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Drawer: Webhook Deliveries Telemetry */}
+      {isDeliveriesOpen && deliveriesWebhook && (
+        <div className="fixed inset-0 z-50 flex items-center justify-end bg-black/50 p-0 backdrop-blur-sm animate-fade-in">
+          <div className="w-full max-w-lg h-full bg-surface border-l border-surface-border p-6 shadow-2xl flex flex-col space-y-4 overflow-y-auto">
+            <div className="flex items-center justify-between border-b border-surface-border pb-3">
+              <div className="flex items-center gap-2">
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-teal-50 dark:bg-teal-950/40 text-teal-600 dark:text-teal-400">
+                  <Activity className="h-4 w-4" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-semibold text-zinc-900 dark:text-white">
+                    Webhook Deliveries Telemetry
+                  </h3>
+                  <p className="text-[11px] font-mono text-zinc-500 truncate max-w-xs">
+                    {deliveriesWebhook.url}
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setIsDeliveriesOpen(false)}
+                className="rounded-lg p-1.5 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+
+            <div className="flex-1 space-y-3 overflow-y-auto text-xs">
+              {isDeliveriesLoading ? (
+                <div className="py-12 text-center text-zinc-500 flex items-center justify-center gap-2">
+                  <RefreshCw className="h-4 w-4 animate-spin" />
+                  <span>Loading recent delivery events...</span>
+                </div>
+              ) : deliveries.length === 0 ? (
+                <div className="py-12 text-center text-zinc-500">
+                  No recent deliveries logged for this endpoint.
+                </div>
+              ) : (
+                deliveries.map((del) => {
+                  const isDelivered = del.status === "delivered";
+                  const isFailed = del.status === "failed";
+                  return (
+                    <div
+                      key={del.id}
+                      className="rounded-xl border border-surface-border bg-surface-raised p-3.5 space-y-2"
+                    >
+                      <div className="flex items-center justify-between">
+                        <span className="font-mono text-xs font-semibold text-zinc-900 dark:text-white">
+                          {del.event_type}
+                        </span>
+                        <span
+                          className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase ${
+                            isDelivered
+                              ? "bg-emerald-500/20 text-emerald-700 dark:text-emerald-300"
+                              : isFailed
+                              ? "bg-rose-500/20 text-rose-700 dark:text-rose-300"
+                              : "bg-amber-500/20 text-amber-700 dark:text-amber-300"
+                          }`}
+                        >
+                          {del.status}
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between text-[11px] text-zinc-500 font-mono">
+                        <span>Attempts: {del.attempts}</span>
+                        <span>{new Date(del.created_at).toLocaleString()}</span>
+                      </div>
+                      {del.last_error && (
+                        <p className="text-[10px] font-mono text-rose-600 dark:text-rose-400 bg-rose-500/10 p-1.5 rounded">
+                          {del.last_error}
+                        </p>
+                      )}
+                      {!isDelivered && (
+                        <div className="pt-1 flex justify-end">
+                          <button
+                            type="button"
+                            onClick={() => void handleRetryDelivery(del.id)}
+                            disabled={retryingDeliveryId === del.id}
+                            className="inline-flex items-center gap-1 text-[11px] text-teal-600 dark:text-teal-400 hover:underline"
+                          >
+                            <RotateCw className={`h-3 w-3 ${retryingDeliveryId === del.id ? "animate-spin" : ""}`} />
+                            <span>Retry Dispatch</span>
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })
+              )}
+            </div>
+
+            <div className="pt-3 border-t border-surface-border flex justify-end">
+              <button
+                type="button"
+                onClick={() => setIsDeliveriesOpen(false)}
+                className="btn-secondary text-xs"
+              >
+                Close
+              </button>
+            </div>
           </div>
         </div>
       )}

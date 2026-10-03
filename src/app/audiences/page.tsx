@@ -7,6 +7,7 @@ import {
   ContactView,
   SegmentView,
   TopicView,
+  ContactBulkImportResponse,
 } from "@/lib/api";
 import {
   Users,
@@ -24,6 +25,10 @@ import {
   Sparkles,
   TrendingUp,
   BarChart3,
+  Upload,
+  FileUp,
+  CheckCircle2,
+  AlertTriangle,
 } from "lucide-react";
 import { useToast } from "@/lib/toast-context";
 import { ErrorState } from "@/components/ui/ErrorState";
@@ -93,6 +98,14 @@ export default function AudiencesPage() {
   const [topicDescription, setTopicDescription] = useState("");
   const [topicVisibility, setTopicVisibility] = useState<"public" | "private">("public");
   const [editingTopicId, setEditingTopicId] = useState<string | null>(null);
+
+  // Bulk CSV Importer state
+  const [isImportOpen, setIsImportOpen] = useState(false);
+  const [importCsvText, setImportCsvText] = useState("");
+  const [importSkipDisposable, setImportSkipDisposable] = useState(true);
+  const [importSkipRoleBased, setImportSkipRoleBased] = useState(false);
+  const [isImporting, setIsImporting] = useState(false);
+  const [importResult, setImportResult] = useState<ContactBulkImportResponse | null>(null);
 
   const fetchData = async () => {
     const revision = ++dataLoadRevision.current;
@@ -257,6 +270,31 @@ export default function AudiencesPage() {
       loadContacts(selectedAudience?.id);
     } catch (err: any) {
       toast.error("Failed to delete contact: " + err.message);
+    }
+  };
+
+  const handleBulkImport = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!importCsvText.trim()) {
+      toast.error("Please provide CSV data or contact emails to import.");
+      return;
+    }
+    setIsImporting(true);
+    setImportResult(null);
+    try {
+      const res = await api.bulkImportContacts({
+        audience_id: selectedAudience?.id,
+        csv_data: importCsvText,
+        skip_disposable: importSkipDisposable,
+        skip_role_based: importSkipRoleBased,
+      });
+      setImportResult(res);
+      toast.success(`Import complete: ${res.imported} imported, ${res.updated} updated.`);
+      loadContacts(selectedAudience?.id);
+    } catch (err: any) {
+      toast.error("Bulk import failed: " + err.message);
+    } finally {
+      setIsImporting(false);
     }
   };
 
@@ -520,6 +558,16 @@ export default function AudiencesPage() {
               >
                 <FolderPlus className="h-3.5 w-3.5 text-zinc-500 dark:text-zinc-400" />
                 <span>New Audience</span>
+              </button>
+              <button
+                onClick={() => {
+                  setImportResult(null);
+                  setIsImportOpen(true);
+                }}
+                className="btn-secondary"
+              >
+                <Upload className="h-3.5 w-3.5 text-teal-600 dark:text-teal-400" />
+                <span>Import CSV</span>
               </button>
               <button
                 onClick={() => setIsContactOpen(true)}
@@ -1454,6 +1502,146 @@ export default function AudiencesPage() {
                 Close
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal: Bulk CSV Contact Importer */}
+      {isImportOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm animate-fade-in">
+          <div className="w-full max-w-lg rounded-2xl border border-surface-border bg-surface p-6 shadow-2xl space-y-4">
+            <div className="flex items-center justify-between border-b border-surface-border pb-3">
+              <div className="flex items-center gap-2">
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-teal-50 dark:bg-teal-950/40 text-teal-600 dark:text-teal-400">
+                  <Upload className="h-4 w-4" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-semibold text-zinc-900 dark:text-white">
+                    Bulk Import Contacts &amp; Data Hygiene
+                  </h3>
+                  <p className="text-[11px] text-zinc-500">
+                    Import to: <strong className="text-zinc-700 dark:text-zinc-300">{selectedAudience?.name || "All Contacts"}</strong>
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setIsImportOpen(false)}
+                className="rounded-lg p-1 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+
+            <form onSubmit={handleBulkImport} className="space-y-4 text-xs">
+              <div>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="text-[11px] font-medium text-zinc-700 dark:text-zinc-300">
+                    CSV Content or Email List
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setImportCsvText(
+                        "email,first_name,last_name\nalex@acme.corp,Alex,Smith\njane@fintech.io,Jane,Doe\nsam@startup.dev,Sam,Altman"
+                      );
+                    }}
+                    className="text-[10px] text-teal-600 dark:text-teal-400 hover:underline"
+                  >
+                    Load Sample CSV
+                  </button>
+                </div>
+                <textarea
+                  rows={6}
+                  value={importCsvText}
+                  onChange={(e) => setImportCsvText(e.target.value)}
+                  placeholder="Paste CSV rows (e.g. email,first_name,last_name) or one email per line..."
+                  className="w-full rounded-lg border border-surface-border bg-surface-raised p-2.5 font-mono text-[11px] text-zinc-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-teal-500"
+                />
+              </div>
+
+              {/* Hygiene Guards */}
+              <div className="space-y-2 rounded-xl border border-surface-border bg-surface-raised p-3">
+                <span className="text-[10px] font-semibold uppercase tracking-wider text-zinc-500 block">
+                  Automated Deliverability &amp; Hygiene Guards
+                </span>
+                <label className="flex items-center gap-2 cursor-pointer text-[11px] text-zinc-700 dark:text-zinc-300">
+                  <input
+                    type="checkbox"
+                    checked={importSkipDisposable}
+                    onChange={(e) => setImportSkipDisposable(e.target.checked)}
+                    className="rounded border-surface-border text-teal-600 focus:ring-teal-500"
+                  />
+                  <span>Block disposable &amp; burner mail providers (mailinator, guerrillamail, tempmail)</span>
+                </label>
+                <label className="flex items-center gap-2 cursor-pointer text-[11px] text-zinc-700 dark:text-zinc-300">
+                  <input
+                    type="checkbox"
+                    checked={importSkipRoleBased}
+                    onChange={(e) => setImportSkipRoleBased(e.target.checked)}
+                    className="rounded border-surface-border text-teal-600 focus:ring-teal-500"
+                  />
+                  <span>Filter shared department role addresses (admin@, support@, info@)</span>
+                </label>
+              </div>
+
+              {/* Import Results Telemetry */}
+              {importResult && (
+                <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/10 p-3 text-xs space-y-1.5 text-emerald-900 dark:text-emerald-300">
+                  <div className="flex items-center gap-1.5 font-semibold text-emerald-800 dark:text-emerald-200">
+                    <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+                    <span>Import Completed Successfully</span>
+                  </div>
+                  <div className="grid grid-cols-3 gap-2 text-[11px] pt-1">
+                    <div>
+                      <span className="text-zinc-500 block">Total:</span>
+                      <strong className="font-mono">{importResult.total_processed}</strong>
+                    </div>
+                    <div>
+                      <span className="text-emerald-600 block">Imported:</span>
+                      <strong className="font-mono text-emerald-600">{importResult.imported}</strong>
+                    </div>
+                    <div>
+                      <span className="text-teal-600 block">Updated:</span>
+                      <strong className="font-mono text-teal-600">{importResult.updated}</strong>
+                    </div>
+                    <div>
+                      <span className="text-rose-500 block">Invalid:</span>
+                      <strong className="font-mono">{importResult.invalid}</strong>
+                    </div>
+                    <div>
+                      <span className="text-amber-500 block">Disposable:</span>
+                      <strong className="font-mono">{importResult.disposable}</strong>
+                    </div>
+                    <div>
+                      <span className="text-zinc-500 block">Role-Based:</span>
+                      <strong className="font-mono">{importResult.role_based}</strong>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              <div className="flex justify-end gap-2 pt-2 border-t border-surface-border">
+                <button
+                  type="button"
+                  onClick={() => setIsImportOpen(false)}
+                  className="rounded-md border border-surface-border px-4 py-2 text-xs font-medium text-zinc-700 hover:bg-surface-raised dark:text-zinc-300"
+                >
+                  {importResult ? "Done" : "Cancel"}
+                </button>
+                <button
+                  type="submit"
+                  disabled={isImporting || !importCsvText.trim()}
+                  className="btn-primary inline-flex items-center gap-2 px-4 py-2 text-xs"
+                >
+                  {isImporting ? (
+                    <RefreshCw className="h-3.5 w-3.5 animate-spin" />
+                  ) : (
+                    <Upload className="h-3.5 w-3.5" />
+                  )}
+                  <span>{isImporting ? "Processing CSV..." : "Start Batch Ingestion"}</span>
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}
