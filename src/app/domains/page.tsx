@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { api, DomainView } from "@/lib/api";
 import {
@@ -34,30 +34,28 @@ export default function DomainsPage() {
   const [isSavingInboundWebhook, setIsSavingInboundWebhook] = useState(false);
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
 
-  const fetchDomains = async () => {
+  const fetchDomains = useCallback(async () => {
     setIsLoading(true);
     setLoadError(null);
     try {
       const res = await api.listDomains();
       const list = res.data || [];
       setDomains(list);
-      if (list.length > 0 && !selectedDomain) {
-        setSelectedDomain(list[0]);
-      } else if (selectedDomain) {
-        const updated = list.find((d) => d.id === selectedDomain.id);
-        if (updated) setSelectedDomain(updated);
-      }
+      setSelectedDomain((prev) => {
+        if (!prev) return list[0] || null;
+        return list.find((d) => d.id === prev.id) || prev;
+      });
     } catch (err) {
       console.error("Failed to fetch domains", err);
       setLoadError(err instanceof Error ? err.message : "Could not load domains.");
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
-    fetchDomains();
-  }, []);
+    void fetchDomains();
+  }, [fetchDomains]);
 
   useEffect(() => {
     setInboundWebhookURL(selectedDomain?.inbound_webhook_url || "");

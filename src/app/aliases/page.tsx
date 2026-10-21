@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import Link from "next/link";
 import {
   api,
@@ -62,7 +62,7 @@ export default function AliasesPage() {
 
   const verifiedDomains = useMemo(() => getVerifiedDomains(domains), [domains]);
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     setIsLoading(true);
     setError(null);
     try {
@@ -81,8 +81,8 @@ export default function AliasesPage() {
         const domList = domRes.value.data || [];
         setDomains(domList);
         const verified = domList.filter((d) => d.status === "verified");
-        if (verified.length > 0 && !selectedDomainId) {
-          setSelectedDomainId(verified[0].id);
+        if (verified.length > 0) {
+          setSelectedDomainId((cur) => cur || verified[0].id);
         }
       }
     } catch (err: any) {
@@ -91,11 +91,11 @@ export default function AliasesPage() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
-    fetchData();
-  }, []);
+    void fetchData();
+  }, [fetchData]);
 
   const openCreateModal = () => {
     setEditingAlias(null);

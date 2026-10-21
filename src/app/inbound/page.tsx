@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
 import {
   api,
@@ -53,7 +53,7 @@ export default function InboundPage() {
   const [forwardTo, setForwardTo] = useState("");
   const [storeAliasCopy, setStoreAliasCopy] = useState(true);
 
-  const fetchData = async (before?: string, resetPage = true): Promise<boolean> => {
+  const fetchData = useCallback(async (before?: string, resetPage = true): Promise<boolean> => {
     const revision = ++dataLoadRevision.current;
     setIsLoading(true);
     setError(null);
@@ -79,9 +79,7 @@ export default function InboundPage() {
       if (domainsRes.status === "fulfilled") {
         const domList = domainsRes.value.data || [];
         setDomains(domList);
-        if (domList.length > 0 && !selectedDomain) {
-          setSelectedDomain(domList[0].name);
-        }
+        setSelectedDomain((cur) => cur || domList[0]?.name || "");
         hasSuccess = true;
       }
       if (!hasSuccess && (inboundRes.status === "rejected" || aliasesRes.status === "rejected")) {
@@ -97,7 +95,7 @@ export default function InboundPage() {
     } finally {
       if (revision === dataLoadRevision.current) setIsLoading(false);
     }
-  };
+  }, []);
 
   const loadOlderInbound = async () => {
     if (!nextInboundBefore || isPageLoading) return;
@@ -131,7 +129,7 @@ export default function InboundPage() {
       dataLoadRevision.current += 1;
       detailLoadRevision.current += 1;
     };
-  }, []);
+  }, [fetchData]);
 
   // Keyboard accessibility
   useEffect(() => {

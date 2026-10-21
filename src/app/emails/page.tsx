@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef, Suspense } from "react";
+import React, { useState, useEffect, useRef, useCallback, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import {
   api,
@@ -85,7 +85,19 @@ function EmailsPageContent() {
       .catch((err) => console.error("Failed to load domains", err));
   }, []);
 
-  const fetchEmails = async (before?: string, resetPage = true): Promise<boolean> => {
+  const loadEmailDetail = useCallback(async (id: string) => {
+    const revision = ++emailDetailRevision.current;
+    try {
+      const detail = await api.getEmail(id);
+      if (revision === emailDetailRevision.current) setSelectedEmail(detail);
+    } catch (err) {
+      if (revision !== emailDetailRevision.current) return;
+      console.error("Failed to load email detail", err);
+      toast.error("Failed to load email details: " + (err instanceof Error ? err.message : "Unknown error"));
+    }
+  }, [toast]);
+
+  const fetchEmails = useCallback(async (before?: string, resetPage = true): Promise<boolean> => {
     const revision = ++emailListRevision.current;
     setIsLoading(true);
     setLoadError(null);
@@ -108,7 +120,7 @@ function EmailsPageContent() {
     } finally {
       if (revision === emailListRevision.current) setIsLoading(false);
     }
-  };
+  }, [statusFilter, initialId, loadEmailDetail]);
 
   const loadOlderEmails = async () => {
     if (!nextEmailBefore || isLoading) return;
@@ -126,25 +138,13 @@ function EmailsPageContent() {
     }
   };
 
-  const loadEmailDetail = async (id: string) => {
-    const revision = ++emailDetailRevision.current;
-    try {
-      const detail = await api.getEmail(id);
-      if (revision === emailDetailRevision.current) setSelectedEmail(detail);
-    } catch (err) {
-      if (revision !== emailDetailRevision.current) return;
-      console.error("Failed to load email detail", err);
-      toast.error("Failed to load email details: " + (err instanceof Error ? err.message : "Unknown error"));
-    }
-  };
-
   useEffect(() => {
     void fetchEmails();
     return () => {
       emailListRevision.current += 1;
       emailDetailRevision.current += 1;
     };
-  }, [initialId, statusFilter]);
+  }, [fetchEmails]);
 
   const handleCancelEmail = async (id: string) => {
     try {

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, useCallback } from "react";
 import Link from "next/link";
 import {
   api,
@@ -41,7 +41,7 @@ export default function OverviewPage() {
   const [interval, setInterval] = useState<"hour" | "day" | "week" | "month">("day");
   const loadRevision = useRef(0);
 
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     const revision = ++loadRevision.current;
     setIsLoading(true);
     setLoadError(null);
@@ -79,7 +79,7 @@ export default function OverviewPage() {
     } finally {
       if (revision === loadRevision.current) setIsLoading(false);
     }
-  };
+  }, [interval]);
 
   useEffect(() => {
     void loadData();
@@ -94,7 +94,7 @@ export default function OverviewPage() {
       window.removeEventListener("mailhost_email_sent", handleSent);
       loadRevision.current += 1;
     };
-  }, [interval]);
+  }, [loadData]);
 
   const totals = analytics?.totals || {
     sent: 0,

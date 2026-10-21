@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import {
   Plus,
   Trash2,
@@ -88,7 +88,7 @@ export default function TemplatesPage() {
     }
   };
 
-  const fetchTemplates = async () => {
+  const fetchTemplates = useCallback(async () => {
     const revision = ++templateListRevision.current;
     setIsLoading(true);
     setLoadError(null);
@@ -97,9 +97,10 @@ export default function TemplatesPage() {
       if (revision !== templateListRevision.current) return;
       const list = res.data || [];
       setTemplates(list);
-      if (list.length > 0 && !selectedTemplate) {
-        setSelectedTemplate(list[0]);
-      }
+      setSelectedTemplate((prev) => {
+        if (!prev) return list[0] || null;
+        return list.find((t) => t.id === prev.id) || prev;
+      });
     } catch (err) {
       if (revision !== templateListRevision.current) return;
       console.error("Failed to load templates", err);
@@ -107,14 +108,14 @@ export default function TemplatesPage() {
     } finally {
       if (revision === templateListRevision.current) setIsLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     void fetchTemplates();
     return () => {
       templateListRevision.current += 1;
     };
-  }, []);
+  }, [fetchTemplates]);
 
   const [versions, setVersions] = useState<TemplateVersion[]>([]);
   const [isVersionsLoading, setIsVersionsLoading] = useState(false);

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef, useMemo } from "react";
+import React, { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import {
   api,
   AudienceView,
@@ -107,54 +107,7 @@ export default function AudiencesPage() {
   const [isImporting, setIsImporting] = useState(false);
   const [importResult, setImportResult] = useState<ContactBulkImportResponse | null>(null);
 
-  const fetchData = async () => {
-    const revision = ++dataLoadRevision.current;
-    setIsLoading(true);
-    setLoadError(null);
-    try {
-      const [audRes, segRes, topRes] = await Promise.allSettled([
-        api.listAudiences(),
-        api.listSegments(),
-        api.listTopics(),
-      ]);
-      if (revision !== dataLoadRevision.current) return;
-      const failedResources: string[] = [];
-
-      if (audRes.status === "fulfilled") {
-        const list = audRes.value.data || [];
-        setAudiences(list);
-        const nextAudience =
-          list.find((audience) => audience.id === selectedAudience?.id) || list[0] || null;
-        setSelectedAudience(nextAudience);
-        void loadContacts(nextAudience?.id);
-      } else {
-        failedResources.push("audiences");
-      }
-
-      if (segRes.status === "fulfilled") {
-        setSegments(segRes.value.data || []);
-      } else {
-        failedResources.push("segments");
-      }
-
-      if (topRes.status === "fulfilled") {
-        setTopics(topRes.value.data || []);
-      } else {
-        failedResources.push("topics");
-      }
-      if (failedResources.length) {
-        setLoadError(`Could not load ${failedResources.join(" and ")}.`);
-      }
-    } catch (err) {
-      if (revision !== dataLoadRevision.current) return;
-      console.error("Failed to load audience data", err);
-      setLoadError(err instanceof Error ? err.message : "Could not load audience data.");
-    } finally {
-      if (revision === dataLoadRevision.current) setIsLoading(false);
-    }
-  };
-
-  const loadContacts = async (
+  const loadContacts = useCallback(async (
     audienceId?: string,
     before?: string,
     resetPage = true
@@ -183,7 +136,56 @@ export default function AudiencesPage() {
     } finally {
       if (revision === contactsLoadRevision.current) setIsContactsLoading(false);
     }
-  };
+  }, []);
+
+  const fetchData = useCallback(async () => {
+    const revision = ++dataLoadRevision.current;
+    setIsLoading(true);
+    setLoadError(null);
+    try {
+      const [audRes, segRes, topRes] = await Promise.allSettled([
+        api.listAudiences(),
+        api.listSegments(),
+        api.listTopics(),
+      ]);
+      if (revision !== dataLoadRevision.current) return;
+      const failedResources: string[] = [];
+
+      if (audRes.status === "fulfilled") {
+        const list = audRes.value.data || [];
+        setAudiences(list);
+        let nextAudience: AudienceView | null = null;
+        setSelectedAudience((prev) => {
+          nextAudience = list.find((audience) => audience.id === prev?.id) || list[0] || null;
+          return nextAudience;
+        });
+        void loadContacts(nextAudience?.id);
+      } else {
+        failedResources.push("audiences");
+      }
+
+      if (segRes.status === "fulfilled") {
+        setSegments(segRes.value.data || []);
+      } else {
+        failedResources.push("segments");
+      }
+
+      if (topRes.status === "fulfilled") {
+        setTopics(topRes.value.data || []);
+      } else {
+        failedResources.push("topics");
+      }
+      if (failedResources.length) {
+        setLoadError(`Could not load ${failedResources.join(" and ")}.`);
+      }
+    } catch (err) {
+      if (revision !== dataLoadRevision.current) return;
+      console.error("Failed to load audience data", err);
+      setLoadError(err instanceof Error ? err.message : "Could not load audience data.");
+    } finally {
+      if (revision === dataLoadRevision.current) setIsLoading(false);
+    }
+  }, [loadContacts]);
 
   const loadOlderContacts = async () => {
     if (!nextContactsBefore || isContactsLoading) return;
@@ -205,7 +207,7 @@ export default function AudiencesPage() {
       dataLoadRevision.current += 1;
       contactsLoadRevision.current += 1;
     };
-  }, []);
+  }, [fetchData]);
 
   const handleCreateAudience = async (e: React.FormEvent) => {
     e.preventDefault();
