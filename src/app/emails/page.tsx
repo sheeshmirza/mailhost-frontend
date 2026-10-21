@@ -64,6 +64,11 @@ function EmailsPageContent() {
   const [lastBatchId, setLastBatchId] = useState<string | null>(null);
   const [batchStatus, setBatchStatus] = useState<BatchStatusView | null>(null);
   const [isCheckingBatch, setIsCheckingBatch] = useState(false);
+  const [isInspectBatchOpen, setIsInspectBatchOpen] = useState(false);
+  const [inspectBatchId, setInspectBatchId] = useState("");
+  const [inspectedBatch, setInspectedBatch] = useState<BatchStatusView | null>(null);
+  const [isInspectingBatch, setIsInspectingBatch] = useState(false);
+  const [inspectBatchError, setInspectBatchError] = useState<string | null>(null);
   const [emailBefore, setEmailBefore] = useState<string | undefined>();
   const [nextEmailBefore, setNextEmailBefore] = useState<string | undefined>();
   const [emailPageHistory, setEmailPageHistory] = useState<(string | undefined)[]>([]);
@@ -177,9 +182,13 @@ function EmailsPageContent() {
       );
       const result = await api.sendBatch(parsed);
       setLastBatchId(result.batch_id);
+      setInspectBatchId(result.batch_id);
       setBatchStatus(null);
+      setInspectedBatch(null);
       toast.success("Batch sent successfully");
       setIsBatchOpen(false);
+      setIsInspectBatchOpen(true);
+      void handleInspectBatch(result.batch_id);
       fetchEmails();
     } catch (err: any) {
       toast.error("Batch send failed: " + err.message);
@@ -222,8 +231,12 @@ function EmailsPageContent() {
         recipients,
       });
       setLastBatchId(result.batch_id);
+      setInspectBatchId(result.batch_id);
       setBatchStatus(null);
+      setInspectedBatch(null);
       setIsBulkOpen(false);
+      setIsInspectBatchOpen(true);
+      void handleInspectBatch(result.batch_id);
       toast.success("Bulk emails queued successfully", `${result.count} messages sent to delivery queue.`);
       await fetchEmails();
     } catch (err) {
@@ -237,11 +250,35 @@ function EmailsPageContent() {
     if (!lastBatchId || isCheckingBatch) return;
     setIsCheckingBatch(true);
     try {
-      setBatchStatus(await api.getBatch(lastBatchId));
+      const res = await api.getBatch(lastBatchId);
+      setBatchStatus(res);
+      setInspectedBatch(res);
     } catch (err) {
       toast.error("Could not load batch status: " + (err instanceof Error ? err.message : "Unknown error"));
     } finally {
       setIsCheckingBatch(false);
+    }
+  };
+
+  const handleInspectBatch = async (id?: string) => {
+    const targetId = (id || inspectBatchId).trim();
+    if (!targetId) {
+      toast.error("Please enter a valid Batch ID.");
+      return;
+    }
+    setIsInspectingBatch(true);
+    setInspectBatchError(null);
+    try {
+      const res = await api.getBatch(targetId);
+      setInspectedBatch(res);
+      setLastBatchId(targetId);
+      setBatchStatus(res);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Failed to load batch status.";
+      setInspectBatchError(msg);
+      toast.error("Batch lookup failed: " + msg);
+    } finally {
+      setIsInspectingBatch(false);
     }
   };
 
@@ -322,6 +359,19 @@ function EmailsPageContent() {
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
+          <button
+            onClick={() => {
+              if (lastBatchId && !inspectBatchId) {
+                setInspectBatchId(lastBatchId);
+              }
+              setIsInspectBatchOpen(true);
+            }}
+            className="btn-secondary"
+            title="Inspect status and delivery counts of any batch"
+          >
+            <Search className="h-3.5 w-3.5" />
+            <span>Inspect Batch</span>
+          </button>
           <button onClick={() => setIsBulkOpen(true)} className="btn-secondary">
             <Users className="h-3.5 w-3.5" />
             <span>Bulk Send</span>
@@ -358,10 +408,23 @@ function EmailsPageContent() {
               </div>
             )}
           </div>
-          <button onClick={checkBatchStatus} disabled={isCheckingBatch} className="btn-secondary shrink-0">
-            <RefreshCw className={`h-3.5 w-3.5 ${isCheckingBatch ? "animate-spin" : ""}`} />
-            <span>{isCheckingBatch ? "Checking..." : "Check status"}</span>
-          </button>
+          <div className="flex items-center gap-2 shrink-0">
+            <button onClick={checkBatchStatus} disabled={isCheckingBatch} className="btn-secondary">
+              <RefreshCw className={`h-3.5 w-3.5 ${isCheckingBatch ? "animate-spin" : ""}`} />
+              <span>{isCheckingBatch ? "Checking..." : "Refresh"}</span>
+            </button>
+            <button
+              onClick={() => {
+                setInspectBatchId(lastBatchId);
+                setInspectedBatch(batchStatus);
+                setIsInspectBatchOpen(true);
+              }}
+              className="btn-secondary"
+            >
+              <Search className="h-3.5 w-3.5" />
+              <span>Inspect</span>
+            </button>
+          </div>
         </section>
       )}
 
@@ -806,6 +869,122 @@ function EmailsPageContent() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Inspect Batch Modal */}
+      {isInspectBatchOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
+          <div className="dialog-scroll relative flex flex-col w-full max-w-lg rounded-xl border border-surface-border bg-surface shadow-2xl p-6 space-y-4">
+            <div className="flex items-center justify-between border-b border-surface-border pb-3">
+              <div className="flex items-center gap-2">
+                <Search className="h-4 w-4 text-teal-600 dark:text-teal-400" />
+                <h2 className="text-sm font-semibold text-zinc-900 dark:text-white">Batch Status Inspector</h2>
+              </div>
+              <button
+                onClick={() => setIsInspectBatchOpen(false)}
+                className="text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white transition-colors"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+
+            <p className="text-xs text-zinc-500 dark:text-zinc-400">
+              Query real-time delivery status, queued quantities, and delivery milestones for any batch dispatch.
+            </p>
+
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                void handleInspectBatch();
+              }}
+              className="flex gap-2"
+            >
+              <input
+                type="text"
+                value={inspectBatchId}
+                onChange={(e) => setInspectBatchId(e.target.value)}
+                placeholder="Paste Batch ID (UUID)..."
+                required
+                className="flex-1 rounded-md border border-surface-border bg-surface-raised px-3 py-1.5 font-mono text-xs text-zinc-900 dark:text-white placeholder-zinc-400 focus:outline-none"
+              />
+              <button
+                type="submit"
+                disabled={isInspectingBatch}
+                className="btn-primary px-3 py-1.5 text-xs flex items-center gap-1.5 shrink-0"
+              >
+                <RefreshCw className={`h-3.5 w-3.5 ${isInspectingBatch ? "animate-spin" : ""}`} />
+                <span>{isInspectingBatch ? "Inspecting..." : "Inspect"}</span>
+              </button>
+            </form>
+
+            {inspectBatchError && (
+              <div className="rounded-md border border-red-200 bg-red-50 p-3 text-xs text-red-700 dark:border-red-900/50 dark:bg-red-950/20 dark:text-red-300">
+                {inspectBatchError}
+              </div>
+            )}
+
+            {inspectedBatch && (
+              <div className="space-y-4 rounded-lg border border-surface-border bg-surface-raised p-4">
+                <div className="flex items-center justify-between border-b border-surface-border pb-3">
+                  <div>
+                    <span className="text-[10px] uppercase font-semibold text-zinc-500 dark:text-zinc-400">Batch ID</span>
+                    <p className="font-mono text-xs text-zinc-900 dark:text-white truncate max-w-xs">{inspectedBatch.batch_id}</p>
+                  </div>
+                  <div className="text-right">
+                    <span className="text-[10px] uppercase font-semibold text-zinc-500 dark:text-zinc-400">Total Emails</span>
+                    <p className="font-mono text-sm font-semibold text-zinc-900 dark:text-white">{inspectedBatch.total}</p>
+                  </div>
+                </div>
+
+                <div>
+                  <span className="text-[11px] font-medium text-zinc-700 dark:text-zinc-300 block mb-2">Delivery Breakdown</span>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                    {Object.entries(inspectedBatch.statuses || {}).map(([statusKey, count]) => {
+                      const s = statusKey.toLowerCase();
+                      const isGood = s === "delivered" || s === "sent";
+                      const isBad = s === "failed" || s === "bounced";
+                      return (
+                        <div
+                          key={statusKey}
+                          className={`rounded-md border p-2.5 flex flex-col justify-between ${
+                            isGood
+                              ? "border-emerald-200 bg-emerald-50/50 dark:border-emerald-900/30 dark:bg-emerald-950/20"
+                              : isBad
+                              ? "border-red-200 bg-red-50/50 dark:border-red-900/30 dark:bg-red-950/20"
+                              : "border-surface-border bg-surface"
+                          }`}
+                        >
+                          <span className="text-[10px] uppercase tracking-wider font-semibold text-zinc-500 dark:text-zinc-400 capitalize">
+                            {statusKey}
+                          </span>
+                          <span className={`text-base font-bold font-mono mt-1 ${
+                            isGood
+                              ? "text-emerald-700 dark:text-emerald-400"
+                              : isBad
+                              ? "text-red-700 dark:text-red-400"
+                              : "text-zinc-900 dark:text-white"
+                          }`}>
+                            {count}
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            <div className="flex justify-end pt-2">
+              <button
+                type="button"
+                onClick={() => setIsInspectBatchOpen(false)}
+                className="btn-secondary text-xs px-4 py-1.5"
+              >
+                Close
+              </button>
+            </div>
           </div>
         </div>
       )}

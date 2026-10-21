@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   api,
   AuditLogView,
@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { ErrorState } from "@/components/ui/ErrorState";
 import { TableSkeleton } from "@/components/ui/LoadingState";
+import { CursorPagination } from "@/components/ui/CursorPagination";
 import { WidgetErrorBoundary } from "@/components/ui/WidgetErrorBoundary";
 import { useToast } from "@/lib/toast-context";
 import { useAuth } from "@/lib/auth-context";
@@ -34,6 +35,11 @@ export default function LogsHealthPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [auditLogsError, setAuditLogsError] = useState<string | null>(null);
+  const [auditBefore, setAuditBefore] = useState<string | undefined>();
+  const [nextAuditBefore, setNextAuditBefore] = useState<string | undefined>();
+  const [auditPageHistory, setAuditPageHistory] = useState<(string | undefined)[]>([]);
+  const [isAuditPageLoading, setIsAuditPageLoading] = useState(false);
+  const auditLogsRevision = useRef(0);
   const [editingIP, setEditingIP] = useState<DedicatedIPView | null>(null);
   const [ipStatus, setIPStatus] = useState<"warming" | "active" | "paused">("warming");
   const [ipWarmupDay, setIPWarmupDay] = useState(1);
@@ -67,14 +73,50 @@ export default function LogsHealthPage() {
     }
   };
 
+  const fetchAuditLogs = async (before?: string, resetPage = true): Promise<boolean> => {
+    const rev = ++auditLogsRevision.current;
+    setIsAuditPageLoading(true);
+    setAuditLogsError(null);
+    try {
+      const res = await api.listAuditLogs(50, before);
+      if (rev !== auditLogsRevision.current) return false;
+      setAuditLogs(res.data || []);
+      setAuditBefore(before);
+      setNextAuditBefore(res.next_before);
+      if (resetPage) setAuditPageHistory([]);
+      return true;
+    } catch (err) {
+      if (rev !== auditLogsRevision.current) return false;
+      const message = err instanceof Error ? err.message : "Could not load audit logs.";
+      setAuditLogsError(message);
+      return false;
+    } finally {
+      if (rev === auditLogsRevision.current) setIsAuditPageLoading(false);
+    }
+  };
+
+  const loadOlderLogs = async () => {
+    if (!nextAuditBefore || isAuditPageLoading) return;
+    const currentBefore = auditBefore;
+    if (await fetchAuditLogs(nextAuditBefore, false)) {
+      setAuditPageHistory((history) => [...history, currentBefore]);
+    }
+  };
+
+  const loadNewerLogs = async () => {
+    if (auditPageHistory.length === 0 || isAuditPageLoading) return;
+    const previousBefore = auditPageHistory[auditPageHistory.length - 1];
+    if (await fetchAuditLogs(previousBefore, false)) {
+      setAuditPageHistory((history) => history.slice(0, -1));
+    }
+  };
+
   const fetchHealthAndLogs = async () => {
     setIsLoading(true);
     setLoadError(null);
-    setAuditLogsError(null);
     try {
-      const [readyRes, logsRes, ipsRes, schedRes] = await Promise.allSettled([
+      const [readyRes, ipsRes, schedRes] = await Promise.allSettled([
         api.getReadiness(),
-        api.listAuditLogs(),
         api.listDedicatedIPs(),
         api.getWarmingSchedule(),
       ]);
@@ -85,13 +127,6 @@ export default function LogsHealthPage() {
       } else {
         setReadiness("unavailable");
         failedResources.push("service availability");
-      }
-      if (logsRes.status === "fulfilled") {
-        setAuditLogs(logsRes.value.data || []);
-      } else {
-        const message = logsRes.reason instanceof Error ? logsRes.reason.message : "Could not load audit logs.";
-        setAuditLogsError(message);
-        failedResources.push("audit logs");
       }
       if (ipsRes.status === "fulfilled") {
         setDedicatedIPs(ipsRes.value.data || []);
@@ -108,10 +143,10 @@ export default function LogsHealthPage() {
       console.error("Failed to load health and logs", err);
       const message = err instanceof Error ? err.message : "Could not load logs and system health.";
       setLoadError(message);
-      setAuditLogsError(message);
     } finally {
       setIsLoading(false);
     }
+    void fetchAuditLogs();
   };
 
   useEffect(() => {
@@ -273,6 +308,19 @@ export default function LogsHealthPage() {
             </tbody>
           </table>
         </div>
+        )}
+        {(auditPageHistory.length > 0 || nextAuditBefore) && (
+          <CursorPagination
+            page={auditPageHistory.length + 1}
+            canGoNewer={auditPageHistory.length > 0}
+            canGoOlder={Boolean(nextAuditBefore)}
+            isLoading={isAuditPageLoading || isLoading}
+            onNewer={() => void loadNewerLogs()}
+            onOlder={() => void loadOlderLogs()}
+          />
+        )}
+        {auditLogsError && auditLogs.length > 0 && (
+          <ErrorState message={auditLogsError} onRetry={() => void fetchAuditLogs()} />
         )}
         </div>
       </WidgetErrorBoundary>
