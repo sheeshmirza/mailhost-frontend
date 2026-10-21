@@ -137,14 +137,14 @@ export default function OverviewPage() {
           </p>
         </div>
 
-        <div className="flex items-center gap-2.5">
+        <div className="flex flex-wrap items-center gap-2 sm:gap-2.5">
           {/* Interval selector */}
-          <div className="flex items-center rounded-lg border border-surface-border bg-surface p-0.5">
+          <div className="flex items-center rounded-lg border border-surface-border bg-surface p-0.5 overflow-x-auto max-w-full">
             {(["hour", "day", "week", "month"] as const).map((int) => (
               <button
                 key={int}
                 onClick={() => setInterval(int)}
-                className={`rounded-md px-3 py-1 text-xs font-medium capitalize transition-colors ${
+                className={`rounded-md px-2.5 sm:px-3 py-1 text-xs font-medium capitalize transition-colors ${
                   interval === int
                     ? "bg-surface-raised text-zinc-900 dark:text-white font-medium shadow-sm border border-surface-border/50"
                     : "text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white"
@@ -165,16 +165,15 @@ export default function OverviewPage() {
           >
             <RefreshCw className={`h-3.5 w-3.5 ${isLoading ? "animate-spin" : ""}`} />
           </button>
-
         </div>
       </div>
 
       {loadError && <ErrorState message={loadError} onRetry={loadData} />}
 
       {/* KPI Cards Grid */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3.5 sm:gap-4">
         {/* Sent */}
-        <div className="rounded-xl border border-surface-border bg-surface p-5 space-y-3 shadow-sm">
+        <div className="rounded-xl border border-surface-border bg-surface p-4 sm:p-5 space-y-2.5 sm:space-y-3 shadow-sm">
           <div className="flex items-center justify-between">
             <span className="text-xs text-zinc-500 uppercase tracking-wider font-medium">Sent</span>
             <div className="flex h-8 w-8 items-center justify-center rounded-full bg-zinc-100 dark:bg-zinc-800">
@@ -192,7 +191,7 @@ export default function OverviewPage() {
         </div>
 
         {/* Delivered */}
-        <div className="rounded-xl border border-surface-border bg-surface p-5 space-y-3 shadow-sm">
+        <div className="rounded-xl border border-surface-border bg-surface p-4 sm:p-5 space-y-2.5 sm:space-y-3 shadow-sm">
           <div className="flex items-center justify-between">
             <span className="text-xs text-zinc-500 uppercase tracking-wider font-medium">Delivered</span>
             <div className="flex h-8 w-8 items-center justify-center rounded-full bg-emerald-50 dark:bg-emerald-500/10">
@@ -210,7 +209,7 @@ export default function OverviewPage() {
         </div>
 
         {/* Opened */}
-        <div className="rounded-xl border border-surface-border bg-surface p-5 space-y-3 shadow-sm">
+        <div className="rounded-xl border border-surface-border bg-surface p-4 sm:p-5 space-y-2.5 sm:space-y-3 shadow-sm">
           <div className="flex items-center justify-between">
             <span className="text-xs text-zinc-500 uppercase tracking-wider font-medium">Opened</span>
             <div className="flex h-8 w-8 items-center justify-center rounded-full bg-teal-50 dark:bg-teal-500/10">
@@ -228,7 +227,7 @@ export default function OverviewPage() {
         </div>
 
         {/* Clicked */}
-        <div className="rounded-xl border border-surface-border bg-surface p-5 space-y-3 shadow-sm">
+        <div className="rounded-xl border border-surface-border bg-surface p-4 sm:p-5 space-y-2.5 sm:space-y-3 shadow-sm">
           <div className="flex items-center justify-between">
             <span className="text-xs text-zinc-500 uppercase tracking-wider font-medium">Clicked</span>
             <div className="flex h-8 w-8 items-center justify-center rounded-full bg-teal-50 dark:bg-teal-500/10">
@@ -246,7 +245,7 @@ export default function OverviewPage() {
         </div>
 
         {/* Bounced / Failed */}
-        <div className="rounded-xl border border-surface-border bg-surface p-5 space-y-3 shadow-sm col-span-2 sm:col-span-1">
+        <div className="rounded-xl border border-surface-border bg-surface p-4 sm:p-5 space-y-2.5 sm:space-y-3 shadow-sm col-span-1 sm:col-span-2 md:col-span-1">
           <div className="flex items-center justify-between">
             <span className="text-xs text-zinc-500 uppercase tracking-wider font-medium">Bounced</span>
             <div className="flex h-8 w-8 items-center justify-center rounded-full bg-red-50 dark:bg-red-500/10">
@@ -266,15 +265,15 @@ export default function OverviewPage() {
 
       {/* Activity Timeline Chart */}
       <WidgetErrorBoundary fallbackTitle="Email volume chart unavailable">
-        <div className="rounded-xl border border-surface-border bg-surface p-5 space-y-4 shadow-sm">
-          <div className="flex items-center justify-between">
+        <div className="rounded-xl border border-surface-border bg-surface p-4 sm:p-5 space-y-4 shadow-sm">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
               <h2 className="text-sm font-semibold text-zinc-900 dark:text-white">Email Volume</h2>
               <p className="text-xs text-zinc-500 dark:text-zinc-400">
                 Emails delivered grouped by {interval}
               </p>
             </div>
-            <div className="flex items-center gap-4 text-xs">
+            <div className="flex flex-wrap items-center gap-3 sm:gap-4 text-xs">
               <span className="flex items-center gap-1.5 text-zinc-500 dark:text-zinc-400">
                 <span className="h-2 w-2 rounded-full bg-zinc-900 dark:bg-white" /> Sent
               </span>
@@ -291,7 +290,7 @@ export default function OverviewPage() {
           <div
             role="img"
             aria-label={`Aggregated email delivery chart grouped by ${interval}`}
-            className="h-44 w-full flex items-end gap-1.5 pt-6 border-b border-surface-border"
+            className="h-44 w-full flex items-end gap-1.5 pt-6 border-b border-surface-border overflow-x-auto pb-1"
           >
           {analytics?.series && analytics.series.length > 0 ? (
             analytics.series.map((bucket, i) => {

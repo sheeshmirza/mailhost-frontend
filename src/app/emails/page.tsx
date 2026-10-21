@@ -321,7 +321,7 @@ function EmailsPageContent() {
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <button onClick={() => setIsBulkOpen(true)} className="btn-secondary">
             <Users className="h-3.5 w-3.5" />
             <span>Bulk Send</span>
@@ -411,8 +411,8 @@ function EmailsPageContent() {
           })}
         </div>
 
-        <div className="flex items-center gap-2">
-          <div className="relative w-full sm:w-64">
+        <div className="flex items-center gap-2 w-full sm:w-auto">
+          <div className="relative flex-1 sm:w-64">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400 dark:text-zinc-500" />
             <input
               type="text"
@@ -428,7 +428,7 @@ function EmailsPageContent() {
               api.clearCache();
               void fetchEmails();
             }}
-            className="flex h-9 w-9 items-center justify-center rounded-lg border border-surface-border bg-surface text-zinc-500 hover:bg-surface-raised hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white transition-colors"
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-surface-border bg-surface text-zinc-500 hover:bg-surface-raised hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white transition-colors"
             title="Refresh emails"
           >
             <RefreshCw className={`h-4 w-4 ${isLoading ? "animate-spin" : ""}`} />
@@ -518,14 +518,14 @@ function EmailsPageContent() {
       {/* Email Detail Slide-over / Modal */}
       {selectedEmail && (
         <div className="fixed inset-0 z-50 flex items-center justify-end bg-zinc-900/40 dark:bg-black/60 backdrop-blur-sm animate-fade-in">
-          <div className="h-full w-full max-w-2xl border-l border-surface-border bg-surface p-8 shadow-2xl flex flex-col space-y-8 overflow-y-auto">
+          <div className="h-full w-full max-w-2xl border-l border-surface-border bg-surface p-4 sm:p-6 lg:p-8 shadow-2xl flex flex-col space-y-6 sm:space-y-8 overflow-y-auto">
             {/* Header */}
-            <div className="flex items-start justify-between border-b border-surface-border pb-6">
-              <div className="space-y-1.5">
+            <div className="flex items-start justify-between border-b border-surface-border pb-4 sm:pb-6 gap-3">
+              <div className="space-y-1.5 min-w-0">
                 <span className="text-[11px] font-mono uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
                   Email Details
                 </span>
-                <h2 className="text-xl font-semibold tracking-tight text-zinc-900 dark:text-white">
+                <h2 className="text-lg sm:text-xl font-semibold tracking-tight text-zinc-900 dark:text-white truncate">
                   {selectedEmail.subject || "(no subject)"}
                 </h2>
               </div>
@@ -534,27 +534,27 @@ function EmailsPageContent() {
                   emailDetailRevision.current += 1;
                   setSelectedEmail(null);
                 }}
-                className="rounded-md p-1.5 text-zinc-500 hover:bg-surface-raised hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white transition-colors"
+                className="rounded-lg p-1.5 text-zinc-500 hover:bg-surface-raised hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white transition-colors shrink-0"
               >
                 <X className="h-5 w-5" />
               </button>
             </div>
 
             {/* Meta info */}
-            <div className="grid grid-cols-2 gap-4 text-xs">
-              <div className="rounded-xl border border-surface-border bg-surface-raised/50 p-4 space-y-1.5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 text-xs">
+              <div className="rounded-xl border border-surface-border bg-surface-raised/50 p-3.5 sm:p-4 space-y-1.5">
                 <span className="text-[11px] font-medium text-zinc-500 dark:text-zinc-400 block uppercase tracking-wider">ID</span>
                 <span className="font-mono text-zinc-900 dark:text-zinc-200 truncate block">
                   {selectedEmail.id}
                 </span>
               </div>
-              <div className="rounded-xl border border-surface-border bg-surface-raised/50 p-4 space-y-1.5">
+              <div className="rounded-xl border border-surface-border bg-surface-raised/50 p-3.5 sm:p-4 space-y-1.5">
                 <span className="text-[11px] font-medium text-zinc-500 dark:text-zinc-400 block uppercase tracking-wider">Created At</span>
                 <span className="font-mono text-zinc-900 dark:text-zinc-200 block">
                   {new Date(selectedEmail.created_at).toLocaleString()}
                 </span>
               </div>
-              <div className="rounded-xl border border-surface-border bg-surface-raised/50 p-4 col-span-2 space-y-1.5">
+              <div className="rounded-xl border border-surface-border bg-surface-raised/50 p-3.5 sm:p-4 sm:col-span-2 space-y-1.5">
                 <span className="text-[11px] font-medium text-zinc-500 dark:text-zinc-400 block uppercase tracking-wider">From</span>
                 <span className="font-mono text-zinc-900 dark:text-zinc-200 block truncate">
                   {selectedEmail.from}

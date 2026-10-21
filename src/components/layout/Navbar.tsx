@@ -98,6 +98,24 @@ export default function Navbar({
   const [showUserDropdown, setShowUserDropdown] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
+  // Close mobile drawer on route transition
+  useEffect(() => {
+    setMobileMenuOpen(false);
+    setShowOrgDropdown(false);
+    setShowUserDropdown(false);
+  }, [pathname]);
+
+  // Lock body scroll when mobile navigation drawer is active
+  useEffect(() => {
+    if (mobileMenuOpen) {
+      const originalStyle = window.getComputedStyle(document.body).overflow;
+      document.body.style.overflow = "hidden";
+      return () => {
+        document.body.style.overflow = originalStyle;
+      };
+    }
+  }, [mobileMenuOpen]);
+
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
@@ -112,13 +130,13 @@ export default function Navbar({
 
   return (
     <>
-      <header className="sticky top-0 z-40 flex h-14 w-full items-center justify-between border-b border-surface-border bg-surface/95 px-4 shadow-sm backdrop-blur-md transition-colors sm:px-6">
+      <header className="sticky top-0 z-40 flex h-14 w-full items-center justify-between border-b border-surface-border bg-surface/95 px-3 sm:px-6 shadow-sm backdrop-blur-md transition-colors">
         {/* Left Section: Logo (+ Mobile Menu or Org Switcher) */}
-        <div className="flex items-center gap-3 sm:gap-4">
+        <div className="flex items-center gap-2.5 sm:gap-4">
           {!isHomepage && !isLoginPage && (
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="flex h-8 w-8 items-center justify-center rounded-md border border-surface-border bg-surface text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white lg:hidden transition-colors"
+              className="flex h-9 w-9 items-center justify-center rounded-lg border border-surface-border bg-surface text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white lg:hidden transition-colors active:scale-95 touch-manipulation"
               aria-label="Toggle navigation"
             >
               {mobileMenuOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
@@ -386,7 +404,7 @@ export default function Navbar({
             role="presentation"
             aria-hidden="true"
           />
-          <nav aria-label="Mobile Navigation" className="fixed inset-y-0 left-0 w-64 border-r border-surface-border bg-surface p-4 shadow-2xl flex flex-col justify-between overflow-y-auto animate-fade-in">
+          <nav aria-label="Mobile Navigation" className="fixed inset-y-0 left-0 w-72 sm:w-80 max-w-[88vw] border-r border-surface-border bg-surface p-4 sm:p-5 shadow-2xl flex flex-col justify-between overflow-y-auto overscroll-contain animate-fade-in">
             <div className="space-y-4">
               <div className="flex items-center justify-between pb-3 border-b border-surface-border">
                 <div className="flex items-center gap-2">
@@ -397,7 +415,8 @@ export default function Navbar({
                 </div>
                 <button
                   onClick={() => setMobileMenuOpen(false)}
-                  className="rounded-md p-1 text-zinc-500 hover:text-zinc-900 dark:hover:text-white"
+                  className="flex h-8 w-8 items-center justify-center rounded-lg border border-surface-border text-zinc-500 hover:text-zinc-900 dark:hover:text-white"
+                  aria-label="Close navigation"
                 >
                   <X className="h-4 w-4" />
                 </button>
@@ -420,7 +439,7 @@ export default function Navbar({
                           toast.error("Could not switch account: " + (err instanceof Error ? err.message : "Unknown error"));
                         }
                       }}
-                      className="flex min-h-9 w-full items-center justify-between gap-2 rounded-md px-3 text-left text-xs text-zinc-700 hover:bg-surface-raised dark:text-zinc-300 dark:hover:text-white"
+                      className="flex min-h-10 w-full items-center justify-between gap-2 rounded-lg px-3 text-left text-xs text-zinc-700 hover:bg-surface-raised dark:text-zinc-300 dark:hover:text-white"
                     >
                       <span className="min-w-0 truncate">{acct.name}</span>
                       {acct.id === account?.id && <Check className="h-3.5 w-3.5 shrink-0" />}
@@ -449,7 +468,7 @@ export default function Navbar({
                             href={item.href}
                             onClick={() => setMobileMenuOpen(false)}
                             className={clsx(
-                              "flex items-center gap-2.5 rounded-md px-3 py-1.5 text-xs font-medium transition-colors border-l-2",
+                              "flex min-h-[38px] items-center gap-2.5 rounded-lg px-3 py-2 text-xs font-medium transition-colors border-l-2",
                               isActive
                                 ? "border-zinc-900 dark:border-white bg-zinc-50 dark:bg-zinc-900/50 text-zinc-900 dark:text-white font-medium"
                                 : "border-transparent text-zinc-600 dark:text-zinc-400 hover:bg-surface-raised hover:text-zinc-900 dark:hover:text-white"
