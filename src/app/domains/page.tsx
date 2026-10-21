@@ -253,12 +253,12 @@ export default function DomainsPage() {
         {/* Right Column: DNS Records & Verification Inspector */}
         <div className="lg:col-span-2 space-y-6">
           {selectedDomain ? (
-            <div className="rounded-xl border border-surface-border bg-surface p-6 sm:p-8 space-y-8 shadow-sm">
+            <div className="rounded-xl border border-surface-border bg-surface p-4 sm:p-6 lg:p-8 space-y-8 shadow-sm">
               {/* Domain Header */}
               <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 border-b border-surface-border pb-6">
-                <div className="space-y-1">
-                  <div className="flex items-center gap-3">
-                    <h2 className="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-white">
+                <div className="space-y-1 min-w-0">
+                  <div className="flex items-center gap-3 flex-wrap">
+                    <h2 className="text-xl sm:text-2xl font-semibold tracking-tight text-zinc-900 dark:text-white truncate">
                       {selectedDomain.name}
                     </h2>
                     <span
@@ -271,13 +271,13 @@ export default function DomainsPage() {
                       {selectedDomain.status.charAt(0).toUpperCase() + selectedDomain.status.slice(1)}
                     </span>
                   </div>
-                  <p className="text-sm text-zinc-500 dark:text-zinc-400">
+                  <p className="text-xs sm:text-sm text-zinc-500 dark:text-zinc-400 truncate">
                     Region: <span className="font-mono text-xs">{selectedDomain.region}</span> · Created{" "}
                     {new Date(selectedDomain.created_at).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })}
                   </p>
                 </div>
 
-                <div className="flex items-center gap-2">
+                <div className="flex flex-wrap items-center gap-2 shrink-0">
                   <Link
                     href={`/aliases?domain_id=${selectedDomain.id}`}
                     className="flex items-center gap-1.5 rounded-md border border-zinc-200 bg-white px-3 py-2 text-sm font-medium text-zinc-900 hover:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900 dark:text-white dark:hover:bg-zinc-800 transition-colors shadow-sm"
@@ -316,7 +316,7 @@ export default function DomainsPage() {
               </div>
 
               {/* Records Table */}
-              <div className="overflow-x-auto rounded-lg border border-zinc-200 shadow-sm dark:border-zinc-800 bg-white dark:bg-zinc-950">
+              <div className="overflow-x-auto table-container rounded-lg border border-zinc-200 shadow-sm dark:border-zinc-800 bg-white dark:bg-zinc-950">
                 <div className="overflow-x-auto">
                   <table className="w-full text-left text-sm whitespace-nowrap min-w-[600px]">
                     <thead className="border-b border-zinc-200 bg-zinc-50/80 text-xs text-zinc-500 dark:border-zinc-800 dark:bg-zinc-900/80 dark:text-zinc-400">
@@ -485,8 +485,8 @@ export default function DomainsPage() {
 
       {/* Add Domain Modal */}
       {isAddOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
-          <div className="dialog-scroll relative flex flex-col w-full max-w-md rounded-xl border border-surface-border bg-surface p-6 shadow-2xl space-y-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
+          <div className="dialog-scroll relative flex flex-col w-full max-w-md rounded-xl border border-surface-border bg-surface p-4 sm:p-6 shadow-2xl space-y-4">
             <h2 className="text-sm font-semibold text-zinc-900 dark:text-white">Add Sending Domain</h2>
             <p className="text-xs text-zinc-500 dark:text-zinc-400">
               Enter your apex domain or subdomain to generate DKIM cryptographic keys.

@@ -514,11 +514,11 @@ export default function AudiencesPage() {
         </div>
 
         {/* Tab Switcher & Quick Actions */}
-        <div className="flex items-center gap-2">
-          <div className="flex items-center rounded-lg border border-surface-border bg-surface p-0.5">
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="flex items-center rounded-lg border border-surface-border bg-surface p-0.5 overflow-x-auto max-w-full">
             <button
               onClick={() => setMainTab("contacts")}
-              className={`flex items-center gap-1.5 rounded-md px-3 py-1 text-xs font-medium transition-colors ${
+              className={`flex items-center gap-1.5 rounded-md px-3 py-1 text-xs font-medium transition-colors shrink-0 ${
                 mainTab === "contacts"
                   ? "bg-surface-raised text-zinc-900 dark:text-white font-medium shadow-sm border border-surface-border/50"
                   : "text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white"
@@ -529,7 +529,7 @@ export default function AudiencesPage() {
             </button>
             <button
               onClick={() => setMainTab("segments")}
-              className={`flex items-center gap-1.5 rounded-md px-3 py-1 text-xs font-medium transition-colors ${
+              className={`flex items-center gap-1.5 rounded-md px-3 py-1 text-xs font-medium transition-colors shrink-0 ${
                 mainTab === "segments"
                   ? "bg-surface-raised text-zinc-900 dark:text-white font-medium shadow-sm border border-surface-border/50"
                   : "text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white"
@@ -540,7 +540,7 @@ export default function AudiencesPage() {
             </button>
             <button
               onClick={() => setMainTab("topics")}
-              className={`flex items-center gap-1.5 rounded-md px-3 py-1 text-xs font-medium transition-colors ${
+              className={`flex items-center gap-1.5 rounded-md px-3 py-1 text-xs font-medium transition-colors shrink-0 ${
                 mainTab === "topics"
                   ? "bg-surface-raised text-zinc-900 dark:text-white font-medium shadow-sm border border-surface-border/50"
                   : "text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white"
