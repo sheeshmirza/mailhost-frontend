@@ -154,12 +154,11 @@ export default function AudiencesPage() {
       if (audRes.status === "fulfilled") {
         const list = audRes.value.data || [];
         setAudiences(list);
-        let nextAudience: AudienceView | null = null;
         setSelectedAudience((prev) => {
-          nextAudience = list.find((audience) => audience.id === prev?.id) || list[0] || null;
+          const nextAudience = list.find((audience) => audience.id === prev?.id) || list[0] || null;
+          void loadContacts(nextAudience?.id);
           return nextAudience;
         });
-        void loadContacts(nextAudience?.id);
       } else {
         failedResources.push("audiences");
       }
