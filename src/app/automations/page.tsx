@@ -1573,7 +1573,7 @@ export default function AutomationsPage() {
                         </button>
                       </div>
                     </div>
-                  ))}
+                  )))}
                 </div>
               </div>
 
