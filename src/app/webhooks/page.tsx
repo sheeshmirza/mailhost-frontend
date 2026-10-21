@@ -53,7 +53,7 @@ export default function WebhooksPage() {
   const [isTestOpen, setIsTestOpen] = useState(false);
   const [testingWebhook, setTestingWebhook] = useState<WebhookView | null>(null);
   const [testEventType, setTestEventType] = useState("email.delivered");
-  const [testPayloadJson, setTestPayloadJson] = useState('{\n  "email_id": "em_test_98231",\n  "recipient": "user@example.com",\n  "subject": "Order Confirmation",\n  "event": "delivered"\n}');
+  const [testPayloadJson, setTestPayloadJson] = useState("{}");
   const [isTesting, setIsTesting] = useState(false);
   const [testResult, setTestResult] = useState<WebhookTestResponse | null>(null);
 

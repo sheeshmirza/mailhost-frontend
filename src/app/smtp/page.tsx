@@ -150,8 +150,8 @@ export default function SMTPProtocolsPage() {
     setTimeout(() => setCopiedPass(false), 2000);
   };
 
-  // Sample credential for code examples
-  const sampleUsername = credentials[0]?.username || (verifiedDomains[0] ? `notifications@${verifiedDomains[0].name}` : "user@yourdomain.com");
+  // Active credential username for configuration examples
+  const displayUsername = credentials[0]?.username || (verifiedDomains[0] ? `notifications@${verifiedDomains[0].name}` : "user@yourdomain.com");
 
   return (
     <div className="page-container space-y-6">
@@ -355,14 +355,14 @@ const transporter = nodemailer.createTransport({
   port: 587,
   secure: false, // true for port 465, false for port 587 (uses STARTTLS)
   auth: {
-    user: '${sampleUsername}',
+    user: '${displayUsername}',
     pass: process.env.MAILHOST_APP_PASSWORD, // Generated below
   },
 });
 
 await transporter.sendMail({
-  from: '"Operations" <${sampleUsername}>',
-  to: 'customer@example.com',
+  from: '"Operations" <${displayUsername}>',
+  to: 'recipient@yourdomain.com',
   subject: 'Order Confirmation',
   text: 'Your order has shipped!',
   html: '<strong>Your order has shipped!</strong>',
@@ -377,14 +377,14 @@ from email.message import EmailMessage
 
 msg = EmailMessage()
 msg['Subject'] = 'Transactional Notification'
-msg['From'] = '${sampleUsername}'
-msg['To'] = 'customer@example.com'
+msg['From'] = '${displayUsername}'
+msg['To'] = 'recipient@yourdomain.com'
 msg.set_content('Hello from Python standard library!')
 
 # Connect securely using STARTTLS on Port 587
 with smtplib.SMTP('${hostName}', 587) as server:
     server.starttls()
-    server.login('${sampleUsername}', 'YOUR_APP_PASSWORD')
+    server.login('${displayUsername}', 'YOUR_APP_PASSWORD')
     server.send_message(msg)`}
               </pre>
             )}
@@ -398,15 +398,15 @@ import (
 )
 
 func main() {
-    auth := smtp.PlainAuth("", "${sampleUsername}", "YOUR_APP_PASSWORD", "${hostName}")
-    to := []string{"customer@example.com"}
-    msg := []byte("From: ${sampleUsername}\\r\\n" +
-        "To: customer@example.com\\r\\n" +
+    auth := smtp.PlainAuth("", "${displayUsername}", "YOUR_APP_PASSWORD", "${hostName}")
+    to := []string{"recipient@yourdomain.com"}
+    msg := []byte("From: ${displayUsername}\\r\\n" +
+        "To: recipient@yourdomain.com\\r\\n" +
         "Subject: Go SMTP Delivery\\r\\n" +
         "\\r\\n" +
         "High performance delivery from Go.\\r\\n")
 
-    err := smtp.SendMail("${hostName}:587", auth, "${sampleUsername}", to, msg)
+    err := smtp.SendMail("${hostName}:587", auth, "${displayUsername}", to, msg)
     if err != nil {
         panic(err)
     }
@@ -516,7 +516,7 @@ openssl s_client -connect ${hostName}:465 -crlf`}
 
 # Connect securely via IMAPS on Port 993
 mail = imaplib.IMAP4_SSL('${hostName}', 993)
-mail.login('${sampleUsername}', 'YOUR_APP_PASSWORD')
+mail.login('${displayUsername}', 'YOUR_APP_PASSWORD')
 
 # Select INBOX and search for unread messages
 mail.select('INBOX')
@@ -586,7 +586,7 @@ mail.logout()`}
 
 # Connect securely via POP3S on Port 995
 server = poplib.POP3_SSL('${hostName}', 995)
-server.user('${sampleUsername}')
+server.user('${displayUsername}')
 server.pass_('YOUR_APP_PASSWORD')
 
 # Retrieve message count and mailbox size

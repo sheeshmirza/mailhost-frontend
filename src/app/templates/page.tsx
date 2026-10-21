@@ -43,9 +43,7 @@ export default function TemplatesPage() {
 
   // Playground & Test Send State
   const [isPlaygroundOpen, setIsPlaygroundOpen] = useState(false);
-  const [playgroundVariables, setPlaygroundVariables] = useState(
-    '{\n  "first_name": "Jane",\n  "company": "Acme Corp",\n  "invite_url": "https://example.com/join"\n}'
-  );
+  const [playgroundVariables, setPlaygroundVariables] = useState("{}");
   const [playgroundPreview, setPlaygroundPreview] = useState<{ subject: string; html: string; text: string } | null>(null);
   const [playgroundDevice, setPlaygroundDevice] = useState<"desktop" | "mobile">("desktop");
   const [playgroundTo, setPlaygroundTo] = useState("");
@@ -543,7 +541,7 @@ await resend.emails.send({
               </div>
 
               <div>
-                <label className="block text-[11px] font-medium text-zinc-600 dark:text-zinc-300 mb-1">Template tags and sample values (JSON array)</label>
+                <label className="block text-[11px] font-medium text-zinc-600 dark:text-zinc-300 mb-1">Template variables (JSON array)</label>
                 <textarea value={variablesJson} onChange={(event) => setVariablesJson(event.target.value)} rows={4} spellCheck={false} className="w-full rounded-md border border-surface-border bg-surface-raised p-3 font-mono text-xs text-zinc-900 dark:text-white" />
               </div>
 
@@ -636,7 +634,7 @@ await resend.emails.send({
                 <div className="space-y-1.5">
                   <div className="flex items-center justify-between">
                     <label className="text-[11px] font-semibold uppercase tracking-wider text-zinc-500">
-                      Sample Values for Tags (JSON)
+                      Preview Variables (JSON)
                     </label>
                     <button
                       type="button"
@@ -664,7 +662,7 @@ await resend.emails.send({
                     <span>Send a Test Email to Your Inbox</span>
                   </div>
                   <p className="text-[11px] text-zinc-500">
-                    Sends a test email with your sample values filled in so you can see how it looks in your mail app.
+                    Sends a test email with your variables filled in so you can see how it looks in your mail app.
                   </p>
                   <div>
                     <input
