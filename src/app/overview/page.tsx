@@ -115,7 +115,7 @@ export default function OverviewPage() {
 
   // Compute maximum bucket count for chart scaling
   const maxSeriesCount = Math.max(
-    ...(analytics?.series?.map((s) => s.sent) || [1]),
+    ...(analytics?.series?.map((s) => Math.max(s.sent, s.delivered, s.opened, s.clicked, s.bounced, s.failed)) || [1]),
     1
   );
 
@@ -295,9 +295,10 @@ export default function OverviewPage() {
           >
           {analytics?.series && analytics.series.length > 0 ? (
             analytics.series.map((bucket, i) => {
+              const bucketMax = Math.max(bucket.sent, bucket.delivered, bucket.opened, bucket.clicked, bucket.bounced, bucket.failed);
               const heightPct = Math.max(
-                (bucket.sent / maxSeriesCount) * 100,
-                bucket.sent > 0 ? 8 : 2
+                (bucketMax / maxSeriesCount) * 100,
+                bucketMax > 0 ? 8 : 2
               );
               const dateLabel = new Date(bucket.bucket).toLocaleDateString(undefined, {
                 month: "short",
@@ -310,10 +311,13 @@ export default function OverviewPage() {
                   className="flex-1 flex flex-col items-center h-full justify-end group relative"
                 >
                   {/* Tooltip */}
-                  <div className="absolute -top-10 hidden group-hover:flex z-10 flex-col items-center bg-surface-raised border border-surface-border px-2 py-1 rounded text-[10px] text-zinc-700 dark:text-zinc-200 shadow-lg pointer-events-none whitespace-nowrap">
+                  <div className="absolute -top-12 hidden group-hover:flex z-10 flex-col items-center bg-surface-raised border border-surface-border px-2 py-1 rounded text-[10px] text-zinc-700 dark:text-zinc-200 shadow-lg pointer-events-none whitespace-nowrap">
                     <span>{dateLabel}</span>
                     <span className="font-mono text-zinc-900 dark:text-white font-medium">
                       {bucket.sent} sent · {bucket.delivered} delivered
+                      {bucket.opened > 0 ? ` · ${bucket.opened} opened` : ""}
+                      {bucket.clicked > 0 ? ` · ${bucket.clicked} clicked` : ""}
+                      {bucket.bounced > 0 ? ` · ${bucket.bounced} bounced` : ""}
                     </span>
                   </div>
 
