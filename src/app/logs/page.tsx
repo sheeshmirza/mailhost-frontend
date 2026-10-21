@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import {
   api,
   AuditLogView,
@@ -73,7 +73,7 @@ export default function LogsHealthPage() {
     }
   };
 
-  const fetchAuditLogs = async (before?: string, resetPage = true): Promise<boolean> => {
+  const fetchAuditLogs = useCallback(async (before?: string, resetPage = true): Promise<boolean> => {
     const rev = ++auditLogsRevision.current;
     setIsAuditPageLoading(true);
     setAuditLogsError(null);
@@ -93,7 +93,7 @@ export default function LogsHealthPage() {
     } finally {
       if (rev === auditLogsRevision.current) setIsAuditPageLoading(false);
     }
-  };
+  }, []);
 
   const loadOlderLogs = async () => {
     if (!nextAuditBefore || isAuditPageLoading) return;
@@ -111,7 +111,7 @@ export default function LogsHealthPage() {
     }
   };
 
-  const fetchHealthAndLogs = async () => {
+  const fetchHealthAndLogs = useCallback(async () => {
     setIsLoading(true);
     setLoadError(null);
     try {
@@ -147,11 +147,11 @@ export default function LogsHealthPage() {
       setIsLoading(false);
     }
     void fetchAuditLogs();
-  };
+  }, [fetchAuditLogs]);
 
   useEffect(() => {
-    fetchHealthAndLogs();
-  }, []);
+    void fetchHealthAndLogs();
+  }, [fetchHealthAndLogs]);
 
   return (
     <div className="page-container">
