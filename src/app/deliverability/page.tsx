@@ -29,13 +29,9 @@ export default function DeliverabilityPage() {
   const [domains, setDomains] = useState<DomainView[]>([]);
   const [selectedDomain, setSelectedDomain] = useState<string>("");
   const [fromAddress, setFromAddress] = useState<string>("");
-  const [subject, setSubject] = useState<string>("Important update regarding your account security");
-  const [htmlContent, setHtmlContent] = useState<string>(
-    "<p>Hello {{first_name}},</p><p>We have updated our terms and enhanced account security with multi-factor authentication. Please review your settings <a href=\"https://example.com/settings\">here</a>.</p><p><small>To unsubscribe, click <a href=\"https://example.com/unsubscribe\">here</a>.</small></p>"
-  );
-  const [textContent, setTextContent] = useState<string>(
-    "Hello {{first_name}},\n\nWe have updated our terms and enhanced account security. Review your settings at https://example.com/settings.\n\nTo unsubscribe: https://example.com/unsubscribe"
-  );
+  const [subject, setSubject] = useState<string>("");
+  const [htmlContent, setHtmlContent] = useState<string>("");
+  const [textContent, setTextContent] = useState<string>("");
   const [includeUnsubHeader, setIncludeUnsubHeader] = useState<boolean>(true);
 
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -67,6 +63,10 @@ export default function DeliverabilityPage() {
   }, []);
 
   const runAudit = async () => {
+    if (!subject.trim() && !htmlContent.trim() && !textContent.trim()) {
+      setErrorMessage("Please enter an email subject or body to analyze.");
+      return;
+    }
     setIsAuditing(true);
     setErrorMessage(null);
     try {
@@ -89,31 +89,6 @@ export default function DeliverabilityPage() {
       setErrorMessage(err?.message || "Failed to run deliverability audit.");
     } finally {
       setIsAuditing(false);
-    }
-  };
-
-  const loadSample = (type: "marketing" | "transactional" | "risky") => {
-    if (type === "transactional") {
-      setSubject("Your order confirmation #MH-8921");
-      setHtmlContent(
-        "<h2>Order Confirmed</h2><p>Thank you for your purchase. Your receipt and shipping tracking details are available <a href=\"https://example.com/orders\">here</a>.</p>"
-      );
-      setTextContent("Order Confirmed\n\nThank you for your purchase. View your receipt: https://example.com/orders");
-      setIncludeUnsubHeader(false);
-    } else if (type === "marketing") {
-      setSubject("Introducing the next-generation automation suite");
-      setHtmlContent(
-        "<h1>Unlock Superpowered Workflows</h1><p>Hey {{first_name}}, explore our newly redesigned visual drag-and-drop automation builder. <a href=\"https://example.com/try\">Try it now</a>.</p><p><small><a href=\"https://example.com/unsub\">Unsubscribe</a></small></p>"
-      );
-      setTextContent("Unlock Superpowered Workflows\n\nExplore our newly redesigned builder: https://example.com/try\n\nUnsubscribe: https://example.com/unsub");
-      setIncludeUnsubHeader(true);
-    } else {
-      setSubject("URGENT: YOU ARE OUR 100% FREE WINNER! CLAIM NOW $$$");
-      setHtmlContent(
-        "<h1>CONGRATULATIONS WINNER!</h1><p>You have won our exclusive jackpot! Click <a href=\"http://insecure-link.com/claim\">HERE</a> to claim your free reward immediately.</p>"
-      );
-      setTextContent("");
-      setIncludeUnsubHeader(false);
     }
   };
 
@@ -173,30 +148,6 @@ export default function DeliverabilityPage() {
               <Mail className="h-4 w-4 text-teal-600 dark:text-teal-400" />
               <span>Email Content to Check</span>
             </div>
-            {/* Quick Samples */}
-            <div className="flex items-center gap-1.5 text-[10px]">
-              <button
-                type="button"
-                onClick={() => loadSample("marketing")}
-                className="px-2 py-0.5 rounded border border-surface-border hover:bg-surface-raised text-zinc-600 dark:text-zinc-300"
-              >
-                Marketing
-              </button>
-              <button
-                type="button"
-                onClick={() => loadSample("transactional")}
-                className="px-2 py-0.5 rounded border border-surface-border hover:bg-surface-raised text-zinc-600 dark:text-zinc-300"
-              >
-                Transactional
-              </button>
-              <button
-                type="button"
-                onClick={() => loadSample("risky")}
-                className="px-2 py-0.5 rounded border border-rose-500/30 bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 font-medium"
-              >
-                Spam Test
-              </button>
-            </div>
           </div>
 
           <div className="space-y-4 text-xs">
@@ -226,7 +177,7 @@ export default function DeliverabilityPage() {
                     type="text"
                     value={selectedDomain}
                     onChange={(e) => setSelectedDomain(e.target.value)}
-                    placeholder="e.g. example.com"
+                    placeholder="e.g. yourdomain.com"
                     className="w-full rounded-lg border border-surface-border bg-surface-raised px-3 py-2 text-xs text-zinc-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-teal-500"
                   />
                 )}
@@ -242,7 +193,7 @@ export default function DeliverabilityPage() {
                 type="email"
                 value={fromAddress}
                 onChange={(e) => setFromAddress(e.target.value)}
-                placeholder="notifications@example.com"
+                placeholder="notifications@yourdomain.com"
                 className="w-full rounded-lg border border-surface-border bg-surface-raised px-3 py-2 text-xs text-zinc-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-teal-500 font-mono"
               />
             </div>

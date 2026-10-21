@@ -49,231 +49,6 @@ import { TableSkeleton } from "@/components/ui/LoadingState";
 import { getVerifiedDomains, assertVerifiedSender, buildSenderAddress } from "@/lib/domain-utils";
 import { VerifiedDomainAlert } from "@/components/common/VerifiedDomainAlert";
 
-// --- Pre-Built Automation Blueprints ---
-interface Blueprint {
-  id: string;
-  name: string;
-  tagline: string;
-  triggerType: string;
-  eventName?: string;
-  steps: AutomationStep[];
-}
-
-const BLUEPRINTS: Blueprint[] = [
-  {
-    id: "saas-onboarding",
-    name: "SaaS Onboarding Journey",
-    tagline: "Welcome series with conditional VIP pro tips and follow-up check-in",
-    triggerType: "contact.created",
-    steps: [
-      {
-        id: "step-1",
-        type: "send_email",
-        config: {
-          subject: "Welcome to Mailhost! Let's get you set up",
-          html: "<p>Welcome aboard! Here is your quickstart guide to high-deliverability email.</p>",
-        },
-      },
-      {
-        id: "step-2",
-        type: "delay",
-        config: {
-          delay_seconds: 172800, // 48 hours
-        },
-      },
-      {
-        id: "step-3",
-        type: "condition",
-        config: {
-          field: "plan",
-          operator: "eq",
-          value: "pro",
-        },
-        then_steps: [
-          {
-            id: "step-3-then",
-            type: "send_email",
-            config: {
-              subject: "Pro Power Tips: Dedicated IPs & Wildcard Aliases",
-              html: "<p>As a Pro user, here is how to configure unlimited virtual aliases and sub-second direct MX delivery.</p>",
-            },
-          },
-        ],
-        else_steps: [
-          {
-            id: "step-3-else",
-            type: "send_email",
-            config: {
-              subject: "Unlock Pro Power: 500k monthly emails + Custom DKIM",
-              html: "<p>Upgrade your plan today to unlock dedicated IP warming and unlimited team seats.</p>",
-            },
-          },
-        ],
-      },
-      {
-        id: "step-4",
-        type: "delay",
-        config: {
-          delay_seconds: 259200, // 72 hours
-        },
-      },
-      {
-        id: "step-5",
-        type: "send_email",
-        config: {
-          subject: "How is your deliverability? Let's connect",
-          html: "<p>We'd love to hear how your sending experience has been so far. Hit reply to talk to our team.</p>",
-        },
-      },
-    ],
-  },
-  {
-    id: "cart-recovery",
-    name: "E-Commerce Cart Recovery",
-    tagline: "Recover abandoned checkouts with timed reminders and tiered incentives",
-    triggerType: "event",
-    eventName: "cart.abandoned",
-    steps: [
-      {
-        id: "step-cart-1",
-        type: "delay",
-        config: {
-          delay_seconds: 3600, // 1 hour
-        },
-      },
-      {
-        id: "step-cart-2",
-        type: "send_email",
-        config: {
-          subject: "Did you leave something behind?",
-          html: "<p>Your selected items are reserved in your cart. Complete checkout with one click.</p>",
-        },
-      },
-      {
-        id: "step-cart-3",
-        type: "delay",
-        config: {
-          delay_seconds: 86400, // 24 hours
-        },
-      },
-      {
-        id: "step-cart-4",
-        type: "condition",
-        config: {
-          field: "cart_total",
-          operator: "gt",
-          value: "100",
-        },
-        then_steps: [
-          {
-            id: "step-cart-vip",
-            type: "send_email",
-            config: {
-              subject: "Exclusive: 15% VIP discount on your pending order",
-              html: "<p>Use code <strong>SAVE15VIP</strong> at checkout to claim 15% off your high-value order.</p>",
-            },
-          },
-        ],
-        else_steps: [
-          {
-            id: "step-cart-standard",
-            type: "send_email",
-            config: {
-              subject: "Enjoy Free Express Shipping on your order",
-              html: "<p>Complete your purchase today and receive complimentary express delivery with code <strong>FREESHIP</strong>.</p>",
-            },
-          },
-        ],
-      },
-    ],
-  },
-  {
-    id: "lead-vip",
-    name: "High-Value Lead Routing",
-    tagline: "Instantly route demo requests, assign VIP segment, and dispatch case studies",
-    triggerType: "event",
-    eventName: "demo.requested",
-    steps: [
-      {
-        id: "step-lead-1",
-        type: "send_email",
-        config: {
-          subject: "Your Consultation is Confirmed — Calendar Link Inside",
-          html: "<p>Thank you for requesting a demo. Select a slot that works best for your team.</p>",
-        },
-      },
-      {
-        id: "step-lead-2",
-        type: "delay",
-        config: {
-          delay_seconds: 86400, // 24 hours
-        },
-      },
-      {
-        id: "step-lead-3",
-        type: "send_email",
-        config: {
-          subject: "Case Study: Scaling to 10M Daily Emails with Zero Relays",
-          html: "<p>Here is how modern engineering teams architect their email stack with Mailhost Direct MX.</p>",
-        },
-      },
-    ],
-  },
-  {
-    id: "re-engagement",
-    name: "Subscriber Win-Back",
-    tagline: "Re-engage dormant subscribers before automated list hygiene cleanup",
-    triggerType: "event",
-    eventName: "user.inactive",
-    steps: [
-      {
-        id: "step-win-1",
-        type: "send_email",
-        config: {
-          subject: "We miss you! Here is what is new on Mailhost",
-          html: "<p>We've launched new features including SMTP/IMAP/POP3 Mailbox protocols and AI MCP server.</p>",
-        },
-      },
-      {
-        id: "step-win-2",
-        type: "delay",
-        config: {
-          delay_seconds: 432000, // 5 days
-        },
-      },
-      {
-        id: "step-win-3",
-        type: "condition",
-        config: {
-          field: "opened_recent",
-          operator: "eq",
-          value: "false",
-        },
-        then_steps: [
-          {
-            id: "step-win-final",
-            type: "send_email",
-            config: {
-              subject: "Last chance: Special 50% comeback discount",
-              html: "<p>Come back today with code <strong>WELCOMEBACK50</strong> for 50% off for 3 months.</p>",
-            },
-          },
-        ],
-        else_steps: [
-          {
-            id: "step-win-active",
-            type: "send_email",
-            config: {
-              subject: "Great to have you back with us!",
-              html: "<p>Thanks for checking back in. Let us know if you need any assistance getting started.</p>",
-            },
-          },
-        ],
-      },
-    ],
-  },
-];
-
 export default function AutomationsPage() {
   const toast = useToast();
   const [automations, setAutomations] = useState<AutomationView[]>([]);
@@ -296,7 +71,6 @@ export default function AutomationsPage() {
 
   // New automation modal state
   const [isOpen, setIsOpen] = useState(false);
-  const [blueprintChoice, setBlueprintChoice] = useState<string>("custom");
   const [name, setName] = useState("");
   const [triggerType, setTriggerType] = useState<string>("contact.created");
   const [eventName, setEventName] = useState("");
@@ -306,21 +80,12 @@ export default function AutomationsPage() {
   const [customFrom, setCustomFrom] = useState("");
 
   // Step builder state inside modal
-  const [steps, setSteps] = useState<AutomationStep[]>([
-    {
-      id: "step-init",
-      type: "send_email",
-      config: {
-        subject: "Welcome to Mailhost!",
-        html: "<p>Thank you for joining us. We are excited to support your journey.</p>",
-      },
-    },
-  ]);
+  const [steps, setSteps] = useState<AutomationStep[]>([]);
 
   // Simulation Drawer state
   const [isSimulatorOpen, setIsSimulatorOpen] = useState(false);
-  const [simEmail, setSimEmail] = useState("alex@example.com");
-  const [simDataJson, setSimDataJson] = useState('{\n  "plan": "pro",\n  "cart_total": 125,\n  "country": "US"\n}');
+  const [simEmail, setSimEmail] = useState("");
+  const [simDataJson, setSimDataJson] = useState("{}");
   const [simResults, setSimResults] = useState<{
     evaluatedSteps: Array<{
       stepId: string;
@@ -337,9 +102,9 @@ export default function AutomationsPage() {
   const [appendSubject, setAppendSubject] = useState("");
   const [appendHtml, setAppendHtml] = useState("");
   const [appendDelayHours, setAppendDelayHours] = useState(24);
-  const [appendCondField, setAppendCondField] = useState("plan");
+  const [appendCondField, setAppendCondField] = useState("");
   const [appendCondOp, setAppendCondOp] = useState("eq");
-  const [appendCondVal, setAppendCondVal] = useState("pro");
+  const [appendCondVal, setAppendCondVal] = useState("");
   const [appendSegmentId, setAppendSegmentId] = useState("");
   const [isSavingWorkflow, setIsSavingWorkflow] = useState(false);
 
@@ -452,38 +217,6 @@ export default function AutomationsPage() {
     };
   }, [fetchData]);
 
-  // Blueprint Selection Handler
-  const handleSelectBlueprint = (blueprintId: string) => {
-    setBlueprintChoice(blueprintId);
-    if (blueprintId === "custom") {
-      setName("Custom Engagement Journey");
-      setTriggerType("contact.created");
-      setEventName("");
-      setSteps([
-        {
-          id: crypto.randomUUID(),
-          type: "send_email",
-          config: {
-            subject: "Welcome to Mailhost!",
-            html: "<p>Thank you for subscribing. We are thrilled to have you here.</p>",
-          },
-        },
-      ]);
-      return;
-    }
-
-    const bp = BLUEPRINTS.find((b) => b.id === blueprintId);
-    if (bp) {
-      setName(bp.name);
-      setTriggerType(bp.triggerType);
-      setEventName(bp.eventName || "");
-      // Clone steps deeply with fresh UUIDs
-      const clonedSteps: AutomationStep[] = JSON.parse(JSON.stringify(bp.steps));
-      setSteps(clonedSteps);
-      toast.success(`Loaded "${bp.name}" Blueprint`);
-    }
-  };
-
   // Add Step inside Modal Builder
   const handleAddStepToModal = (type: "send_email" | "delay" | "condition" | "add_to_segment") => {
     const id = crypto.randomUUID();
@@ -493,33 +226,15 @@ export default function AutomationsPage() {
       newStep = {
         id,
         type: "delay",
-        config: { delay_seconds: 86400 }, // default 1 day
+        config: { delay_seconds: 3600 },
       };
     } else if (type === "condition") {
       newStep = {
         id,
         type: "condition",
-        config: { field: "plan", operator: "eq", value: "pro" },
-        then_steps: [
-          {
-            id: crypto.randomUUID(),
-            type: "send_email",
-            config: {
-              subject: "VIP Feature Guide",
-              html: "<p>Exclusive features available on your account.</p>",
-            },
-          },
-        ],
-        else_steps: [
-          {
-            id: crypto.randomUUID(),
-            type: "send_email",
-            config: {
-              subject: "Getting Started Guide",
-              html: "<p>Here is how to get the most out of your current plan.</p>",
-            },
-          },
-        ],
+        config: { field: "", operator: "eq", value: "" },
+        then_steps: [],
+        else_steps: [],
       };
     } else if (type === "add_to_segment") {
       newStep = {
@@ -532,8 +247,8 @@ export default function AutomationsPage() {
         id,
         type: "send_email",
         config: {
-          subject: "Important update for your account",
-          html: "<p>We wanted to reach out with helpful guidance.</p>",
+          subject: "",
+          html: "",
         },
       };
     }
@@ -803,11 +518,15 @@ export default function AutomationsPage() {
       toast.info("Only event-triggered workflows can be test-fired directly.");
       return;
     }
+    if (!simEmail.trim()) {
+      toast.error("Please enter a recipient email address in the simulator drawer.");
+      return;
+    }
     try {
       const data = simDataJson ? JSON.parse(simDataJson) : {};
       await api.triggerEvent({
         name: selectedAuto.trigger.event_name,
-        email: simEmail.trim() || "test@example.com",
+        email: simEmail.trim(),
         data,
       });
       toast.success(`Live event "${selectedAuto.trigger.event_name}" published! Matching automations started.`);
@@ -864,8 +583,11 @@ export default function AutomationsPage() {
 
           <button
             onClick={() => {
+              setName("");
+              setTriggerType("contact.created");
+              setEventName("");
+              setSteps([]);
               setIsOpen(true);
-              handleSelectBlueprint("saas-onboarding");
             }}
             className="btn-primary"
           >
@@ -959,13 +681,19 @@ export default function AutomationsPage() {
                   <div className="rounded-xl border border-surface-border bg-surface p-8 text-center space-y-3">
                     <Sparkles className="h-8 w-8 text-teal-600 dark:text-teal-400 mx-auto" />
                     <p className="text-xs text-zinc-600 dark:text-zinc-400">
-                      No automations configured yet. Deploy a pre-built blueprint or create your custom drip pipeline.
+                      No automations configured yet. Create your custom drip pipeline.
                     </p>
                     <button
-                      onClick={() => setIsOpen(true)}
+                      onClick={() => {
+                        setName("");
+                        setTriggerType("contact.created");
+                        setEventName("");
+                        setSteps([]);
+                        setIsOpen(true);
+                      }}
                       className="btn-primary text-xs"
                     >
-                      Browse Blueprints
+                      Create Automation
                     </button>
                   </div>
                 )}
@@ -1391,7 +1119,7 @@ export default function AutomationsPage() {
             </div>
 
             <p className="text-xs text-zinc-500">
-              Provide test recipient traits and mock event parameters. Mailhost will simulate how each condition branch evaluates in real-time.
+              Provide test recipient traits and event parameters. Mailhost will simulate how each condition branch evaluates in real-time.
             </p>
 
             <div className="space-y-3">
@@ -1409,7 +1137,7 @@ export default function AutomationsPage() {
 
               <div>
                 <label className="text-xs font-semibold text-zinc-700 dark:text-zinc-300 block mb-1">
-                  Mock Event &amp; Traits JSON
+                  Event &amp; Traits JSON
                 </label>
                 <textarea
                   value={simDataJson}
@@ -1630,17 +1358,17 @@ export default function AutomationsPage() {
         </div>
       )}
 
-      {/* Create Automation Modal with Blueprints */}
+      {/* Create Automation Modal */}
       {isOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
           <div className="dialog-scroll w-full max-w-2xl rounded-2xl border border-surface-border bg-surface p-6 shadow-2xl space-y-5 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between border-b border-surface-border pb-3">
               <div>
                 <h2 className="text-base font-bold text-zinc-900 dark:text-white">
-                  Design Next-Gen Automation
+                  Create Automation Workflow
                 </h2>
                 <p className="text-xs text-zinc-500">
-                  Select a battle-tested blueprint or build a custom multi-step pipeline from scratch.
+                  Configure trigger rules, delivery sender, and action steps for your automated workflow.
                 </p>
               </div>
               <button
@@ -1651,44 +1379,10 @@ export default function AutomationsPage() {
               </button>
             </div>
 
-            {/* Blueprints Picker */}
-            <div className="space-y-2">
-              <span className="text-xs font-semibold uppercase tracking-wider text-zinc-500 block">
-                1. Select Blueprint Architecture
-              </span>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                {BLUEPRINTS.map((bp) => (
-                  <button
-                    key={bp.id}
-                    type="button"
-                    onClick={() => handleSelectBlueprint(bp.id)}
-                    className={`text-left p-3 rounded-xl border transition-all ${
-                      blueprintChoice === bp.id
-                        ? "border-teal-500 bg-teal-50/50 dark:bg-teal-950/20 ring-1 ring-teal-500/50"
-                        : "border-surface-border bg-surface-raised hover:border-zinc-300 dark:hover:border-zinc-700"
-                    }`}
-                  >
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold text-zinc-900 dark:text-white">
-                        {bp.name}
-                      </span>
-                      {blueprintChoice === bp.id && (
-                        <Check className="h-3.5 w-3.5 text-teal-600 dark:text-teal-400" />
-                      )}
-                    </div>
-                    <p className="text-[11px] text-zinc-500 mt-1 line-clamp-2">{bp.tagline}</p>
-                    <span className="text-[10px] font-mono text-teal-700 dark:text-teal-400 mt-2 block">
-                      {bp.steps.length} pre-configured steps
-                    </span>
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <form onSubmit={handleCreate} className="space-y-4 pt-2 border-t border-surface-border">
+            <form onSubmit={handleCreate} className="space-y-4 pt-2">
               <div className="space-y-2">
                 <span className="text-xs font-semibold uppercase tracking-wider text-zinc-500 block">
-                  2. Campaign &amp; Sender Configuration
+                  1. Campaign &amp; Sender Configuration
                 </span>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -1795,7 +1489,7 @@ export default function AutomationsPage() {
               <div className="space-y-3 pt-2 border-t border-surface-border">
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-semibold uppercase tracking-wider text-zinc-500">
-                    3. Sequence Steps ({steps.length})
+                    2. Sequence Steps ({steps.length})
                   </span>
                   <div className="flex items-center gap-1.5">
                     <button
@@ -1823,7 +1517,12 @@ export default function AutomationsPage() {
                 </div>
 
                 <div className="space-y-2 max-h-60 overflow-y-auto pr-1">
-                  {steps.map((st, i) => (
+                  {steps.length === 0 ? (
+                    <div className="rounded-lg border border-dashed border-surface-border p-4 text-center text-xs text-zinc-500">
+                      No steps added yet. Click an action above (+ Email, + Delay, + If/Else) to build your pipeline.
+                    </div>
+                  ) : (
+                    steps.map((st, i) => (
                     <div
                       key={st.id || i}
                       className="flex items-center justify-between rounded-lg border border-surface-border bg-surface-raised p-2.5 text-xs"

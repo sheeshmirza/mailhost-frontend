@@ -1534,23 +1534,9 @@ export default function AudiencesPage() {
             </div>
 
             <form onSubmit={handleBulkImport} className="space-y-4 text-xs">
-              <div>
-                <div className="flex items-center justify-between mb-1.5">
-                  <label className="text-[11px] font-medium text-zinc-700 dark:text-zinc-300">
-                    CSV Content or Email List
-                  </label>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setImportCsvText(
-                        "email,first_name,last_name\nalex@acme.corp,Alex,Smith\njane@fintech.io,Jane,Doe\nsam@startup.dev,Sam,Altman"
-                      );
-                    }}
-                    className="text-[10px] text-teal-600 dark:text-teal-400 hover:underline"
-                  >
-                    Load Sample CSV
-                  </button>
-                </div>
+                <label className="block text-[11px] font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">
+                  CSV Content or Email List
+                </label>
                 <textarea
                   rows={6}
                   value={importCsvText}
@@ -1558,7 +1544,6 @@ export default function AudiencesPage() {
                   placeholder="Paste CSV rows (e.g. email,first_name,last_name) or one email per line..."
                   className="w-full rounded-lg border border-surface-border bg-surface-raised p-2.5 font-mono text-[11px] text-zinc-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-teal-500"
                 />
-              </div>
 
               {/* Hygiene Guards */}
               <div className="space-y-2 rounded-xl border border-surface-border bg-surface-raised p-3">
