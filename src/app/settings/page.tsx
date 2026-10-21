@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useAuth } from "@/lib/auth-context";
 import { useToast } from "@/lib/toast-context";
 import {
@@ -76,13 +76,7 @@ export default function SettingsPage() {
   // MCP Snippet
   const [copiedMcp, setCopiedMcp] = useState(false);
 
-  useEffect(() => {
-    if (user?.name) setName(user.name);
-    if (user?.email) setEmail(user.email);
-    fetchTeamAndSessions();
-  }, [user, credentialType]);
-
-  const fetchTeamAndSessions = async () => {
+  const fetchTeamAndSessions = useCallback(async () => {
     setIsLoading(true);
     setError(null);
     setSessionsError(null);
@@ -118,7 +112,13 @@ export default function SettingsPage() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [credentialType]);
+
+  useEffect(() => {
+    if (user?.name) setName(user.name);
+    if (user?.email) setEmail(user.email);
+    fetchTeamAndSessions();
+  }, [user?.name, user?.email, fetchTeamAndSessions]);
 
   const handleUpdateProfile = async (e: React.FormEvent) => {
     e.preventDefault();

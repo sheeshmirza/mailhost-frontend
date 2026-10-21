@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useEffect, useRef, useState, ReactNode } from "react";
+import React, { createContext, useContext, useEffect, useRef, useState, useCallback, ReactNode } from "react";
 import { api, APIError, CurrentUserResponse, UserView, UserAccountView } from "./api";
 
 type CredentialType = "user" | "api_key" | null;
@@ -38,7 +38,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const activeToken = useRef<string | null>(null);
   const authRevision = useRef(0);
 
-  const clearAuthState = (redirect: boolean) => {
+  const clearAuthState = useCallback((redirect: boolean) => {
     authRevision.current += 1;
     activeToken.current = null;
     api.setToken(null);
@@ -56,9 +56,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (redirect && typeof window !== "undefined" && !window.location.pathname.startsWith("/login")) {
       window.location.assign("/login?session_expired=1");
     }
-  };
+  }, []);
 
-  const applyIdentity = (identity: CurrentUserResponse) => {
+  const applyIdentity = useCallback((identity: CurrentUserResponse) => {
     if (identity.object === "user" && identity.id && identity.email) {
       const currentUser: UserView = {
         id: identity.id,
@@ -94,9 +94,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
 
     throw new Error("The server returned an unsupported authentication identity.");
-  };
+  }, []);
 
-  const verifyAndStoreToken = async (
+  const verifyAndStoreToken = useCallback(async (
     candidate: string,
     options: { persist?: boolean; showLoading?: boolean } = {}
   ) => {
@@ -129,7 +129,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setIsLoading(false);
       }
     }
-  };
+  }, [applyIdentity]);
 
   useEffect(() => {
     const handleUnauthorized = (failedToken: string) => {
@@ -176,7 +176,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       window.removeEventListener("storage", handleStorage);
       api.setOnUnauthorized(undefined);
     };
-  }, []);
+  }, [clearAuthState, verifyAndStoreToken]);
 
   const login = async (email: string, password: string) => {
     setIsLoading(true);

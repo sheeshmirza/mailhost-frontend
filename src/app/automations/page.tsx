@@ -356,7 +356,23 @@ export default function AutomationsPage() {
     return "";
   };
 
-  const fetchData = async () => {
+  const loadRuns = useCallback(async (automationId: string) => {
+    const revision = ++runsRevision.current;
+    setRunsLoading(true);
+    setRunsError(null);
+    try {
+      const res = await api.listAutomationRuns(automationId);
+      if (revision === runsRevision.current) setRuns(res.data || []);
+    } catch (err) {
+      if (revision !== runsRevision.current) return;
+      console.error("Failed to load automation runs", err);
+      setRunsError(err instanceof Error ? err.message : "Could not load workflow runs.");
+    } finally {
+      if (revision === runsRevision.current) setRunsLoading(false);
+    }
+  }, []);
+
+  const fetchData = useCallback(async () => {
     const revision = ++automationListRevision.current;
     setIsLoading(true);
     setLoadError(null);
@@ -373,14 +389,16 @@ export default function AutomationsPage() {
       if (listRes.status === "fulfilled") {
         const list = listRes.value.data || [];
         setAutomations(list);
-        const nextAuto = list.find((a) => a.id === selectedAuto?.id) || list[0] || null;
-        setSelectedAuto(nextAuto);
-        if (nextAuto) void loadRuns(nextAuto.id);
-        else {
-          runsRevision.current += 1;
-          setRuns([]);
-          setRunsLoading(false);
-        }
+        setSelectedAuto((prev) => {
+          const nextAuto = list.find((a) => a.id === prev?.id) || list[0] || null;
+          if (nextAuto) void loadRuns(nextAuto.id);
+          else {
+            runsRevision.current += 1;
+            setRuns([]);
+            setRunsLoading(false);
+          }
+          return nextAuto;
+        });
       }
 
       if (domRes.status === "fulfilled") {
@@ -406,23 +424,7 @@ export default function AutomationsPage() {
     } finally {
       if (revision === automationListRevision.current) setIsLoading(false);
     }
-  };
-
-  const loadRuns = async (automationId: string) => {
-    const revision = ++runsRevision.current;
-    setRunsLoading(true);
-    setRunsError(null);
-    try {
-      const res = await api.listAutomationRuns(automationId);
-      if (revision === runsRevision.current) setRuns(res.data || []);
-    } catch (err) {
-      if (revision !== runsRevision.current) return;
-      console.error("Failed to load automation runs", err);
-      setRunsError(err instanceof Error ? err.message : "Could not load workflow runs.");
-    } finally {
-      if (revision === runsRevision.current) setRunsLoading(false);
-    }
-  };
+  }, [loadRuns]);
 
   const loadRunDetail = async (runId: string) => {
     if (!selectedAuto) return;
@@ -448,7 +450,7 @@ export default function AutomationsPage() {
       runsRevision.current += 1;
       runDetailRevision.current += 1;
     };
-  }, []);
+  }, [fetchData]);
 
   // Blueprint Selection Handler
   const handleSelectBlueprint = (blueprintId: string) => {
