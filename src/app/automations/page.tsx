@@ -554,12 +554,12 @@ export default function AutomationsPage() {
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           {/* Workflows / Runs Tab Switcher */}
-          <div className="flex items-center rounded-lg border border-surface-border bg-surface p-0.5 shadow-sm">
+          <div className="flex items-center rounded-lg border border-surface-border bg-surface p-0.5 shadow-sm overflow-x-auto max-w-full">
             <button
               onClick={() => setActiveTab("workflows")}
-              className={`flex items-center gap-1.5 rounded-md px-3 py-1 text-xs font-medium transition-colors ${
+              className={`flex items-center gap-1.5 rounded-md px-3 py-1 text-xs font-medium transition-colors shrink-0 ${
                 activeTab === "workflows"
                   ? "bg-surface-raised text-zinc-900 dark:text-white shadow-sm border border-surface-border/50"
                   : "text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white"
@@ -570,7 +570,7 @@ export default function AutomationsPage() {
             </button>
             <button
               onClick={() => setActiveTab("runs")}
-              className={`flex items-center gap-1.5 rounded-md px-3 py-1 text-xs font-medium transition-colors ${
+              className={`flex items-center gap-1.5 rounded-md px-3 py-1 text-xs font-medium transition-colors shrink-0 ${
                 activeTab === "runs"
                   ? "bg-surface-raised text-zinc-900 dark:text-white shadow-sm border border-surface-border/50"
                   : "text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white"
@@ -581,27 +581,29 @@ export default function AutomationsPage() {
             </button>
           </div>
 
-          <button
-            onClick={() => {
-              setName("");
-              setTriggerType("contact.created");
-              setEventName("");
-              setSteps([]);
-              setIsOpen(true);
-            }}
-            className="btn-primary"
-          >
-            <Plus className="h-3.5 w-3.5" />
-            <span>New Workflow</span>
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => {
+                setName("");
+                setTriggerType("contact.created");
+                setEventName("");
+                setSteps([]);
+                setIsOpen(true);
+              }}
+              className="btn-primary"
+            >
+              <Plus className="h-3.5 w-3.5" />
+              <span>New Workflow</span>
+            </button>
 
-          <button
-            onClick={fetchData}
-            title="Refresh Automations"
-            className="flex h-8 w-8 items-center justify-center rounded-lg border border-surface-border bg-surface text-zinc-500 hover:bg-surface-raised hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white transition-colors"
-          >
-            <RefreshCw className={`h-3.5 w-3.5 ${isLoading ? "animate-spin" : ""}`} />
-          </button>
+            <button
+              onClick={fetchData}
+              title="Refresh Automations"
+              className="flex h-8 w-8 items-center justify-center rounded-lg border border-surface-border bg-surface text-zinc-500 hover:bg-surface-raised hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white transition-colors"
+            >
+              <RefreshCw className={`h-3.5 w-3.5 ${isLoading ? "animate-spin" : ""}`} />
+            </button>
+          </div>
         </div>
       </div>
 
@@ -725,7 +727,7 @@ export default function AutomationsPage() {
                     </p>
                   </div>
 
-                  <div className="flex items-center gap-2">
+                  <div className="flex flex-wrap items-center gap-2">
                     <button
                       onClick={() => setIsSimulatorOpen(true)}
                       className="flex items-center gap-1.5 rounded-md border border-surface-border bg-surface-raised px-3 py-1.5 text-xs font-medium text-teal-800 hover:text-teal-900 dark:text-teal-300 hover:bg-surface transition-colors"

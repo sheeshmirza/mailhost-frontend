@@ -264,12 +264,12 @@ export default function SettingsPage() {
   };
 
   return (
-    <div className="max-w-5xl mx-auto px-6 sm:px-8 py-8 space-y-6 animate-fade-in">
+    <div className="max-w-5xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-8 space-y-6 animate-fade-in">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-surface-border pb-6">
         <div>
           <h1 className="text-xl font-semibold tracking-tight text-zinc-900 dark:text-white">
-            Settings & Team
+            Settings &amp; Team
           </h1>
           <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
             Manage your account, team members, security, and AI assistant connections.
@@ -285,10 +285,10 @@ export default function SettingsPage() {
       </div>
 
       {/* Tab switch */}
-      <div className="flex gap-6 border-b border-surface-border">
+      <div className="flex gap-4 sm:gap-6 border-b border-surface-border overflow-x-auto no-scrollbar">
         <button
           onClick={() => setActiveTab("profile")}
-          className={`flex items-center gap-2 pb-3 text-sm font-medium transition-colors border-b-2 -mb-px ${
+          className={`flex items-center gap-2 pb-3 text-sm font-medium transition-colors border-b-2 -mb-px shrink-0 ${
             activeTab === "profile"
               ? "border-zinc-900 text-zinc-900 dark:border-white dark:text-white"
               : "border-transparent text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white"
@@ -299,7 +299,7 @@ export default function SettingsPage() {
         </button>
         <button
           onClick={() => setActiveTab("team")}
-          className={`flex items-center gap-2 pb-3 text-sm font-medium transition-colors border-b-2 -mb-px ${
+          className={`flex items-center gap-2 pb-3 text-sm font-medium transition-colors border-b-2 -mb-px shrink-0 ${
             activeTab === "team"
               ? "border-zinc-900 text-zinc-900 dark:border-white dark:text-white"
               : "border-transparent text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white"
@@ -310,7 +310,7 @@ export default function SettingsPage() {
         </button>
         <button
           onClick={() => setActiveTab("sessions")}
-          className={`flex items-center gap-2 pb-3 text-sm font-medium transition-colors border-b-2 -mb-px ${
+          className={`flex items-center gap-2 pb-3 text-sm font-medium transition-colors border-b-2 -mb-px shrink-0 ${
             activeTab === "sessions"
               ? "border-zinc-900 text-zinc-900 dark:border-white dark:text-white"
               : "border-transparent text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white"
@@ -321,7 +321,7 @@ export default function SettingsPage() {
         </button>
         <button
           onClick={() => setActiveTab("mcp")}
-          className={`flex items-center gap-2 pb-3 text-sm font-medium transition-colors border-b-2 -mb-px ${
+          className={`flex items-center gap-2 pb-3 text-sm font-medium transition-colors border-b-2 -mb-px shrink-0 ${
             activeTab === "mcp"
               ? "border-zinc-900 text-zinc-900 dark:border-white dark:text-white"
               : "border-transparent text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white"
@@ -448,7 +448,7 @@ export default function SettingsPage() {
               </span>
             </div>
 
-            <form onSubmit={handleCreateOrg} className="pt-2 border-t border-surface-border flex gap-2">
+            <form onSubmit={handleCreateOrg} className="pt-2 border-t border-surface-border flex flex-col sm:flex-row gap-2">
               <input
                 type="text"
                 value={newOrgName}

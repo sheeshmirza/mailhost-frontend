@@ -323,22 +323,22 @@ export default function TemplatesPage() {
         <div className="lg:col-span-2 space-y-4">
           {selectedTemplate ? (
             <div className="rounded-xl border border-surface-border bg-surface p-6 space-y-6">
-              <div className="flex items-center justify-between border-b border-surface-border pb-4">
-                <div>
-                  <div className="flex items-center gap-2">
-                    <h2 className="text-base font-semibold text-zinc-900 dark:text-white">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-surface-border pb-4">
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <h2 className="text-base font-semibold text-zinc-900 dark:text-white truncate">
                       {selectedTemplate.name}
                     </h2>
-                    <span className="rounded-full px-2 py-0.5 text-[10px] font-medium border border-surface-border bg-surface-raised text-zinc-600 dark:text-zinc-300">
+                    <span className="rounded-full px-2 py-0.5 text-[10px] font-medium border border-surface-border bg-surface-raised text-zinc-600 dark:text-zinc-300 shrink-0">
                       {selectedTemplate.status}
                     </span>
                   </div>
-                  <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
+                  <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1 truncate">
                     Subject: {selectedTemplate.subject}
                   </p>
                 </div>
 
-                <div className="flex items-center gap-2">
+                <div className="flex flex-wrap items-center gap-2">
                   <button
                     onClick={() => {
                       setPlaygroundTo("");
@@ -476,8 +476,8 @@ await resend.emails.send({
 
       {/* New Template Modal */}
       {isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
-          <div className="dialog-scroll relative flex flex-col w-full max-w-lg rounded-xl border border-surface-border bg-surface p-6 shadow-2xl space-y-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
+          <div className="dialog-scroll relative flex flex-col w-full max-w-lg rounded-xl border border-surface-border bg-surface p-4 sm:p-6 shadow-2xl space-y-4">
             <h2 className="text-sm font-semibold text-zinc-900 dark:text-white">
               {editingTemplateId ? "Edit Email Template" : "New Email Template"}
             </h2>
@@ -571,25 +571,25 @@ await resend.emails.send({
 
       {/* Modal: Interactive Template Playground & Test Send */}
       {isPlaygroundOpen && selectedTemplate && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm animate-fade-in">
-          <div className="w-full max-w-4xl max-h-[90vh] flex flex-col rounded-2xl border border-surface-border bg-surface shadow-2xl overflow-hidden">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-3 sm:p-4 backdrop-blur-sm animate-fade-in">
+          <div className="w-full max-w-4xl max-h-[92vh] sm:max-h-[90vh] flex flex-col rounded-2xl border border-surface-border bg-surface shadow-2xl overflow-hidden">
             {/* Header */}
-            <div className="flex items-center justify-between border-b border-surface-border px-6 py-4">
-              <div className="flex items-center gap-2">
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-teal-50 dark:bg-teal-950/40 text-teal-600 dark:text-teal-400">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-surface-border px-4 sm:px-6 py-3.5 sm:py-4 gap-3">
+              <div className="flex items-center gap-2 min-w-0">
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-teal-50 dark:bg-teal-950/40 text-teal-600 dark:text-teal-400">
                   <Sparkles className="h-4 w-4" />
                 </div>
-                <div>
-                  <h3 className="text-sm font-semibold text-zinc-900 dark:text-white">
+                <div className="min-w-0">
+                  <h3 className="text-sm font-semibold text-zinc-900 dark:text-white truncate">
                     Preview Template &amp; Send Test Email
                   </h3>
-                  <p className="text-[11px] text-zinc-500">
+                  <p className="text-[11px] text-zinc-500 truncate">
                     Template: <strong className="text-zinc-700 dark:text-zinc-300">{selectedTemplate.name}</strong>
                   </p>
                 </div>
               </div>
 
-              <div className="flex items-center gap-2">
+              <div className="flex items-center justify-between sm:justify-end gap-2 shrink-0">
                 {/* Device preview toggles */}
                 <div className="flex items-center rounded-lg border border-surface-border bg-surface-raised p-0.5">
                   <button
@@ -718,8 +718,8 @@ await resend.emails.send({
                   </span>
                   <div className="flex-1 flex justify-center items-start overflow-auto">
                     <div
-                      style={{ width: playgroundDevice === "mobile" ? "375px" : "100%" }}
-                      className="rounded-xl border border-surface-border bg-white text-black p-5 shadow-sm min-h-[300px] transition-all"
+                      style={{ width: playgroundDevice === "mobile" ? "min(375px, 100%)" : "100%" }}
+                      className="rounded-xl border border-surface-border bg-white text-black p-4 sm:p-5 shadow-sm min-h-[300px] transition-all"
                     >
                       <div
                         dangerouslySetInnerHTML={{

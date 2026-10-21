@@ -206,13 +206,13 @@ export default function HomePage() {
             {/* Left: Code Snippet Panel */}
             <div className="flex flex-col justify-between bg-zinc-950 text-white">
               {/* Language Tabs */}
-              <div className="flex items-center justify-between border-b border-zinc-800 px-4 py-2.5 bg-zinc-900/60 overflow-x-auto">
-                <div className="flex items-center gap-1">
+              <div className="flex items-center justify-between border-b border-zinc-800 px-3 sm:px-4 py-2 bg-zinc-900/60 gap-2">
+                <div className="flex items-center gap-1 overflow-x-auto no-scrollbar min-w-0 py-0.5">
                   {(["nodejs", "python", "go", "ruby", "php", "rust", "curl"] as CodeLang[]).map((lang) => (
                     <button
                       key={lang}
                       onClick={() => setSelectedLang(lang)}
-                      className={`rounded px-2.5 py-1 text-xs font-medium font-mono uppercase transition-colors ${
+                      className={`shrink-0 rounded px-2.5 py-1 text-xs font-medium font-mono uppercase transition-colors ${
                         selectedLang === lang
                           ? "bg-zinc-800 text-white shadow-sm"
                           : "text-zinc-400 hover:text-zinc-200"
@@ -225,7 +225,7 @@ export default function HomePage() {
 
                 <button
                   onClick={handleCopyCode}
-                  className="flex items-center gap-1 rounded bg-zinc-800/80 px-2 py-1 text-[11px] text-zinc-300 hover:text-white transition-colors"
+                  className="shrink-0 flex items-center gap-1 rounded bg-zinc-800/80 px-2.5 py-1 text-[11px] text-zinc-300 hover:text-white transition-colors"
                   title="Copy code snippet"
                 >
                   {copied ? (

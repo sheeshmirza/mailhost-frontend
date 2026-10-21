@@ -202,11 +202,11 @@ export default function SendEmailModal({
       role="dialog"
       aria-modal="true"
       aria-labelledby="send-email-title"
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in"
+      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-sm animate-fade-in"
     >
-      <div className="relative flex flex-col w-full max-w-2xl max-h-[90vh] rounded-xl border border-surface-border bg-surface shadow-2xl overflow-hidden">
+      <div className="relative flex flex-col w-full max-w-2xl max-h-[92dvh] sm:max-h-[90vh] rounded-xl border border-surface-border bg-surface shadow-2xl overflow-hidden">
         {/* Modal Header */}
-        <div className="flex items-center justify-between border-b border-surface-border px-5 py-3.5 bg-surface-raised/40">
+        <div className="flex items-center justify-between border-b border-surface-border px-4 sm:px-5 py-3.5 bg-surface-raised/40">
           <div className="flex items-center gap-2">
             <Send className="h-4 w-4 text-zinc-900 dark:text-white" />
             <h2 id="send-email-title" className="text-sm font-semibold text-zinc-900 dark:text-white">Send Email</h2>
@@ -222,7 +222,7 @@ export default function SendEmailModal({
 
         {/* Modal Body */}
         {successId ? (
-          <div className="flex flex-col items-center justify-center p-10 text-center space-y-4">
+          <div className="flex flex-col items-center justify-center p-6 sm:p-10 text-center space-y-4">
             <CheckCircle2 className="h-12 w-12 text-emerald-500 animate-bounce" />
             <div className="space-y-1">
               <h3 className="text-base font-semibold text-zinc-900 dark:text-white">Email Sent Successfully!</h3>
@@ -253,7 +253,7 @@ export default function SendEmailModal({
             </div>
           </div>
         ) : (
-          <form onSubmit={handleSubmit} className="flex flex-col flex-1 overflow-y-auto p-5 space-y-4">
+          <form onSubmit={handleSubmit} className="flex flex-col flex-1 overflow-y-auto p-3.5 sm:p-5 space-y-4">
             {error && (
               <div className="flex items-center gap-2 rounded-lg border border-red-900/50 bg-red-950/20 p-3 text-xs text-red-300">
                 <AlertCircle className="h-4 w-4 flex-shrink-0 text-red-400" />
@@ -302,13 +302,13 @@ export default function SendEmailModal({
                   />
                 ) : (
                   <div className="space-y-1.5">
-                    <div className="flex gap-1.5">
+                    <div className="flex flex-col sm:flex-row gap-1.5">
                       <input
                         type="text"
                         value={senderName}
                         onChange={(e) => setSenderName(e.target.value)}
                         placeholder="Sender Name (optional)"
-                        className="w-1/3 rounded-md border border-surface-border bg-surface-raised px-2.5 py-1.5 text-xs text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-600 focus:border-zinc-500 focus:outline-none"
+                        className="w-full sm:w-1/3 rounded-md border border-surface-border bg-surface-raised px-2.5 py-1.5 text-xs text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-600 focus:border-zinc-500 focus:outline-none"
                       />
                       <div className="flex flex-1 items-center rounded-md border border-surface-border bg-surface-raised overflow-hidden">
                         <input
