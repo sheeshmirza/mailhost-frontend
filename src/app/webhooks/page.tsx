@@ -237,7 +237,7 @@ export default function WebhooksPage() {
       ) : loadError && webhooks.length === 0 ? (
         <ErrorState message={loadError} onRetry={fetchWebhooks} />
       ) : (
-      <div className="overflow-x-auto rounded-xl border border-surface-border bg-surface">
+      <div className="overflow-x-auto table-container rounded-xl border border-surface-border bg-surface">
         <table className="w-full min-w-[760px] text-left">
           <thead className="bg-surface-raised border-b border-surface-border text-[11px] font-medium uppercase tracking-wider text-zinc-500">
             <tr>
@@ -366,8 +366,8 @@ export default function WebhooksPage() {
 
       {/* Add Webhook Modal */}
       {isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-fade-in">
-          <div className="dialog-scroll relative flex flex-col w-full max-w-lg rounded-xl border border-surface-border bg-surface p-6 shadow-2xl space-y-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-3 sm:p-4 animate-fade-in">
+          <div className="dialog-scroll relative flex flex-col w-full max-w-lg rounded-xl border border-surface-border bg-surface p-4 sm:p-6 shadow-2xl space-y-4">
             <div>
               <h2 className="text-lg font-semibold text-zinc-900 dark:text-white">
                 {editingWebhookId ? "Edit Webhook" : "Add Webhook"}
@@ -445,8 +445,8 @@ export default function WebhooksPage() {
 
       {/* Modal: Live Webhook Test Dispatcher */}
       {isTestOpen && testingWebhook && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm animate-fade-in">
-          <div className="w-full max-w-lg rounded-2xl border border-surface-border bg-surface p-6 shadow-2xl space-y-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-3 sm:p-4 backdrop-blur-sm animate-fade-in">
+          <div className="w-full max-w-lg rounded-2xl border border-surface-border bg-surface p-4 sm:p-6 shadow-2xl space-y-4">
             <div className="flex items-center justify-between border-b border-surface-border pb-3">
               <div className="flex items-center gap-2">
                 <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-teal-50 dark:bg-teal-950/40 text-teal-600 dark:text-teal-400">

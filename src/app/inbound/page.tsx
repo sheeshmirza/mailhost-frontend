@@ -241,11 +241,11 @@ export default function InboundPage() {
         </div>
 
         {/* Tab switch */}
-        <div className="flex items-center gap-2">
-          <div className="flex items-center rounded-lg border border-surface-border bg-surface p-0.5">
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="flex items-center rounded-lg border border-surface-border bg-surface p-0.5 overflow-x-auto max-w-full">
             <button
               onClick={() => setActiveTab("emails")}
-              className={`flex items-center gap-1.5 rounded-md px-3 py-1 text-xs font-medium transition-colors ${
+              className={`flex items-center gap-1.5 rounded-md px-3 py-1 text-xs font-medium transition-colors shrink-0 ${
                 activeTab === "emails"
                   ? "bg-surface-raised text-zinc-900 dark:text-white font-medium shadow-sm border border-surface-border/50"
                   : "text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white"
@@ -256,7 +256,7 @@ export default function InboundPage() {
             </button>
             <button
               onClick={() => setActiveTab("aliases")}
-              className={`flex items-center gap-1.5 rounded-md px-3 py-1 text-xs font-medium transition-colors ${
+              className={`flex items-center gap-1.5 rounded-md px-3 py-1 text-xs font-medium transition-colors shrink-0 ${
                 activeTab === "aliases"
                   ? "bg-surface-raised text-zinc-900 dark:text-white font-medium shadow-sm border border-surface-border/50"
                   : "text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white"
@@ -312,7 +312,7 @@ export default function InboundPage() {
           isLoading && inboundEmails.length === 0 ? (
             <TableSkeleton rows={5} cols={6} />
           ) : (
-            <div className="overflow-x-auto rounded-xl border border-surface-border bg-surface">
+            <div className="overflow-x-auto table-container rounded-xl border border-surface-border bg-surface">
               <table className="w-full text-left text-xs min-w-[650px]">
                 <thead className="border-b border-surface-border bg-surface-raised text-[11px] font-medium uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
                   <tr>
@@ -366,7 +366,7 @@ export default function InboundPage() {
         ) : isLoading && aliases.length === 0 ? (
             <TableSkeleton rows={4} cols={4} />
           ) : (
-            <div className="overflow-x-auto rounded-xl border border-surface-border bg-surface">
+            <div className="overflow-x-auto table-container rounded-xl border border-surface-border bg-surface">
               <table className="w-full text-left text-xs min-w-[500px]">
                 <thead className="border-b border-surface-border bg-surface-raised text-[11px] font-medium uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
                   <tr>
@@ -445,7 +445,7 @@ export default function InboundPage() {
       {/* Inbound Email Detail Modal */}
       {selectedInbound && (
         <div className="fixed inset-0 z-50 flex items-center justify-end bg-black/60 backdrop-blur-sm animate-fade-in">
-          <div className="h-full w-full max-w-xl border-l border-surface-border bg-surface p-6 shadow-2xl flex flex-col space-y-6 overflow-y-auto">
+          <div className="h-full w-full max-w-xl border-l border-surface-border bg-surface p-4 sm:p-6 shadow-2xl flex flex-col space-y-4 sm:space-y-6 overflow-y-auto">
             <div className="flex items-start justify-between border-b border-surface-border pb-4">
               <div className="space-y-1">
                 <span className="text-[10px] font-mono uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
@@ -556,8 +556,8 @@ export default function InboundPage() {
 
       {/* Create Alias Modal */}
       {isAliasOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
-          <div className="dialog-scroll relative flex flex-col w-full max-w-md rounded-xl border border-surface-border bg-surface p-6 shadow-2xl space-y-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
+          <div className="dialog-scroll relative flex flex-col w-full max-w-md rounded-xl border border-surface-border bg-surface p-4 sm:p-6 shadow-2xl space-y-4">
             <h2 className="text-sm font-semibold text-zinc-900 dark:text-white">{editingAliasId ? "Edit Forwarding Address" : "Create Forwarding Address"}</h2>
             <p className="text-xs text-zinc-500 dark:text-zinc-400">
               Forward all emails sent to this address to your personal or team inboxes.
