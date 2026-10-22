@@ -3,6 +3,8 @@
 import React, { useState, useEffect, useRef } from "react";
 import { api, CustomEvent, getErrorMessage } from "@/lib/api";
 import { useToast } from "@/lib/toast-context";
+import { useCopy } from "@/lib/useCopy";
+import { useCursorPagination } from "@/lib/useCursorPagination";
 import { ErrorState } from "@/components/ui/ErrorState";
 import { TableSkeleton } from "@/components/ui/LoadingState";
 import { CursorPagination } from "@/components/ui/CursorPagination";
@@ -18,8 +20,7 @@ export default function EventsPage() {
   const [events, setEvents] = useState<CustomEvent[]>([]);
   const [selectedEvent, setSelectedEvent] = useState<CustomEvent | null>(null);
   const [loadingDetailId, setLoadingDetailId] = useState<string | null>(null);
-  const [copiedId, setCopiedId] = useState(false);
-  const [copiedData, setCopiedData] = useState(false);
+  const { copy, isCopied } = useCopy();
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [isOpen, setIsOpen] = useState(false);
@@ -29,13 +30,11 @@ export default function EventsPage() {
   const [email, setEmail] = useState("");
   const [jsonData, setJsonData] = useState("{}");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [eventsBefore, setEventsBefore] = useState<string | undefined>();
-  const [nextEventsBefore, setNextEventsBefore] = useState<string | undefined>();
-  const [eventsPageHistory, setEventsPageHistory] = useState<(string | undefined)[]>([]);
   const [isPageLoading, setIsPageLoading] = useState(false);
   const eventsLoadRevision = useRef(0);
+  const onFetchSuccessRef = useRef<((currentBefore?: string, nextBefore?: string, reset?: boolean) => void) | null>(null);
 
-  const fetchEvents = async (before?: string, resetPage = true): Promise<boolean> => {
+  const fetchEvents = useCallback(async (before?: string, resetPage = true): Promise<boolean> => {
     const revision = ++eventsLoadRevision.current;
     setIsLoading(true);
     setLoadError(null);
@@ -43,9 +42,7 @@ export default function EventsPage() {
       const res = await api.listEvents(50, before);
       if (revision !== eventsLoadRevision.current) return false;
       setEvents(res.data || []);
-      setEventsBefore(before);
-      setNextEventsBefore(res.next_before);
-      if (resetPage) setEventsPageHistory([]);
+      onFetchSuccessRef.current?.(before, res.next_before, resetPage);
       return true;
     } catch (err) {
       if (revision !== eventsLoadRevision.current) return false;
@@ -55,33 +52,10 @@ export default function EventsPage() {
     } finally {
       if (revision === eventsLoadRevision.current) setIsLoading(false);
     }
-  };
+  }, []);
 
-  const loadOlderEvents = async () => {
-    if (!nextEventsBefore || isPageLoading) return;
-    setIsPageLoading(true);
-    const currentBefore = eventsBefore;
-    try {
-      if (await fetchEvents(nextEventsBefore, false)) {
-        setEventsPageHistory((history) => [...history, currentBefore]);
-      }
-    } finally {
-      setIsPageLoading(false);
-    }
-  };
-
-  const loadNewerEvents = async () => {
-    if (eventsPageHistory.length === 0 || isPageLoading) return;
-    setIsPageLoading(true);
-    const previousBefore = eventsPageHistory[eventsPageHistory.length - 1];
-    try {
-      if (await fetchEvents(previousBefore, false)) {
-        setEventsPageHistory((history) => history.slice(0, -1));
-      }
-    } finally {
-      setIsPageLoading(false);
-    }
-  };
+  const pagination = useCursorPagination(fetchEvents, isPageLoading);
+  onFetchSuccessRef.current = pagination.onFetchSuccess;
 
   useEffect(() => {
     void fetchEvents();
@@ -206,14 +180,14 @@ export default function EventsPage() {
         </table>
       </div>
       )}
-      {(eventsPageHistory.length > 0 || nextEventsBefore) && (
+      {(pagination.canGoNewer || pagination.canGoOlder) && (
         <CursorPagination
-          page={eventsPageHistory.length + 1}
-          canGoNewer={eventsPageHistory.length > 0}
-          canGoOlder={Boolean(nextEventsBefore)}
+          page={pagination.page}
+          canGoNewer={pagination.canGoNewer}
+          canGoOlder={pagination.canGoOlder}
           isLoading={isPageLoading || isLoading}
-          onNewer={() => void loadNewerEvents()}
-          onOlder={() => void loadOlderEvents()}
+          onNewer={() => void pagination.loadNewer()}
+          onOlder={() => void pagination.loadOlder()}
         />
       )}
       {loadError && events.length > 0 && (

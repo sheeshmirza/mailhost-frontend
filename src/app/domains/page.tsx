@@ -141,13 +141,6 @@ export default function DomainsPage() {
     }
   };
 
-  const copyText = (val: string, key: string) => {
-    navigator.clipboard.writeText(val);
-    setCopiedKey(key);
-    toast.success("Copied to clipboard!");
-    setTimeout(() => setCopiedKey(null), 2000);
-  };
-
   return (
     <div className="page-container">
       {/* Header */}
@@ -353,7 +346,7 @@ export default function DomainsPage() {
                                 className="rounded-md p-1.5 text-zinc-400 hover:text-zinc-900 hover:bg-zinc-100 dark:hover:bg-zinc-800 dark:hover:text-white transition-colors focus:outline-none focus:ring-2 focus:ring-zinc-500"
                                 title="Copy record value"
                               >
-                                {copiedKey === `${i}-val` ? (
+                                {isCopied(`${i}-val`) ? (
                                   <Check className="h-4 w-4 text-emerald-500" />
                                 ) : (
                                   <Copy className="h-4 w-4" />

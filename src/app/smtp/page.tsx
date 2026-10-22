@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { api, SMTPCredView, DomainView, getErrorMessage } from "@/lib/api";
 import { useToast } from "@/lib/toast-context";
+import { useCopy } from "@/lib/useCopy";
 import { ErrorState } from "@/components/ui/ErrorState";
 import { TableSkeleton } from "@/components/ui/LoadingState";
 import { getVerifiedDomains, assertVerifiedSender, buildSenderAddress } from "@/lib/domain-utils";
@@ -59,8 +60,7 @@ export default function SMTPProtocolsPage() {
     username: string;
     password: string;
   } | null>(null);
-  const [copiedPass, setCopiedPass] = useState(false);
-  const [copiedField, setCopiedField] = useState<string | null>(null);
+  const { copy, isCopied } = useCopy();
 
   const verifiedDomains = useMemo(() => getVerifiedDomains(domains), [domains]);
 
@@ -136,18 +136,12 @@ export default function SMTPProtocolsPage() {
   };
 
   const copyToClipboard = (text: string, label: string) => {
-    navigator.clipboard.writeText(text);
-    setCopiedField(label);
-    toast.info(`Copied ${label} to clipboard`);
-    setTimeout(() => setCopiedField(null), 2000);
+    void copy(text, label, `Copied ${label} to clipboard`);
   };
 
   const copyPassword = () => {
     if (!generatedCreds) return;
-    navigator.clipboard.writeText(generatedCreds.password);
-    setCopiedPass(true);
-    toast.info("Password copied to clipboard");
-    setTimeout(() => setCopiedPass(false), 2000);
+    void copy(generatedCreds.password, "password", "Password copied to clipboard");
   };
 
   // Active credential username for configuration examples
@@ -268,7 +262,7 @@ export default function SMTPProtocolsPage() {
                 <div className="flex items-center justify-between">
                   <span className="text-[10px] text-zinc-500 uppercase font-sans">Host</span>
                   <button onClick={() => copyToClipboard(hostName, "Host")} className="text-zinc-400 hover:text-zinc-600">
-                    {copiedField === "Host" ? <Check className="h-3 w-3 text-teal-500" /> : <Copy className="h-3 w-3" />}
+                    {isCopied("Host") ? <Check className="h-3 w-3 text-teal-500" /> : <Copy className="h-3 w-3" />}
                   </button>
                 </div>
                 <span className="text-zinc-900 dark:text-white font-semibold block mt-1">{hostName}</span>
@@ -933,7 +927,7 @@ server.quit()`}
                         onClick={copyPassword}
                         className="text-zinc-400 hover:text-zinc-600 shrink-0 ml-2"
                       >
-                        {copiedPass ? <Check className="h-3.5 w-3.5 text-teal-500" /> : <Copy className="h-3.5 w-3.5" />}
+                        {isCopied("password") ? <Check className="h-3.5 w-3.5 text-teal-500" /> : <Copy className="h-3.5 w-3.5" />}
                       </button>
                     </div>
                   </div>

@@ -27,6 +27,7 @@ import {
   X,
 } from "lucide-react";
 import { useToast } from "@/lib/toast-context";
+import { useCopy } from "@/lib/useCopy";
 import { TableSkeleton } from "@/components/ui/LoadingState";
 import { ErrorState } from "@/components/ui/ErrorState";
 import { VerifiedDomainAlert } from "@/components/common/VerifiedDomainAlert";
@@ -58,7 +59,7 @@ export default function AliasesPage() {
   const [isDeleting, setIsDeleting] = useState(false);
 
   // Copy status
-  const [copiedId, setCopiedId] = useState<string | null>(null);
+  const { copy: copyAlias, isCopied: isAliasCopied } = useCopy();
 
   const verifiedDomains = useMemo(() => getVerifiedDomains(domains), [domains]);
 
@@ -214,10 +215,7 @@ export default function AliasesPage() {
   };
 
   const copyToClipboard = (text: string, id: string) => {
-    navigator.clipboard.writeText(text);
-    setCopiedId(id);
-    toast.info("Copied to clipboard: " + text);
-    setTimeout(() => setCopiedId(null), 2000);
+    void copyAlias(text, id, "Copied to clipboard: " + text);
   };
 
   // Filtered Aliases
@@ -413,7 +411,7 @@ export default function AliasesPage() {
                             className="text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 transition-colors"
                             title="Copy alias address"
                           >
-                            {copiedId === alias.id ? (
+                            {isAliasCopied(alias.id) ? (
                               <Check className="h-3.5 w-3.5 text-teal-500" />
                             ) : (
                               <Copy className="h-3.5 w-3.5" />

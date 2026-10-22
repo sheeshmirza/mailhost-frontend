@@ -22,6 +22,7 @@ import {
   AtSign,
 } from "lucide-react";
 import { useToast } from "@/lib/toast-context";
+import { useCopy } from "@/lib/useCopy";
 
 type CodeLang = "nodejs" | "python" | "go" | "ruby" | "php" | "rust" | "curl";
 
@@ -145,13 +146,12 @@ async fn main() {
 export default function HomePage() {
   const { toast } = useToast();
   const [selectedLang, setSelectedLang] = useState<CodeLang>("nodejs");
-  const [copied, setCopied] = useState(false);
+  const { copy, isCopied } = useCopy({
+    successMessage: "Code snippet copied to clipboard",
+  });
 
   const handleCopyCode = () => {
-    navigator.clipboard.writeText(codeSnippets[selectedLang].code);
-    setCopied(true);
-    toast.info("Code snippet copied to clipboard");
-    setTimeout(() => setCopied(false), 2000);
+    void copy(codeSnippets[selectedLang].code, "hero-code");
   };
 
   return (
@@ -228,7 +228,7 @@ export default function HomePage() {
                   className="shrink-0 flex items-center gap-1 rounded bg-zinc-800/80 px-2.5 py-1 text-[11px] text-zinc-300 hover:text-white transition-colors"
                   title="Copy code snippet"
                 >
-                  {copied ? (
+                  {isCopied("hero-code") ? (
                     <>
                       <Check className="h-3 w-3 text-emerald-400" />
                       <span className="text-emerald-400 font-sans">Copied</span>
