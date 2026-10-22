@@ -3,8 +3,10 @@
 import React, { useState, useEffect } from "react";
 import { api, WebhookView, WebhookTestResponse, WebhookDeliveryItem, getErrorMessage } from "@/lib/api";
 import { useToast } from "@/lib/toast-context";
+import { useCopy } from "@/lib/useCopy";
 import { ErrorState } from "@/components/ui/ErrorState";
 import { TableSkeleton } from "@/components/ui/LoadingState";
+import { StatusBadge } from "@/components/ui/StatusBadge";
 import {
   Plus,
   Trash2,
@@ -46,7 +48,9 @@ export default function WebhooksPage() {
     "email.delivered",
     "email.bounced",
   ]);
-  const [copiedSecret, setCopiedSecret] = useState<string | null>(null);
+  const { copy: copySecret, isCopied: isSecretCopied } = useCopy({
+    successMessage: "Signing secret copied to clipboard",
+  });
   const [newSigningSecret, setNewSigningSecret] = useState<string | null>(null);
 
   // Webhook Test State
@@ -193,13 +197,6 @@ export default function WebhooksPage() {
     }
   };
 
-  const copySecret = (sec: string, id: string) => {
-    navigator.clipboard.writeText(sec);
-    setCopiedSecret(id);
-    toast.info("Signing secret copied to clipboard");
-    setTimeout(() => setCopiedSecret(null), 2000);
-  };
-
   return (
     <div className="page-container">
       {/* Header */}
@@ -268,15 +265,7 @@ export default function WebhooksPage() {
                     </div>
                   </td>
                   <td className="px-4 py-3 text-sm font-sans">
-                    <span
-                      className={`inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium ${
-                        wh.status === "active"
-                          ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-400"
-                          : "bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300"
-                      }`}
-                    >
-                      {wh.status}
-                    </span>
+                    <StatusBadge status={wh.status} size="sm" />
                   </td>
                   <td className="px-4 py-3 text-sm font-mono text-zinc-700 dark:text-zinc-300">
                     {wh.signing_secret ? (
@@ -286,7 +275,7 @@ export default function WebhooksPage() {
                         title="Click to copy secret"
                       >
                         <span>••••••••••••••••</span>
-                        {copiedSecret === wh.id ? (
+                        {isSecretCopied(wh.id) ? (
                           <Check className="h-4 w-4 text-emerald-500" />
                         ) : (
                           <Copy className="h-4 w-4" />
@@ -356,8 +345,8 @@ export default function WebhooksPage() {
           <div className="flex min-w-0 items-center gap-2 rounded-md border border-amber-200 bg-white px-3 py-2 dark:border-amber-900/50 dark:bg-black/20">
             <code className="min-w-0 flex-1 break-all font-mono text-xs text-zinc-900 dark:text-zinc-100">{newSigningSecret}</code>
             <button onClick={() => copySecret(newSigningSecret, "new-signing-secret")} className="btn-secondary shrink-0" aria-label="Copy signing secret">
-              {copiedSecret === "new-signing-secret" ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
-              <span>{copiedSecret === "new-signing-secret" ? "Copied" : "Copy"}</span>
+              {isSecretCopied("new-signing-secret") ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
+              <span>{isSecretCopied("new-signing-secret") ? "Copied" : "Copy"}</span>
             </button>
           </div>
           <button onClick={() => setNewSigningSecret(null)} className="text-xs font-medium text-amber-900 underline dark:text-amber-300">Dismiss</button>
