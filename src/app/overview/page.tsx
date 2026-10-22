@@ -505,20 +505,8 @@ export default function OverviewPage() {
                         {email.from}
                       </p>
                     </div>
-                    <div className="text-right">
-                      <span className={`badge capitalize ${
-                        email.status === "delivered"
-                          ? "badge-success"
-                          : email.status === "bounced" || email.status === "failed"
-                          ? "badge-error"
-                          : email.status === "sent"
-                          ? "badge-info"
-                          : email.status === "canceled"
-                          ? "badge-neutral"
-                          : "badge-warning"
-                      }`}>
-                        {email.status || "queued"}
-                      </span>
+                    <div className="text-right flex flex-col items-end">
+                      <StatusBadge status={email.status} size="sm" />
                       <p className="text-[10px] text-zinc-400 dark:text-zinc-500 mt-0.5 font-mono">
                         {new Date(email.created_at).toLocaleTimeString([], {
                           hour: "2-digit",
