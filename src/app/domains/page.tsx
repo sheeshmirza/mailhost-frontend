@@ -17,6 +17,7 @@ import {
   ArrowRightLeft,
 } from "lucide-react";
 import { useToast } from "@/lib/toast-context";
+import { useCopy } from "@/lib/useCopy";
 import { ErrorState } from "@/components/ui/ErrorState";
 import { CardSkeleton } from "@/components/ui/LoadingState";
 
@@ -32,7 +33,7 @@ export default function DomainsPage() {
   const [isVerifying, setIsVerifying] = useState(false);
   const [inboundWebhookURL, setInboundWebhookURL] = useState("");
   const [isSavingInboundWebhook, setIsSavingInboundWebhook] = useState(false);
-  const [copiedKey, setCopiedKey] = useState<string | null>(null);
+  const { copy: copyText, isCopied } = useCopy({ successMessage: "Copied to clipboard!" });
 
   const fetchDomains = useCallback(async () => {
     setIsLoading(true);

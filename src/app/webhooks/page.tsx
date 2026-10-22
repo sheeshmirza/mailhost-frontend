@@ -600,17 +600,7 @@ export default function WebhooksPage() {
                         <span className="font-mono text-xs font-semibold text-zinc-900 dark:text-white">
                           {del.event_type}
                         </span>
-                        <span
-                          className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase ${
-                            isDelivered
-                              ? "bg-emerald-500/20 text-emerald-700 dark:text-emerald-300"
-                              : isFailed
-                              ? "bg-rose-500/20 text-rose-700 dark:text-rose-300"
-                              : "bg-amber-500/20 text-amber-700 dark:text-amber-300"
-                          }`}
-                        >
-                          {del.status}
-                        </span>
+                        <StatusBadge status={del.status} size="sm" />
                       </div>
                       <div className="flex items-center justify-between text-[11px] text-zinc-500 font-mono">
                         <span>Attempts: {del.attempts}</span>

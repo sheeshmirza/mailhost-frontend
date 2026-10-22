@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useAuth } from "@/lib/auth-context";
 import { useToast } from "@/lib/toast-context";
+import { useCopy } from "@/lib/useCopy";
 import {
   api,
   getConfiguredAPIBaseUrl,
@@ -74,7 +75,9 @@ export default function SettingsPage() {
   const [isRevokingOthers, setIsRevokingOthers] = useState(false);
 
   // MCP Snippet
-  const [copiedMcp, setCopiedMcp] = useState(false);
+  const { copy: copyToClipboard, isCopied: isMcpCopied } = useCopy({
+    successMessage: "MCP config copied to clipboard",
+  });
 
   const fetchTeamAndSessions = useCallback(async () => {
     setIsLoading(true);
@@ -257,10 +260,7 @@ export default function SettingsPage() {
 }`;
 
   const copyMcpConfig = () => {
-    navigator.clipboard.writeText(mcpConfig);
-    setCopiedMcp(true);
-    toast.info("MCP config copied to clipboard");
-    setTimeout(() => setCopiedMcp(false), 2000);
+    void copyToClipboard(mcpConfig, "mcp-config");
   };
 
   return (
@@ -730,7 +730,7 @@ export default function SettingsPage() {
                   onClick={copyMcpConfig}
                   className="flex items-center gap-1 text-xs text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white transition-colors"
                 >
-                  {copiedMcp ? (
+                  {isMcpCopied("mcp-config") ? (
                     <>
                       <Check className="h-3.5 w-3.5 text-emerald-500" />
                       <span className="text-emerald-500">Copied</span>
