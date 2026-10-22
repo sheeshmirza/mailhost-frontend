@@ -110,6 +110,30 @@ export interface EmailSummary {
   created_at: string;
 }
 
+export interface EmailSemanticSearchResult {
+  id: string;
+  subject: string;
+  snippet?: string;
+  from: string;
+  status: string;
+  score?: number;
+  created_at: string;
+}
+
+export interface TemplateSemanticSearchResult {
+  id: string;
+  name: string;
+  subject: string;
+  snippet?: string;
+  score?: number;
+  created_at: string;
+}
+
+export interface SemanticSearchResponse<T> {
+  data: T[];
+  source: "qdrant" | "database" | string;
+}
+
 export interface DeliveryView {
   id: string;
   recipient: string;
@@ -1042,6 +1066,16 @@ export class APIClient {
     });
   }
 
+  async semanticSearchEmails(query: string, limit = 20) {
+    return this.request<SemanticSearchResponse<EmailSemanticSearchResult>>(
+      "/v1/emails/semantic-search",
+      {
+        method: "POST",
+        body: JSON.stringify({ query, limit }),
+      }
+    );
+  }
+
   // Render Preview
   async renderEmail(data: { html?: string; text?: string; variables?: Record<string, any> }) {
     return this.request<{ html: string; text: string }>("/v1/render", {
@@ -1373,6 +1407,16 @@ export class APIClient {
     return this.request<{ id: string; deleted: boolean }>(
       `/v1/templates/${id}`,
       { method: "DELETE" }
+    );
+  }
+
+  async semanticSearchTemplates(query: string, limit = 20) {
+    return this.request<SemanticSearchResponse<TemplateSemanticSearchResult>>(
+      "/v1/templates/semantic-search",
+      {
+        method: "POST",
+        body: JSON.stringify({ query, limit }),
+      }
     );
   }
 

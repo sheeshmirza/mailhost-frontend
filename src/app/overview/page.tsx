@@ -31,6 +31,7 @@ import {
 import CodeSnippet from "@/components/ui/CodeSnippet";
 import { ErrorState } from "@/components/ui/ErrorState";
 import { WidgetErrorBoundary } from "@/components/ui/WidgetErrorBoundary";
+import { StatusBadge } from "@/components/ui/StatusBadge";
 
 export default function OverviewPage() {
   const [analytics, setAnalytics] = useState<AnalyticsResponse | null>(null);
