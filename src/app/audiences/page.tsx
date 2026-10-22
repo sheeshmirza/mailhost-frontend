@@ -34,6 +34,8 @@ import { useToast } from "@/lib/toast-context";
 import { ErrorState } from "@/components/ui/ErrorState";
 import { TableSkeleton } from "@/components/ui/LoadingState";
 import { CursorPagination } from "@/components/ui/CursorPagination";
+import { useCursorPagination } from "@/lib/useCursorPagination";
+import { StatusBadge } from "@/components/ui/StatusBadge";
 
 export default function AudiencesPage() {
   const toast = useToast();
@@ -53,11 +55,9 @@ export default function AudiencesPage() {
   const [loadError, setLoadError] = useState<string | null>(null);
   const [contactsError, setContactsError] = useState<string | null>(null);
   const [isContactsLoading, setIsContactsLoading] = useState(false);
-  const [contactsBefore, setContactsBefore] = useState<string | undefined>();
-  const [nextContactsBefore, setNextContactsBefore] = useState<string | undefined>();
-  const [contactsPageHistory, setContactsPageHistory] = useState<(string | undefined)[]>([]);
   const dataLoadRevision = useRef(0);
   const contactsLoadRevision = useRef(0);
+  const onContactsFetchSuccessRef = useRef<((currentBefore?: string, nextBefore?: string, reset?: boolean) => void) | null>(null);
 
   // Contact Detail Drawer State
   const [selectedContact, setSelectedContact] = useState<ContactView | null>(null);
@@ -71,10 +71,8 @@ export default function AudiencesPage() {
   const [segmentContacts, setSegmentContacts] = useState<ContactView[]>([]);
   const [isSegmentLoading, setIsSegmentLoading] = useState(false);
   const [segmentContactsError, setSegmentContactsError] = useState<string | null>(null);
-  const [segmentContactsBefore, setSegmentContactsBefore] = useState<string | undefined>();
-  const [nextSegmentContactsBefore, setNextSegmentContactsBefore] = useState<string | undefined>();
-  const [segmentContactsPageHistory, setSegmentContactsPageHistory] = useState<(string | undefined)[]>([]);
   const segmentContactsRevision = useRef(0);
+  const onSegmentContactsFetchSuccessRef = useRef<((currentBefore?: string, nextBefore?: string, reset?: boolean) => void) | null>(null);
 
   // Modals
   const [isAudienceOpen, setIsAudienceOpen] = useState(false);
@@ -117,16 +115,12 @@ export default function AudiencesPage() {
     setContactsError(null);
     if (resetPage) {
       setContacts([]);
-      setContactsBefore(undefined);
-      setNextContactsBefore(undefined);
-      setContactsPageHistory([]);
     }
     try {
       const res = await api.listContacts(audienceId, 50, before);
       if (revision !== contactsLoadRevision.current) return false;
       setContacts(res.data || []);
-      setContactsBefore(before);
-      setNextContactsBefore(res.next_before);
+      onContactsFetchSuccessRef.current?.(before, res.next_before, resetPage);
       return true;
     } catch (err) {
       if (revision !== contactsLoadRevision.current) return false;
@@ -137,6 +131,12 @@ export default function AudiencesPage() {
       if (revision === contactsLoadRevision.current) setIsContactsLoading(false);
     }
   }, []);
+
+  const contactsPagination = useCursorPagination(
+    (before, reset) => loadContacts(selectedAudience?.id, before, reset),
+    isContactsLoading
+  );
+  onContactsFetchSuccessRef.current = contactsPagination.onFetchSuccess;
 
   const fetchData = useCallback(async () => {
     const revision = ++dataLoadRevision.current;
@@ -185,20 +185,6 @@ export default function AudiencesPage() {
       if (revision === dataLoadRevision.current) setIsLoading(false);
     }
   }, [loadContacts]);
-
-  const loadOlderContacts = async () => {
-    if (!nextContactsBefore || isContactsLoading) return;
-    const currentBefore = contactsBefore;
-    const loaded = await loadContacts(selectedAudience?.id, nextContactsBefore, false);
-    if (loaded) setContactsPageHistory((history) => [...history, currentBefore]);
-  };
-
-  const loadNewerContacts = async () => {
-    if (contactsPageHistory.length === 0 || isContactsLoading) return;
-    const previousBefore = contactsPageHistory[contactsPageHistory.length - 1];
-    const loaded = await loadContacts(selectedAudience?.id, previousBefore, false);
-    if (loaded) setContactsPageHistory((history) => history.slice(0, -1));
-  };
 
   useEffect(() => {
     void fetchData();
@@ -447,7 +433,7 @@ export default function AudiencesPage() {
     }
   };
 
-  const loadSegmentContacts = async (
+  const loadSegmentContacts = useCallback(async (
     seg: SegmentView,
     before?: string,
     resetPage = true
@@ -458,16 +444,12 @@ export default function AudiencesPage() {
     setSegmentContactsError(null);
     if (resetPage) {
       setSegmentContacts([]);
-      setSegmentContactsBefore(undefined);
-      setNextSegmentContactsBefore(undefined);
-      setSegmentContactsPageHistory([]);
     }
     try {
       const res = await api.listSegmentContacts(seg.id, 50, before);
       if (revision !== segmentContactsRevision.current) return false;
       setSegmentContacts(res.data || []);
-      setSegmentContactsBefore(before);
-      setNextSegmentContactsBefore(res.next_before);
+      onSegmentContactsFetchSuccessRef.current?.(before, res.next_before, resetPage);
       return true;
     } catch (err) {
       if (revision !== segmentContactsRevision.current) return false;
@@ -478,26 +460,20 @@ export default function AudiencesPage() {
     } finally {
       if (revision === segmentContactsRevision.current) setIsSegmentLoading(false);
     }
-  };
+  }, []);
+
+  const segmentPagination = useCursorPagination(
+    (before, reset) =>
+      selectedSegment
+        ? loadSegmentContacts(selectedSegment, before, reset)
+        : Promise.resolve(false),
+    isSegmentLoading
+  );
+  onSegmentContactsFetchSuccessRef.current = segmentPagination.onFetchSuccess;
 
   const openSegmentDetail = (seg: SegmentView) => {
+    segmentPagination.reset();
     void loadSegmentContacts(seg);
-  };
-
-  const loadOlderSegmentContacts = async () => {
-    if (!selectedSegment || !nextSegmentContactsBefore || isSegmentLoading) return;
-    const currentBefore = segmentContactsBefore;
-    if (await loadSegmentContacts(selectedSegment, nextSegmentContactsBefore, false)) {
-      setSegmentContactsPageHistory((history) => [...history, currentBefore]);
-    }
-  };
-
-  const loadNewerSegmentContacts = async () => {
-    if (!selectedSegment || segmentContactsPageHistory.length === 0 || isSegmentLoading) return;
-    const previousBefore = segmentContactsPageHistory[segmentContactsPageHistory.length - 1];
-    if (await loadSegmentContacts(selectedSegment, previousBefore, false)) {
-      setSegmentContactsPageHistory((history) => history.slice(0, -1));
-    }
   };
 
   return (
@@ -681,16 +657,6 @@ export default function AudiencesPage() {
               )}
             </div>
             )}
-            {(contactsPageHistory.length > 0 || nextContactsBefore) && (
-              <CursorPagination
-                page={contactsPageHistory.length + 1}
-                canGoNewer={contactsPageHistory.length > 0}
-                canGoOlder={Boolean(nextContactsBefore)}
-                isLoading={isContactsLoading}
-                onNewer={() => void loadNewerContacts()}
-                onOlder={() => void loadOlderContacts()}
-              />
-            )}
           </div>
 
           {/* Right: Contacts Table */}
@@ -790,17 +756,7 @@ export default function AudiencesPage() {
                         </td>
                         <td className="px-4 py-3">
                           <div className="flex items-center gap-1.5 flex-wrap">
-                            {c.unsubscribed ? (
-                              <span className="inline-flex items-center gap-1 rounded-full bg-red-50 border border-red-200 px-2 py-0.5 text-[11px] text-red-700 dark:bg-red-950/60 dark:border-red-800/40 dark:text-red-400">
-                                <UserX className="h-2.5 w-2.5" />
-                                Unsubscribed
-                              </span>
-                            ) : (
-                              <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 border border-emerald-200 px-2 py-0.5 text-[11px] text-emerald-700 dark:bg-emerald-950/60 dark:border-emerald-800/40 dark:text-emerald-400">
-                                <UserCheck className="h-2.5 w-2.5" />
-                                Subscribed
-                              </span>
-                            )}
+                            <StatusBadge status={c.unsubscribed ? "unsubscribed" : "subscribed"} />
                             {c.traits && Object.keys(c.traits).length > 0 && (
                               <span className="inline-flex items-center gap-1 rounded-full bg-teal-50 border border-teal-200 px-2 py-0.5 text-[10px] text-teal-800 dark:bg-teal-950/60 dark:border-teal-800/40 dark:text-teal-300 font-mono">
                                 <Sparkles className="h-2.5 w-2.5" />
@@ -835,6 +791,16 @@ export default function AudiencesPage() {
                 </tbody>
               </table>
             </div>
+            )}
+            {contactsPagination.hasPagination && (
+              <CursorPagination
+                page={contactsPagination.page}
+                canGoNewer={contactsPagination.canGoNewer}
+                canGoOlder={contactsPagination.canGoOlder}
+                isLoading={contactsPagination.isLoading}
+                onNewer={() => void contactsPagination.loadNewer()}
+                onOlder={() => void contactsPagination.loadOlder()}
+              />
             )}
           </div>
         </div>
@@ -1480,14 +1446,14 @@ export default function AudiencesPage() {
               )}
             </div>
 
-            {(segmentContactsPageHistory.length > 0 || nextSegmentContactsBefore) && (
+            {segmentPagination.hasPagination && (
               <CursorPagination
-                page={segmentContactsPageHistory.length + 1}
-                canGoNewer={segmentContactsPageHistory.length > 0}
-                canGoOlder={Boolean(nextSegmentContactsBefore)}
-                isLoading={isSegmentLoading}
-                onNewer={() => void loadNewerSegmentContacts()}
-                onOlder={() => void loadOlderSegmentContacts()}
+                page={segmentPagination.page}
+                canGoNewer={segmentPagination.canGoNewer}
+                canGoOlder={segmentPagination.canGoOlder}
+                isLoading={segmentPagination.isLoading}
+                onNewer={() => void segmentPagination.loadNewer()}
+                onOlder={() => void segmentPagination.loadOlder()}
               />
             )}
 
@@ -1496,6 +1462,7 @@ export default function AudiencesPage() {
                 type="button"
                 onClick={() => {
                   segmentContactsRevision.current += 1;
+                  segmentPagination.reset();
                   setSelectedSegment(null);
                 }}
                 className="rounded-md border border-surface-border px-4 py-1.5 text-xs text-zinc-700 hover:bg-surface-raised hover:text-zinc-900 dark:text-zinc-300 dark:hover:text-white transition-colors"

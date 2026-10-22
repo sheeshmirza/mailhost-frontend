@@ -1,5 +1,5 @@
 import React from "react";
-import { CheckCircle2, AlertCircle, Clock, Ban } from "lucide-react";
+import { CheckCircle2, AlertCircle, Clock, Ban, UserCheck, UserX } from "lucide-react";
 
 export type StatusType =
   | "delivered"
@@ -16,6 +16,8 @@ export type StatusType =
   | "unverified"
   | "draft"
   | "published"
+  | "subscribed"
+  | "unsubscribed"
   | string;
 
 export interface StatusBadgeProps {
@@ -75,6 +77,16 @@ export function StatusBadge({
       colorClasses = "bg-purple-50/50 border-purple-200/50 text-purple-700 dark:bg-purple-500/10 dark:border-purple-500/20 dark:text-purple-400";
       Icon = Clock;
       displayLabel = label || "Draft";
+      break;
+    case "subscribed":
+      colorClasses = "bg-emerald-50/50 border-emerald-200/50 text-emerald-700 dark:bg-emerald-500/10 dark:border-emerald-500/20 dark:text-emerald-400";
+      Icon = UserCheck;
+      displayLabel = label || "Subscribed";
+      break;
+    case "unsubscribed":
+      colorClasses = "bg-red-50/50 border-red-200/50 text-red-700 dark:bg-red-500/10 dark:border-red-500/20 dark:text-red-400";
+      Icon = UserX;
+      displayLabel = label || "Unsubscribed";
       break;
     case "unverified":
     case "pending":

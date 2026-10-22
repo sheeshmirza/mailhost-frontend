@@ -10,6 +10,7 @@ import {
   BulkEmailPayload,
   BatchStatusView,
   DomainView,
+  EmailSemanticSearchResult,
 } from "@/lib/api";
 import {
   Send,
@@ -23,12 +24,15 @@ import {
   RefreshCw,
   Ban,
   Users,
+  Sparkles,
 } from "lucide-react";
 import SendEmailModal from "@/components/emails/SendEmailModal";
 import { useToast } from "@/lib/toast-context";
 import { ErrorState } from "@/components/ui/ErrorState";
 import { TableSkeleton } from "@/components/ui/LoadingState";
 import { CursorPagination } from "@/components/ui/CursorPagination";
+import { StatusBadge } from "@/components/ui/StatusBadge";
+import { useCursorPagination } from "@/lib/useCursorPagination";
 import { getVerifiedDomains, assertVerifiedSender, assertVerifiedSenders, buildSenderAddress } from "@/lib/domain-utils";
 import { VerifiedDomainAlert } from "@/components/common/VerifiedDomainAlert";
 
@@ -69,11 +73,15 @@ function EmailsPageContent() {
   const [inspectedBatch, setInspectedBatch] = useState<BatchStatusView | null>(null);
   const [isInspectingBatch, setIsInspectingBatch] = useState(false);
   const [inspectBatchError, setInspectBatchError] = useState<string | null>(null);
-  const [emailBefore, setEmailBefore] = useState<string | undefined>();
-  const [nextEmailBefore, setNextEmailBefore] = useState<string | undefined>();
-  const [emailPageHistory, setEmailPageHistory] = useState<(string | undefined)[]>([]);
   const emailListRevision = useRef(0);
   const emailDetailRevision = useRef(0);
+  const onFetchSuccessRef = useRef<((currentBefore?: string, nextBefore?: string, reset?: boolean) => void) | null>(null);
+
+  // Semantic Search (Qdrant Vector Database)
+  const [isSemanticSearch, setIsSemanticSearch] = useState(false);
+  const [semanticResults, setSemanticResults] = useState<EmailSemanticSearchResult[]>([]);
+  const [semanticSource, setSemanticSource] = useState<string>("");
+  const [isSearchingSemantic, setIsSearchingSemantic] = useState(false);
 
   const verifiedDomains = getVerifiedDomains(domains);
 
@@ -110,9 +118,7 @@ function EmailsPageContent() {
       const res = await api.listEmails(100, before, statusFilter);
       if (revision !== emailListRevision.current) return false;
       setEmails(res.data || []);
-      setEmailBefore(before);
-      setNextEmailBefore(res.next_before);
-      if (resetPage) setEmailPageHistory([]);
+      onFetchSuccessRef.current?.(before, res.next_before, resetPage);
       if (resetPage && initialId) {
         void loadEmailDetail(initialId);
       }
@@ -127,21 +133,40 @@ function EmailsPageContent() {
     }
   }, [statusFilter, initialId, loadEmailDetail]);
 
-  const loadOlderEmails = async () => {
-    if (!nextEmailBefore || isLoading) return;
-    const currentBefore = emailBefore;
-    if (await fetchEmails(nextEmailBefore, false)) {
-      setEmailPageHistory((history) => [...history, currentBefore]);
-    }
-  };
+  const pagination = useCursorPagination(fetchEmails, isLoading);
+  onFetchSuccessRef.current = pagination.onFetchSuccess;
 
-  const loadNewerEmails = async () => {
-    if (emailPageHistory.length === 0 || isLoading) return;
-    const previousBefore = emailPageHistory[emailPageHistory.length - 1];
-    if (await fetchEmails(previousBefore, false)) {
-      setEmailPageHistory((history) => history.slice(0, -1));
+  const executeSemanticSearch = useCallback(async (query: string) => {
+    const q = query.trim();
+    if (!q) {
+      setSemanticResults([]);
+      setSemanticSource("");
+      return;
     }
-  };
+    setIsSearchingSemantic(true);
+    try {
+      const res = await api.semanticSearchEmails(q, 30);
+      setSemanticResults(res.data || []);
+      setSemanticSource(res.source || "vector");
+    } catch (err) {
+      console.error("Semantic search failed", err);
+      toast.error(err instanceof Error ? err.message : "Semantic search failed");
+    } finally {
+      setIsSearchingSemantic(false);
+    }
+  }, [toast]);
+
+  useEffect(() => {
+    if (isSemanticSearch && searchQuery.trim()) {
+      const timer = setTimeout(() => {
+        void executeSemanticSearch(searchQuery);
+      }, 300);
+      return () => clearTimeout(timer);
+    } else if (isSemanticSearch && !searchQuery.trim()) {
+      setSemanticResults([]);
+      setSemanticSource("");
+    }
+  }, [isSemanticSearch, searchQuery, executeSemanticSearch]);
 
   useEffect(() => {
     void fetchEmails();
@@ -279,56 +304,6 @@ function EmailsPageContent() {
       toast.error("Batch lookup failed: " + msg);
     } finally {
       setIsInspectingBatch(false);
-    }
-  };
-
-  const renderStatusPill = (status?: string) => {
-    const s = (status || "queued").toLowerCase();
-    switch (s) {
-      case "delivered":
-        return (
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50/50 border border-emerald-200/50 px-2 py-0.5 text-[11px] font-medium text-emerald-700 dark:bg-emerald-500/10 dark:border-emerald-500/20 dark:text-emerald-400">
-            <CheckCircle2 className="h-3.5 w-3.5" />
-            Delivered
-          </span>
-        );
-      case "bounced":
-        return (
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-red-50/50 border border-red-200/50 px-2 py-0.5 text-[11px] font-medium text-red-700 dark:bg-red-500/10 dark:border-red-500/20 dark:text-red-400">
-            <AlertCircle className="h-3.5 w-3.5" />
-            Bounced
-          </span>
-        );
-      case "failed":
-        return (
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-red-50/50 border border-red-200/50 px-2 py-0.5 text-[11px] font-medium text-red-700 dark:bg-red-500/10 dark:border-red-500/20 dark:text-red-400">
-            <AlertCircle className="h-3.5 w-3.5" />
-            Failed
-          </span>
-        );
-      case "canceled":
-      case "cancelled":
-        return (
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-zinc-100/50 border border-zinc-200/50 px-2 py-0.5 text-[11px] font-medium text-zinc-700 dark:bg-zinc-800/50 dark:border-zinc-700/50 dark:text-zinc-400">
-            <Ban className="h-3.5 w-3.5" />
-            Canceled
-          </span>
-        );
-      case "sent":
-        return (
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-sky-50/50 border border-sky-200/50 px-2 py-0.5 text-[11px] font-medium text-sky-700 dark:bg-sky-500/10 dark:border-sky-500/20 dark:text-sky-400">
-            <Clock className="h-3.5 w-3.5" />
-            Sent
-          </span>
-        );
-      case "queued":
-      default:
-        return (
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-50/50 border border-amber-200/50 px-2 py-0.5 text-[11px] font-medium text-amber-700 dark:bg-amber-500/10 dark:border-amber-500/20 dark:text-amber-400">
-            <Clock className="h-3.5 w-3.5" />
-            Queued
-          </span>
-        );
     }
   };
 
@@ -474,14 +449,39 @@ function EmailsPageContent() {
           })}
         </div>
 
-        <div className="flex items-center gap-2 w-full sm:w-auto">
+        <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+          <button
+            type="button"
+            onClick={() => {
+              const nextMode = !isSemanticSearch;
+              setIsSemanticSearch(nextMode);
+              if (nextMode && searchQuery.trim()) {
+                void executeSemanticSearch(searchQuery);
+              }
+            }}
+            className={`flex items-center gap-1.5 h-9 px-3 rounded-lg border text-xs font-medium transition-all ${
+              isSemanticSearch
+                ? "border-teal-500 bg-teal-50 text-teal-800 dark:border-teal-500/40 dark:bg-teal-950/40 dark:text-teal-300 shadow-xs"
+                : "border-surface-border bg-surface text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white"
+            }`}
+            title="Toggle AI vector semantic search powered by Qdrant"
+          >
+            <Sparkles className={`h-3.5 w-3.5 ${isSearchingSemantic ? "animate-spin text-teal-500" : ""}`} />
+            <span>AI Semantic Search</span>
+            {isSemanticSearch && semanticSource && (
+              <span className="rounded-full bg-teal-100 dark:bg-teal-900/60 text-teal-800 dark:text-teal-200 px-1.5 py-0.2 text-[9px] uppercase font-mono">
+                {semanticSource}
+              </span>
+            )}
+          </button>
+
           <div className="relative flex-1 sm:w-64">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400 dark:text-zinc-500" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search subject or sender..."
+              placeholder={isSemanticSearch ? "AI vector search (meanings, concepts)..." : "Search subject or sender..."}
               className="w-full h-9 rounded-lg border border-surface-border bg-surface pl-9 pr-3 text-sm text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-500 focus:border-zinc-500 focus:outline-none focus:ring-1 focus:ring-zinc-500 transition-shadow"
             />
           </div>
@@ -517,7 +517,65 @@ function EmailsPageContent() {
             </tr>
           </thead>
           <tbody className="divide-y divide-surface-border">
-            {filteredEmails.length > 0 ? (
+            {isSemanticSearch && searchQuery.trim() ? (
+              semanticResults.length > 0 ? (
+                semanticResults.map((item) => (
+                  <tr
+                    key={item.id}
+                    onClick={() => void loadEmailDetail(item.id)}
+                    className="group cursor-pointer hover:bg-surface-raised/50 transition-colors"
+                  >
+                    <td className="px-5 py-3 font-medium text-zinc-900 dark:text-white max-w-xs">
+                      <div className="flex items-center gap-2">
+                        <span className="truncate">{item.subject || "(no subject)"}</span>
+                        {item.score !== undefined && item.score > 0 && (
+                          <span className="inline-flex items-center rounded-full bg-teal-50 px-2 py-0.5 text-[10px] font-medium text-teal-700 dark:bg-teal-950/40 dark:text-teal-300">
+                            {(item.score * 100).toFixed(0)}% match
+                          </span>
+                        )}
+                      </div>
+                      {item.snippet && (
+                        <p className="text-[11px] text-zinc-500 dark:text-zinc-400 line-clamp-1 mt-0.5 font-normal">
+                          {item.snippet}
+                        </p>
+                      )}
+                    </td>
+                    <td className="px-5 py-3 font-mono text-[11px] text-zinc-600 dark:text-zinc-400 max-w-xs truncate">
+                      {item.from}
+                    </td>
+                    <td className="px-5 py-3">
+                      <StatusBadge status={item.status} size="sm" />
+                    </td>
+                    <td className="px-5 py-3 text-zinc-500 dark:text-zinc-400 font-mono text-[11px]">
+                      {new Date(item.created_at).toLocaleString()}
+                    </td>
+                    <td className="px-5 py-3 text-right">
+                      <button className="text-zinc-400 group-hover:text-zinc-900 dark:text-zinc-500 dark:group-hover:text-white transition-colors">
+                        <ChevronRight className="h-4 w-4" />
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan={5} className="py-24 text-center">
+                    <div className="flex flex-col items-center justify-center space-y-3">
+                      <div className="flex h-12 w-12 items-center justify-center rounded-full bg-surface-raised text-zinc-400">
+                        {isSearchingSemantic ? <RefreshCw className="h-5 w-5 animate-spin" /> : <Sparkles className="h-5 w-5 text-teal-500" />}
+                      </div>
+                      <div className="text-sm font-medium text-zinc-900 dark:text-white">
+                        {isSearchingSemantic ? "Searching vector index..." : "No semantic matches found"}
+                      </div>
+                      {!isSearchingSemantic && (
+                        <div className="text-xs text-zinc-500 dark:text-zinc-400 max-w-sm mx-auto">
+                          Try searching for related concepts, topics, or email content.
+                        </div>
+                      )}
+                    </div>
+                  </td>
+                </tr>
+              )
+            ) : filteredEmails.length > 0 ? (
               filteredEmails.map((item) => (
                 <tr
                   key={item.id}
@@ -531,7 +589,7 @@ function EmailsPageContent() {
                     {item.from}
                   </td>
                   <td className="px-5 py-3">
-                    {renderStatusPill(item.status)}
+                    <StatusBadge status={item.status} size="sm" />
                   </td>
                   <td className="px-5 py-3 text-zinc-500 dark:text-zinc-400 font-mono text-[11px]">
                     {new Date(item.created_at).toLocaleString()}
@@ -566,14 +624,14 @@ function EmailsPageContent() {
         </table>
       </div>
       )}
-      {(emailPageHistory.length > 0 || nextEmailBefore) && (
+      {!isSemanticSearch && (pagination.canGoNewer || pagination.canGoOlder) && (
         <CursorPagination
-          page={emailPageHistory.length + 1}
-          canGoNewer={emailPageHistory.length > 0}
-          canGoOlder={Boolean(nextEmailBefore)}
+          page={pagination.page}
+          canGoNewer={pagination.canGoNewer}
+          canGoOlder={pagination.canGoOlder}
           isLoading={isLoading}
-          onNewer={() => void loadNewerEmails()}
-          onOlder={() => void loadOlderEmails()}
+          onNewer={() => void pagination.loadNewer()}
+          onOlder={() => void pagination.loadOlder()}
         />
       )}
       {loadError && emails.length > 0 && <ErrorState message={loadError} onRetry={() => void fetchEmails()} />}
@@ -658,7 +716,7 @@ function EmailsPageContent() {
                         )}
                       </div>
                       <div>
-                        {renderStatusPill(del.status)}
+                        <StatusBadge status={del.status} size="sm" />
                       </div>
                     </div>
                   ))

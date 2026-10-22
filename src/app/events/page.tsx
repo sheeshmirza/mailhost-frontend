@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { api, CustomEvent, getErrorMessage } from "@/lib/api";
 import { useToast } from "@/lib/toast-context";
 import { useCopy } from "@/lib/useCopy";
@@ -62,7 +62,7 @@ export default function EventsPage() {
     return () => {
       eventsLoadRevision.current += 1;
     };
-  }, []);
+  }, [fetchEvents]);
 
   const handleTrigger = async (e: React.FormEvent) => {
     e.preventDefault();

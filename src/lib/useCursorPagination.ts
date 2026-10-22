@@ -9,6 +9,8 @@ export interface UseCursorPaginationResult {
   page: number;
   canGoNewer: boolean;
   canGoOlder: boolean;
+  hasPagination: boolean;
+  isLoading: boolean;
   setNextCursor: React.Dispatch<React.SetStateAction<string | undefined>>;
   loadOlder: () => Promise<void>;
   loadNewer: () => Promise<void>;
@@ -70,6 +72,8 @@ export function useCursorPagination(
     page: history.length + 1,
     canGoNewer: history.length > 0,
     canGoOlder: Boolean(nextCursor),
+    hasPagination: history.length > 0 || Boolean(nextCursor),
+    isLoading,
     setNextCursor,
     loadOlder,
     loadNewer,
@@ -77,3 +81,4 @@ export function useCursorPagination(
     reset,
   };
 }
+

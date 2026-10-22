@@ -15,11 +15,13 @@ import {
   Monitor,
   X,
   CheckCircle2,
+  Search,
 } from "lucide-react";
-import { api, TemplateView, TemplateVersion, getErrorMessage } from "@/lib/api";
+import { api, TemplateView, TemplateVersion, TemplateSemanticSearchResult, getErrorMessage } from "@/lib/api";
 import { useToast } from "@/lib/toast-context";
 import { ErrorState } from "@/components/ui/ErrorState";
 import { TableSkeleton } from "@/components/ui/LoadingState";
+import { StatusBadge } from "@/components/ui/StatusBadge";
 
 export default function TemplatesPage() {
   const { toast } = useToast();
@@ -49,6 +51,45 @@ export default function TemplatesPage() {
   const [playgroundTo, setPlaygroundTo] = useState("");
   const [isSendingTest, setIsSendingTest] = useState(false);
   const [playgroundResult, setPlaygroundResult] = useState<any>(null);
+
+  // Search & AI Vector Semantic Search
+  const [searchQuery, setSearchQuery] = useState("");
+  const [isSemanticSearch, setIsSemanticSearch] = useState(false);
+  const [semanticResults, setSemanticResults] = useState<TemplateSemanticSearchResult[]>([]);
+  const [semanticSource, setSemanticSource] = useState<string>("");
+  const [isSearchingSemantic, setIsSearchingSemantic] = useState(false);
+
+  const executeSemanticSearch = useCallback(async (query: string) => {
+    const q = query.trim();
+    if (!q) {
+      setSemanticResults([]);
+      setSemanticSource("");
+      return;
+    }
+    setIsSearchingSemantic(true);
+    try {
+      const res = await api.semanticSearchTemplates(q, 20);
+      setSemanticResults(res.data || []);
+      setSemanticSource(res.source || "vector");
+    } catch (err) {
+      console.error("Semantic search templates failed", err);
+      toast.error(err instanceof Error ? err.message : "Semantic search failed");
+    } finally {
+      setIsSearchingSemantic(false);
+    }
+  }, [toast]);
+
+  useEffect(() => {
+    if (isSemanticSearch && searchQuery.trim()) {
+      const timer = setTimeout(() => {
+        void executeSemanticSearch(searchQuery);
+      }, 300);
+      return () => clearTimeout(timer);
+    } else if (isSemanticSearch && !searchQuery.trim()) {
+      setSemanticResults([]);
+      setSemanticSource("");
+    }
+  }, [isSemanticSearch, searchQuery, executeSemanticSearch]);
 
   const handleRunPreview = async (templateId: string, customVars?: Record<string, any>) => {
     try {
@@ -265,7 +306,49 @@ export default function TemplatesPage() {
         <div className="space-y-3">
           <div className="flex items-center justify-between text-xs text-zinc-500 dark:text-zinc-400 font-medium">
             <span>Templates</span>
-            <span className="font-mono">{templates.length}</span>
+            <span className="font-mono">
+              {isSemanticSearch && searchQuery.trim()
+                ? `${semanticResults.length} matches`
+                : `${templates.filter((t) => !searchQuery.trim() || t.name.toLowerCase().includes(searchQuery.toLowerCase().trim()) || (t.alias || "").toLowerCase().includes(searchQuery.toLowerCase().trim()) || t.subject.toLowerCase().includes(searchQuery.toLowerCase().trim())).length} of ${templates.length}`}
+            </span>
+          </div>
+
+          {/* Search & Semantic Search Bar */}
+          <div className="space-y-2">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-zinc-400 dark:text-zinc-500" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder={isSemanticSearch ? "AI vector search (meanings, tags)..." : "Search template name or subject..."}
+                className="w-full h-8.5 rounded-lg border border-surface-border bg-surface pl-8 pr-3 text-xs text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-500 focus:border-zinc-500 focus:outline-none focus:ring-1 focus:ring-zinc-500 transition-shadow"
+              />
+            </div>
+            <button
+              type="button"
+              onClick={() => {
+                const nextMode = !isSemanticSearch;
+                setIsSemanticSearch(nextMode);
+                if (nextMode && searchQuery.trim()) {
+                  void executeSemanticSearch(searchQuery);
+                }
+              }}
+              className={`w-full flex items-center justify-center gap-1.5 h-8 px-2.5 rounded-lg border text-[11px] font-medium transition-all ${
+                isSemanticSearch
+                  ? "border-teal-500 bg-teal-50 text-teal-800 dark:border-teal-500/40 dark:bg-teal-950/40 dark:text-teal-300 shadow-xs"
+                  : "border-surface-border bg-surface text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white"
+              }`}
+              title="Toggle AI vector semantic search powered by Qdrant"
+            >
+              <Sparkles className={`h-3 w-3 ${isSearchingSemantic ? "animate-spin text-teal-500" : ""}`} />
+              <span>AI Semantic Search (Qdrant)</span>
+              {isSemanticSearch && semanticSource && (
+                <span className="rounded-full bg-teal-100 dark:bg-teal-900/60 text-teal-800 dark:text-teal-200 px-1.5 py-0.2 text-[9px] uppercase font-mono">
+                  {semanticSource}
+                </span>
+              )}
+            </button>
           </div>
 
           {isLoading && templates.length === 0 ? (
@@ -274,8 +357,67 @@ export default function TemplatesPage() {
             <ErrorState message={loadError} onRetry={fetchTemplates} />
           ) : (
           <div className="space-y-2">
-            {templates.length > 0 ? (
-              templates.map((tpl) => (
+            {isSemanticSearch && searchQuery.trim() ? (
+              semanticResults.length > 0 ? (
+                semanticResults.map((tpl) => (
+                  <div
+                    key={tpl.id}
+                    onClick={async () => {
+                      const found = templates.find((t) => t.id === tpl.id);
+                      if (found) {
+                        setSelectedTemplate(found);
+                      } else {
+                        try {
+                          const full = await api.getTemplate(tpl.id);
+                          setSelectedTemplate(full);
+                        } catch {
+                          // ignore
+                        }
+                      }
+                    }}
+                    className={`cursor-pointer rounded-xl border p-4 transition-all ${
+                      selectedTemplate?.id === tpl.id
+                        ? "border-zinc-900/30 dark:border-white/30 bg-surface-raised shadow-md"
+                        : "border-surface-border bg-surface hover:border-zinc-300 dark:hover:border-zinc-700"
+                    }`}
+                  >
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-xs font-semibold text-zinc-900 dark:text-white truncate">
+                        {tpl.name}
+                      </span>
+                      {tpl.score !== undefined && tpl.score > 0 && (
+                        <span className="inline-flex items-center rounded-full bg-teal-50 px-2 py-0.5 text-[10px] font-medium text-teal-700 dark:bg-teal-950/40 dark:text-teal-300 shrink-0">
+                          {(tpl.score * 100).toFixed(0)}% match
+                        </span>
+                      )}
+                    </div>
+                    <div className="mt-1 text-xs text-zinc-600 dark:text-zinc-300 line-clamp-1 font-medium">
+                      {tpl.subject}
+                    </div>
+                    {tpl.snippet && (
+                      <p className="mt-1 text-[11px] text-zinc-500 dark:text-zinc-400 line-clamp-2">
+                        {tpl.snippet}
+                      </p>
+                    )}
+                    <div className="mt-2 text-[11px] text-zinc-400 dark:text-zinc-500 font-mono">
+                      Created {new Date(tpl.created_at).toLocaleDateString()}
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="rounded-xl border border-surface-border bg-surface p-6 text-center">
+                  <div className="flex flex-col items-center justify-center space-y-2">
+                    {isSearchingSemantic ? <RefreshCw className="h-5 w-5 animate-spin text-zinc-400" /> : <Sparkles className="h-5 w-5 text-teal-500" />}
+                    <div className="text-xs font-medium text-zinc-900 dark:text-white">
+                      {isSearchingSemantic ? "Searching vector index..." : "No semantic matches found"}
+                    </div>
+                  </div>
+                </div>
+              )
+            ) : templates.filter((t) => !searchQuery.trim() || t.name.toLowerCase().includes(searchQuery.toLowerCase().trim()) || (t.alias || "").toLowerCase().includes(searchQuery.toLowerCase().trim()) || t.subject.toLowerCase().includes(searchQuery.toLowerCase().trim())).length > 0 ? (
+              templates
+                .filter((t) => !searchQuery.trim() || t.name.toLowerCase().includes(searchQuery.toLowerCase().trim()) || (t.alias || "").toLowerCase().includes(searchQuery.toLowerCase().trim()) || t.subject.toLowerCase().includes(searchQuery.toLowerCase().trim()))
+                .map((tpl) => (
                 <div
                   key={tpl.id}
                   onClick={() => setSelectedTemplate(tpl)}
@@ -289,15 +431,7 @@ export default function TemplatesPage() {
                     <span className="text-xs font-semibold text-zinc-900 dark:text-white truncate">
                       {tpl.name}
                     </span>
-                    <span
-                      className={`rounded-full px-2 py-0.5 text-[10px] font-medium border ${
-                        tpl.status === "published"
-                          ? "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/60 dark:text-emerald-400 dark:border-emerald-800/40"
-                          : "bg-zinc-100 text-zinc-600 border-zinc-200 dark:bg-zinc-800 dark:text-zinc-400 dark:border-zinc-700"
-                      }`}
-                    >
-                      {tpl.status}
-                    </span>
+                    <StatusBadge status={tpl.status} size="sm" />
                   </div>
                   {tpl.alias && (
                     <div className="mt-1 font-mono text-[11px] text-zinc-500 dark:text-zinc-400">
@@ -311,7 +445,7 @@ export default function TemplatesPage() {
               ))
             ) : (
               <div className="rounded-xl border border-surface-border bg-surface p-6 text-center text-xs text-zinc-500 dark:text-zinc-400">
-                No templates created yet.
+                {searchQuery ? "No templates match your search." : "No templates created yet."}
               </div>
             )}
           </div>
@@ -329,9 +463,7 @@ export default function TemplatesPage() {
                     <h2 className="text-base font-semibold text-zinc-900 dark:text-white truncate">
                       {selectedTemplate.name}
                     </h2>
-                    <span className="rounded-full px-2 py-0.5 text-[10px] font-medium border border-surface-border bg-surface-raised text-zinc-600 dark:text-zinc-300 shrink-0">
-                      {selectedTemplate.status}
-                    </span>
+                    <StatusBadge status={selectedTemplate.status} size="sm" />
                   </div>
                   <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1 truncate">
                     Subject: {selectedTemplate.subject}

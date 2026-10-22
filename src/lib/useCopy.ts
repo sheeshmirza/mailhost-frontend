@@ -56,3 +56,4 @@ export function useCopy(options: UseCopyOptions = {}) {
 
   return { copy, copiedKey, isCopied };
 }
+
