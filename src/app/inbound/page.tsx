@@ -25,6 +25,7 @@ import { useToast } from "@/lib/toast-context";
 import { TableSkeleton } from "@/components/ui/LoadingState";
 import { ErrorState } from "@/components/ui/ErrorState";
 import { CursorPagination } from "@/components/ui/CursorPagination";
+import { useCursorPagination } from "@/lib/useCursorPagination";
 import { WidgetErrorBoundary } from "@/components/ui/WidgetErrorBoundary";
 import DOMPurify from "dompurify";
 
@@ -38,12 +39,10 @@ export default function InboundPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isDownloadingRaw, setIsDownloadingRaw] = useState(false);
-  const [inboundBefore, setInboundBefore] = useState<string | undefined>();
-  const [nextInboundBefore, setNextInboundBefore] = useState<string | undefined>();
-  const [inboundPageHistory, setInboundPageHistory] = useState<(string | undefined)[]>([]);
   const [isPageLoading, setIsPageLoading] = useState(false);
   const dataLoadRevision = useRef(0);
   const detailLoadRevision = useRef(0);
+  const onFetchSuccessRef = useRef<((currentBefore?: string, nextBefore?: string, reset?: boolean) => void) | null>(null);
 
   // New alias modal
   const [isAliasOpen, setIsAliasOpen] = useState(false);
@@ -67,9 +66,7 @@ export default function InboundPage() {
       let hasSuccess = false;
       if (inboundRes.status === "fulfilled") {
         setInboundEmails(inboundRes.value.data || []);
-        setInboundBefore(before);
-        setNextInboundBefore(inboundRes.value.next_before);
-        if (resetPage) setInboundPageHistory([]);
+        onFetchSuccessRef.current?.(before, inboundRes.value.next_before, resetPage);
         hasSuccess = true;
       }
       if (aliasesRes.status === "fulfilled") {
@@ -97,31 +94,8 @@ export default function InboundPage() {
     }
   }, []);
 
-  const loadOlderInbound = async () => {
-    if (!nextInboundBefore || isPageLoading) return;
-    const currentBefore = inboundBefore;
-    setIsPageLoading(true);
-    try {
-      if (await fetchData(nextInboundBefore, false)) {
-        setInboundPageHistory((history) => [...history, currentBefore]);
-      }
-    } finally {
-      setIsPageLoading(false);
-    }
-  };
-
-  const loadNewerInbound = async () => {
-    if (inboundPageHistory.length === 0 || isPageLoading) return;
-    const previousBefore = inboundPageHistory[inboundPageHistory.length - 1];
-    setIsPageLoading(true);
-    try {
-      if (await fetchData(previousBefore, false)) {
-        setInboundPageHistory((history) => history.slice(0, -1));
-      }
-    } finally {
-      setIsPageLoading(false);
-    }
-  };
+  const pagination = useCursorPagination(fetchData, isPageLoading);
+  onFetchSuccessRef.current = pagination.onFetchSuccess;
 
   useEffect(() => {
     void fetchData();
@@ -431,14 +405,14 @@ export default function InboundPage() {
           </div>
         )}
       </WidgetErrorBoundary>
-      {activeTab === "emails" && (inboundPageHistory.length > 0 || nextInboundBefore) && (
+      {activeTab === "emails" && (pagination.canGoNewer || pagination.canGoOlder) && (
         <CursorPagination
-          page={inboundPageHistory.length + 1}
-          canGoNewer={inboundPageHistory.length > 0}
-          canGoOlder={Boolean(nextInboundBefore)}
+          page={pagination.page}
+          canGoNewer={pagination.canGoNewer}
+          canGoOlder={pagination.canGoOlder}
           isLoading={isPageLoading || isLoading}
-          onNewer={() => void loadNewerInbound()}
-          onOlder={() => void loadOlderInbound()}
+          onNewer={() => void pagination.loadNewer()}
+          onOlder={() => void pagination.loadOlder()}
         />
       )}
 

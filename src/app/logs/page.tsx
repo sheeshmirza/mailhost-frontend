@@ -16,6 +16,7 @@ import {
 import { ErrorState } from "@/components/ui/ErrorState";
 import { TableSkeleton } from "@/components/ui/LoadingState";
 import { CursorPagination } from "@/components/ui/CursorPagination";
+import { useCursorPagination } from "@/lib/useCursorPagination";
 import { WidgetErrorBoundary } from "@/components/ui/WidgetErrorBoundary";
 import { useToast } from "@/lib/toast-context";
 import { useAuth } from "@/lib/auth-context";
@@ -35,11 +36,9 @@ export default function LogsHealthPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [auditLogsError, setAuditLogsError] = useState<string | null>(null);
-  const [auditBefore, setAuditBefore] = useState<string | undefined>();
-  const [nextAuditBefore, setNextAuditBefore] = useState<string | undefined>();
-  const [auditPageHistory, setAuditPageHistory] = useState<(string | undefined)[]>([]);
   const [isAuditPageLoading, setIsAuditPageLoading] = useState(false);
   const auditLogsRevision = useRef(0);
+  const onFetchSuccessRef = useRef<((currentBefore?: string, nextBefore?: string, reset?: boolean) => void) | null>(null);
   const [editingIP, setEditingIP] = useState<DedicatedIPView | null>(null);
   const [ipStatus, setIPStatus] = useState<"warming" | "active" | "paused">("warming");
   const [ipWarmupDay, setIPWarmupDay] = useState(1);
@@ -81,9 +80,7 @@ export default function LogsHealthPage() {
       const res = await api.listAuditLogs(50, before);
       if (rev !== auditLogsRevision.current) return false;
       setAuditLogs(res.data || []);
-      setAuditBefore(before);
-      setNextAuditBefore(res.next_before);
-      if (resetPage) setAuditPageHistory([]);
+      onFetchSuccessRef.current?.(before, res.next_before, resetPage);
       return true;
     } catch (err) {
       if (rev !== auditLogsRevision.current) return false;
@@ -95,21 +92,8 @@ export default function LogsHealthPage() {
     }
   }, []);
 
-  const loadOlderLogs = async () => {
-    if (!nextAuditBefore || isAuditPageLoading) return;
-    const currentBefore = auditBefore;
-    if (await fetchAuditLogs(nextAuditBefore, false)) {
-      setAuditPageHistory((history) => [...history, currentBefore]);
-    }
-  };
-
-  const loadNewerLogs = async () => {
-    if (auditPageHistory.length === 0 || isAuditPageLoading) return;
-    const previousBefore = auditPageHistory[auditPageHistory.length - 1];
-    if (await fetchAuditLogs(previousBefore, false)) {
-      setAuditPageHistory((history) => history.slice(0, -1));
-    }
-  };
+  const pagination = useCursorPagination(fetchAuditLogs, isAuditPageLoading);
+  onFetchSuccessRef.current = pagination.onFetchSuccess;
 
   const fetchHealthAndLogs = useCallback(async () => {
     setIsLoading(true);
@@ -309,14 +293,14 @@ export default function LogsHealthPage() {
           </table>
         </div>
         )}
-        {(auditPageHistory.length > 0 || nextAuditBefore) && (
+        {(pagination.canGoNewer || pagination.canGoOlder) && (
           <CursorPagination
-            page={auditPageHistory.length + 1}
-            canGoNewer={auditPageHistory.length > 0}
-            canGoOlder={Boolean(nextAuditBefore)}
+            page={pagination.page}
+            canGoNewer={pagination.canGoNewer}
+            canGoOlder={pagination.canGoOlder}
             isLoading={isAuditPageLoading || isLoading}
-            onNewer={() => void loadNewerLogs()}
-            onOlder={() => void loadOlderLogs()}
+            onNewer={() => void pagination.loadNewer()}
+            onOlder={() => void pagination.loadOlder()}
           />
         )}
         {auditLogsError && auditLogs.length > 0 && (

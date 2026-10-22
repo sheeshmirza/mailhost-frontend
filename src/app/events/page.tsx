@@ -302,14 +302,12 @@ export default function EventsPage() {
                   <button
                     type="button"
                     onClick={() => {
-                      void navigator.clipboard.writeText(selectedEvent.id);
-                      setCopiedId(true);
-                      setTimeout(() => setCopiedId(false), 2000);
+                      void copy(selectedEvent.id, "event-id");
                     }}
                     className="flex items-center gap-1 text-[11px] text-teal-600 hover:underline dark:text-teal-400"
                   >
                     <Copy className="h-3 w-3" />
-                    <span>{copiedId ? "Copied!" : "Copy ID"}</span>
+                    <span>{isCopied("event-id") ? "Copied!" : "Copy ID"}</span>
                   </button>
                 </div>
                 <span className="font-mono text-xs text-zinc-900 dark:text-zinc-200 mt-1 block select-all">{selectedEvent.id}</span>
@@ -326,14 +324,12 @@ export default function EventsPage() {
                   <button
                     type="button"
                     onClick={() => {
-                      void navigator.clipboard.writeText(JSON.stringify(selectedEvent.data, null, 2));
-                      setCopiedData(true);
-                      setTimeout(() => setCopiedData(false), 2000);
+                      void copy(JSON.stringify(selectedEvent.data, null, 2), "event-json");
                     }}
                     className="flex items-center gap-1 text-[11px] text-teal-600 hover:underline dark:text-teal-400"
                   >
                     <Copy className="h-3 w-3" />
-                    <span>{copiedData ? "Copied!" : "Copy JSON"}</span>
+                    <span>{isCopied("event-json") ? "Copied!" : "Copy JSON"}</span>
                   </button>
                 </div>
                 <pre className="rounded-lg border border-surface-border bg-surface-raised p-3 font-mono text-xs text-zinc-800 dark:text-zinc-200 max-h-60 overflow-y-auto whitespace-pre-wrap">
