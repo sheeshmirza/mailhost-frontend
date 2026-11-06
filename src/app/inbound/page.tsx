@@ -39,7 +39,6 @@ export default function InboundPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isDownloadingRaw, setIsDownloadingRaw] = useState(false);
-  const [isPageLoading, setIsPageLoading] = useState(false);
   const dataLoadRevision = useRef(0);
   const detailLoadRevision = useRef(0);
   const onFetchSuccessRef = useRef<((currentBefore?: string, nextBefore?: string, reset?: boolean) => void) | null>(null);
@@ -94,7 +93,7 @@ export default function InboundPage() {
     }
   }, []);
 
-  const pagination = useCursorPagination(fetchData, isPageLoading);
+  const pagination = useCursorPagination(fetchData, isLoading);
   onFetchSuccessRef.current = pagination.onFetchSuccess;
 
   useEffect(() => {
@@ -410,7 +409,7 @@ export default function InboundPage() {
           page={pagination.page}
           canGoNewer={pagination.canGoNewer}
           canGoOlder={pagination.canGoOlder}
-          isLoading={isPageLoading || isLoading}
+          isLoading={isLoading}
           onNewer={() => void pagination.loadNewer()}
           onOlder={() => void pagination.loadOlder()}
         />

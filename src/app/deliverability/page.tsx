@@ -14,14 +14,9 @@ import {
   Sparkles,
   RefreshCw,
   Mail,
-  Globe,
-  FileText,
-  Inbox,
   ArrowRight,
-  Info,
   Server,
   Layers,
-  Check,
 } from "lucide-react";
 import { ErrorState } from "@/components/ui/ErrorState";
 

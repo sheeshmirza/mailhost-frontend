@@ -220,8 +220,8 @@ export default function SettingsPage() {
       await api.revokeSession(id);
       toast.success("Session revoked");
       await fetchTeamAndSessions();
-    } catch (err) {
-      toast.error("Failed to revoke session: " + (err instanceof Error ? err.message : "Unknown error"));
+    } catch (err: unknown) {
+      toast.error("Failed to revoke session: " + getErrorMessage(err));
     } finally {
       setRevokingSessionId(null);
     }
@@ -234,8 +234,8 @@ export default function SettingsPage() {
       const result = await api.revokeAllOtherSessions();
       toast.success("Other sessions revoked", `${result.revoked} session${result.revoked === 1 ? "" : "s"} signed out.`);
       await fetchTeamAndSessions();
-    } catch (err) {
-      toast.error("Failed to revoke other sessions: " + (err instanceof Error ? err.message : "Unknown error"));
+    } catch (err: unknown) {
+      toast.error("Failed to revoke other sessions: " + getErrorMessage(err));
     } finally {
       setIsRevokingOthers(false);
     }

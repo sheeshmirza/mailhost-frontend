@@ -22,8 +22,6 @@ import {
   CheckCircle2,
   AlertCircle,
   Sparkles,
-  ExternalLink,
-  ShieldCheck,
   X,
 } from "lucide-react";
 import { useToast } from "@/lib/toast-context";

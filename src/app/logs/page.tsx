@@ -5,6 +5,7 @@ import {
   api,
   AuditLogView,
   DedicatedIPView,
+  getErrorMessage,
 } from "@/lib/api";
 import {
   Activity,
@@ -65,8 +66,8 @@ export default function LogsHealthPage() {
       toast.success("Dedicated IP settings updated");
       setEditingIP(null);
       await fetchHealthAndLogs();
-    } catch (err) {
-      toast.error("Could not update dedicated IP: " + (err instanceof Error ? err.message : "Unknown error"));
+    } catch (err: unknown) {
+      toast.error("Could not update dedicated IP: " + getErrorMessage(err));
     } finally {
       setIsSavingIP(false);
     }
@@ -82,9 +83,9 @@ export default function LogsHealthPage() {
       setAuditLogs(res.data || []);
       onFetchSuccessRef.current?.(before, res.next_before, resetPage);
       return true;
-    } catch (err) {
+    } catch (err: unknown) {
       if (rev !== auditLogsRevision.current) return false;
-      const message = err instanceof Error ? err.message : "Could not load audit logs.";
+      const message = getErrorMessage(err);
       setAuditLogsError(message);
       return false;
     } finally {
@@ -123,9 +124,9 @@ export default function LogsHealthPage() {
       if (failedResources.length) {
         setLoadError(`Could not load ${failedResources.join(" and ")}.`);
       }
-    } catch (err) {
+    } catch (err: unknown) {
       console.error("Failed to load health and logs", err);
-      const message = err instanceof Error ? err.message : "Could not load logs and system health.";
+      const message = getErrorMessage(err);
       setLoadError(message);
     } finally {
       setIsLoading(false);

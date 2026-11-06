@@ -27,7 +27,7 @@ export default function DomainsPage() {
   const [selectedDomain, setSelectedDomain] = useState<DomainView | null>(null);
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [domainName, setDomainName] = useState("");
-  const [region, setRegion] = useState("");
+  const [region, setRegion] = useState("us-east-1");
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [isVerifying, setIsVerifying] = useState(false);
@@ -69,7 +69,7 @@ export default function DomainsPage() {
       toast.success("Domain added successfully!");
       setIsAddOpen(false);
       setDomainName("");
-      setRegion("");
+      setRegion("us-east-1");
       await fetchDomains();
       setSelectedDomain(newDom);
     } catch (err: any) {
@@ -462,7 +462,7 @@ export default function DomainsPage() {
                       placeholder="HTTPS endpoint URL"
                       className="input-base"
                     />
-                    <button onClick={saveInboundWebhook} disabled={isSavingInboundWebhook} className="btn-primary shrink-0">
+                    <button type="button" onClick={saveInboundWebhook} disabled={isSavingInboundWebhook} className="btn-primary shrink-0">
                       {isSavingInboundWebhook ? "Saving..." : "Save URL"}
                     </button>
                   </div>

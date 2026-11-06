@@ -15,9 +15,6 @@ import {
 import {
   Send,
   Search,
-  CheckCircle2,
-  Clock,
-  AlertCircle,
   X,
   Layers,
   ChevronRight,

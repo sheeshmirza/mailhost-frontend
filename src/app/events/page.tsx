@@ -30,7 +30,6 @@ export default function EventsPage() {
   const [email, setEmail] = useState("");
   const [jsonData, setJsonData] = useState("{}");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isPageLoading, setIsPageLoading] = useState(false);
   const eventsLoadRevision = useRef(0);
   const onFetchSuccessRef = useRef<((currentBefore?: string, nextBefore?: string, reset?: boolean) => void) | null>(null);
 
@@ -54,7 +53,7 @@ export default function EventsPage() {
     }
   }, []);
 
-  const pagination = useCursorPagination(fetchEvents, isPageLoading);
+  const pagination = useCursorPagination(fetchEvents, isLoading);
   onFetchSuccessRef.current = pagination.onFetchSuccess;
 
   useEffect(() => {
@@ -185,7 +184,7 @@ export default function EventsPage() {
           page={pagination.page}
           canGoNewer={pagination.canGoNewer}
           canGoOlder={pagination.canGoOlder}
-          isLoading={isPageLoading || isLoading}
+          isLoading={isLoading}
           onNewer={() => void pagination.loadNewer()}
           onOlder={() => void pagination.loadOlder()}
         />

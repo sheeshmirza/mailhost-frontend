@@ -18,7 +18,6 @@ import {
   Activity,
   CheckCircle2,
   AlertTriangle,
-  XCircle,
   RotateCw,
   X,
 } from "lucide-react";
@@ -87,8 +86,8 @@ export default function WebhooksPage() {
       } else {
         toast.error(`Webhook test failed: ${res.error || `HTTP ${res.status_code}`}`);
       }
-    } catch (err: any) {
-      toast.error("Test failed: " + err.message);
+    } catch (err: unknown) {
+      toast.error("Test failed: " + getErrorMessage(err));
     } finally {
       setIsTesting(false);
     }
@@ -101,8 +100,8 @@ export default function WebhooksPage() {
     try {
       const res = await api.listWebhookDeliveries(wh.id);
       setDeliveries(res.data || []);
-    } catch (err: any) {
-      toast.error("Failed to load deliveries: " + err.message);
+    } catch (err: unknown) {
+      toast.error("Failed to load deliveries: " + getErrorMessage(err));
     } finally {
       setIsDeliveriesLoading(false);
     }
@@ -116,8 +115,8 @@ export default function WebhooksPage() {
       toast.success("Delivery re-queued for dispatch!");
       const res = await api.listWebhookDeliveries(deliveriesWebhook.id);
       setDeliveries(res.data || []);
-    } catch (err: any) {
-      toast.error("Retry failed: " + err.message);
+    } catch (err: unknown) {
+      toast.error("Retry failed: " + getErrorMessage(err));
     } finally {
       setRetryingDeliveryId(null);
     }
@@ -129,9 +128,9 @@ export default function WebhooksPage() {
     try {
       const res = await api.listWebhooks();
       setWebhooks(res.data || []);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Failed to load webhooks", err);
-      setLoadError(err instanceof Error ? err.message : "Could not load webhooks.");
+      setLoadError(getErrorMessage(err));
     } finally {
       setIsLoading(false);
     }
@@ -164,8 +163,8 @@ export default function WebhooksPage() {
       setUrl("");
       setWebhookStatus("active");
       await fetchWebhooks();
-    } catch (err: any) {
-      toast.error(`${editingWebhookId ? "Failed to update webhook" : "Failed to create webhook"}: ${err.message}`);
+    } catch (err: unknown) {
+      toast.error(`${editingWebhookId ? "Failed to update webhook" : "Failed to create webhook"}: ${getErrorMessage(err)}`);
     } finally {
       setIsSaving(false);
     }
@@ -590,7 +589,6 @@ export default function WebhooksPage() {
               ) : (
                 deliveries.map((del) => {
                   const isDelivered = del.status === "delivered";
-                  const isFailed = del.status === "failed";
                   return (
                     <div
                       key={del.id}

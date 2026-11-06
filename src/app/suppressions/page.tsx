@@ -6,14 +6,12 @@ import { useToast } from "@/lib/toast-context";
 import { ErrorState } from "@/components/ui/ErrorState";
 import { TableSkeleton } from "@/components/ui/LoadingState";
 import {
-  ShieldAlert,
   Trash2,
   RefreshCw,
   Plus,
   Search,
   X,
   UserX,
-  CheckCircle2,
 } from "lucide-react";
 
 export default function SuppressionsPage() {
@@ -81,8 +79,8 @@ export default function SuppressionsPage() {
       setIsAddOpen(false);
       setAddAddresses("");
       fetchSuppressions();
-    } catch (err: any) {
-      toast.error("Failed to add suppressions: " + err.message);
+    } catch (err: unknown) {
+      toast.error("Failed to add suppressions: " + getErrorMessage(err));
     } finally {
       setIsAdding(false);
     }

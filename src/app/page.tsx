@@ -21,8 +21,8 @@ import {
   Workflow,
   AtSign,
 } from "lucide-react";
-import { useToast } from "@/lib/toast-context";
 import { useCopy } from "@/lib/useCopy";
+import { getConfiguredAPIBaseUrl } from "@/lib/api";
 
 type CodeLang = "nodejs" | "python" | "go" | "ruby" | "php" | "rust" | "curl";
 
@@ -144,7 +144,7 @@ async fn main() {
 };
 
 export default function HomePage() {
-  const { toast } = useToast();
+  const openApiUrl = `${getConfiguredAPIBaseUrl() || "https://api.buy4cashback.com"}/openapi.json`;
   const [selectedLang, setSelectedLang] = useState<CodeLang>("nodejs");
   const { copy, isCopied } = useCopy({
     successMessage: "Code snippet copied to clipboard",
@@ -190,7 +190,7 @@ export default function HomePage() {
             <ArrowRight className="h-4 w-4" />
           </Link>
           <a
-            href="/backend/openapi.json"
+            href={openApiUrl}
             target="_blank"
             rel="noreferrer"
             className="w-full sm:w-auto flex items-center justify-center gap-2 rounded-md border border-surface-border bg-surface px-5 py-2.5 text-sm font-medium text-zinc-700 hover:bg-surface-raised hover:text-zinc-900 dark:text-zinc-300 dark:hover:text-white transition-colors"
@@ -674,7 +674,7 @@ export default function HomePage() {
             <div className="flex items-center gap-4">
               <Link href="/overview" className="hover:text-zinc-900 dark:hover:text-white">Dashboard</Link>
               <Link href="/login" className="hover:text-zinc-900 dark:hover:text-white">Login</Link>
-              <a href="/backend/openapi.json" target="_blank" rel="noreferrer" className="hover:text-zinc-900 dark:hover:text-white">API Documentation</a>
+              <a href={openApiUrl} target="_blank" rel="noreferrer" className="hover:text-zinc-900 dark:hover:text-white">API Documentation</a>
             </div>
           </div>
         </div>

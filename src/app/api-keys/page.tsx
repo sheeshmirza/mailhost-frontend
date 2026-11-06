@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { api, APIKeyView, DomainView } from "@/lib/api";
+import { api, APIKeyView, DomainView, getErrorMessage } from "@/lib/api";
 import {
   Plus,
   Trash2,
@@ -76,8 +76,8 @@ export default function APIKeysPage() {
       toast.success("API key generated successfully!");
       setKeyName("");
       await fetchKeys();
-    } catch (err) {
-      toast.error("Failed to create API key: " + (err instanceof Error ? err.message : "Unknown error"));
+    } catch (err: unknown) {
+      toast.error("Failed to create API key: " + getErrorMessage(err));
     } finally {
       setIsCreating(false);
     }
@@ -91,8 +91,8 @@ export default function APIKeysPage() {
       await api.deleteAPIKey(id);
       toast.success("API key deleted successfully");
       await fetchKeys();
-    } catch (err) {
-      toast.error("Failed to delete API key: " + (err instanceof Error ? err.message : "Unknown error"));
+    } catch (err: unknown) {
+      toast.error("Failed to delete API key: " + getErrorMessage(err));
     } finally {
       setRevokingId(null);
     }
@@ -294,7 +294,7 @@ export default function APIKeysPage() {
                   </label>
                   <select
                     value={permission}
-                    onChange={(e) => setPermission(e.target.value as any)}
+                    onChange={(e) => setPermission(e.target.value as "full_access" | "sending_access")}
                     className="input-base"
                   >
                     <option value="full_access">Full Access (Send emails and manage settings)</option>

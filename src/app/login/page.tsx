@@ -326,10 +326,10 @@ export default function LoginPage() {
           </form>
           {mode === "login" && (
             <div className="flex flex-wrap justify-center gap-x-4 gap-y-2 border-t border-surface-border pt-4 text-xs">
-              <button type="button" onClick={() => { setRecoveryMode("forgot"); setRecoveryMessage(null); }} className="text-content-muted hover:text-content-primary">Forgot password?</button>
-              <button type="button" onClick={() => { setRecoveryMode("resend"); setRecoveryMessage(null); }} className="text-content-muted hover:text-content-primary">Resend verification</button>
-              <button type="button" onClick={() => { setRecoveryMode("verify"); setRecoveryMessage(null); }} className="text-content-muted hover:text-content-primary">Verify email</button>
-              <button type="button" onClick={() => { setRecoveryMode("reset"); setRecoveryMessage(null); }} className="text-content-muted hover:text-content-primary">Reset with code</button>
+              <button type="button" onClick={() => { setRecoveryMode("forgot"); setRecoveryMessage(null); setError(null); }} className="text-content-muted hover:text-content-primary">Forgot password?</button>
+              <button type="button" onClick={() => { setRecoveryMode("resend"); setRecoveryMessage(null); setError(null); }} className="text-content-muted hover:text-content-primary">Resend verification</button>
+              <button type="button" onClick={() => { setRecoveryMode("verify"); setRecoveryMessage(null); setError(null); }} className="text-content-muted hover:text-content-primary">Verify email</button>
+              <button type="button" onClick={() => { setRecoveryMode("reset"); setRecoveryMessage(null); setError(null); }} className="text-content-muted hover:text-content-primary">Reset with code</button>
             </div>
           )}
           </>

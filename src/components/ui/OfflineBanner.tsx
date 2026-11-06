@@ -11,12 +11,16 @@ export function OfflineBanner() {
   useEffect(() => {
     if (typeof window === "undefined") return;
 
+    let reconnectTimer: number | null = null;
+
     const handleOnline = () => {
       setIsOffline(false);
       setJustReconnected(true);
       telemetry.log("offline_event", "Network connection re-established");
-      const timer = window.setTimeout(() => setJustReconnected(false), 3500);
-      return () => clearTimeout(timer);
+      if (reconnectTimer !== null) {
+        window.clearTimeout(reconnectTimer);
+      }
+      reconnectTimer = window.setTimeout(() => setJustReconnected(false), 3500);
     };
 
     const handleOffline = () => {
@@ -31,6 +35,9 @@ export function OfflineBanner() {
     window.addEventListener("offline", handleOffline);
 
     return () => {
+      if (reconnectTimer !== null) {
+        window.clearTimeout(reconnectTimer);
+      }
       window.removeEventListener("online", handleOnline);
       window.removeEventListener("offline", handleOffline);
     };

@@ -20,13 +20,11 @@ import {
   Users,
   GitBranch,
   FileText,
-  Mail,
   Server,
   Inbox,
   ArrowRightLeft,
   Globe,
   Sparkles,
-  ShieldCheck,
 } from "lucide-react";
 import CodeSnippet from "@/components/ui/CodeSnippet";
 import { ErrorState } from "@/components/ui/ErrorState";

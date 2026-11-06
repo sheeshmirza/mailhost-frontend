@@ -23,12 +23,8 @@ import {
   ChevronRight,
   Pencil,
   Sparkles,
-  TrendingUp,
-  BarChart3,
   Upload,
-  FileUp,
   CheckCircle2,
-  AlertTriangle,
 } from "lucide-react";
 import { useToast } from "@/lib/toast-context";
 import { ErrorState } from "@/components/ui/ErrorState";

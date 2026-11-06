@@ -9,7 +9,6 @@ import { TableSkeleton } from "@/components/ui/LoadingState";
 import { getVerifiedDomains, assertVerifiedSender, buildSenderAddress } from "@/lib/domain-utils";
 import { VerifiedDomainAlert } from "@/components/common/VerifiedDomainAlert";
 import {
-  Server,
   Mail,
   Inbox,
   FolderSync,
@@ -22,11 +21,7 @@ import {
   ShieldCheck,
   Terminal,
   Code2,
-  ExternalLink,
-  ChevronRight,
-  Info,
   Layers,
-  Sparkles,
 } from "lucide-react";
 
 export default function SMTPProtocolsPage() {

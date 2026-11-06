@@ -22,10 +22,7 @@ import {
   Filter,
   RefreshCw,
   Zap,
-  Globe,
-  ShieldAlert,
   Sparkles,
-  Layers,
   Tag,
   Users,
   CheckCircle2,
@@ -33,15 +30,10 @@ import {
   ArrowRight,
   ChevronDown,
   ChevronRight,
-  Copy,
-  Pencil,
-  Send,
   Eye,
   Sliders,
-  Check,
   X,
   ArrowDown,
-  Info,
 } from "lucide-react";
 import { useToast } from "@/lib/toast-context";
 import { ErrorState } from "@/components/ui/ErrorState";
